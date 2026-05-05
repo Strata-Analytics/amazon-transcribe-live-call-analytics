@@ -97,6 +97,7 @@ export type CallMetaData = {
     agentId?: string,
     samplingRate: number,
     callEvent: string,
+    channel?: 'CALLER' | 'AGENT',
 };
 
 const kinesisClient = new KinesisClient({ region: AWS_REGION });
@@ -152,7 +153,7 @@ export const writeCallRecordingEvent = async (callMetaData: CallMetaData, record
     await writeCallEvent(callRecordingEvent, server);
 };
 
-export const writeTranscriptionSegment = async function (transcribeMessageJson: TranscriptEvent, callId: Uuid, server: FastifyInstance) {
+export const writeTranscriptionSegment = async function (transcribeMessageJson: TranscriptEvent, callId: Uuid, server: FastifyInstance, channel?: 'CALLER' | 'AGENT') {
     if (transcribeMessageJson.Transcript?.Results && transcribeMessageJson.Transcript?.Results.length > 0) {
         if (transcribeMessageJson.Transcript?.Results[0].Alternatives && transcribeMessageJson.Transcript?.Results[0].Alternatives?.length > 0) {
 
@@ -167,7 +168,7 @@ export const writeTranscriptionSegment = async function (transcribeMessageJson: 
             const kdsObject: AddTranscriptSegmentEvent = {
                 EventType: 'ADD_TRANSCRIPT_SEGMENT',
                 CallId: callId,
-                Channel: (result.ChannelId === 'ch_0' ? 'CALLER' : 'AGENT'),
+                Channel: channel ?? (result.ChannelId === 'ch_0' ? 'CALLER' : 'AGENT'),
                 SegmentId: `${result.ChannelId}-${result.StartTime}`,
                 StartTime: result.StartTime || 0,
                 EndTime: result.EndTime || 0,
@@ -414,8 +415,10 @@ export const startTranscribe = async (callMetaData: CallMetaData, audioInputStre
             // Cast response to handle both standard Transcribe and Whisper responses
             outputCallAnalyticsStream = (response as { CallAnalyticsTranscriptResultStream: AsyncIterable<CallAnalyticsTranscriptResultStream> }).CallAnalyticsTranscriptResultStream;
         } else {
-            (tsParams as StartStreamTranscriptionCommandInput).EnableChannelIdentification = true;
-            (tsParams as StartStreamTranscriptionCommandInput).NumberOfChannels = 2;
+            if (!callMetaData.channel) {
+                (tsParams as StartStreamTranscriptionCommandInput).EnableChannelIdentification = true;
+                (tsParams as StartStreamTranscriptionCommandInput).NumberOfChannels = 2;
+            }
             server.log.debug(`[TRANSCRIBING]: [${callMetaData.callId}] - StartStreamTranscriptionCommand args: ${JSON.stringify(tsParams)}`);
             
             // Use the appropriate command based on whether we're using Whisper or standard Transcribe
@@ -447,7 +450,7 @@ export const startTranscribe = async (callMetaData: CallMetaData, audioInputStre
             for await (const event of tsStream) {
                 if (event.TranscriptEvent) {
                     const message: TranscriptEvent = event.TranscriptEvent;
-                    await writeTranscriptionSegment(message, callMetaData.callId, server);
+                    await writeTranscriptionSegment(message, callMetaData.callId, server, callMetaData.channel);
                 }
                 if (event.CategoryEvent && event.CategoryEvent.MatchedCategories) {
                     await writeAddCallCategoryEvent(event.CategoryEvent, callMetaData.callId, server);

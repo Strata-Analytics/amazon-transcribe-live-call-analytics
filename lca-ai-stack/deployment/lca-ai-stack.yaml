@@ -438,6 +438,7 @@ Outputs:
       REACT_APP_AWS_REGION=${AWS::Region}
       REACT_APP_SETTINGS_PARAMETER=${LCASettingsParameterName}
       REACT_APP_ENABLE_LEX_AGENT_ASSIST=true
+      REACT_APP_ENABLE_LAMBDA_AGENT_ASSIST=true
 
   TranscriptSummaryFunctionArn:
     Description: Call Summarizer Lambda function ARN
@@ -669,6 +670,8 @@ Resources:
               - "true"
           - Name: REACT_APP_ENABLE_LEX_AGENT_ASSIST
             Value: !Ref IsLexAgentAssistEnabled
+          - Name: REACT_APP_ENABLE_LAMBDA_AGENT_ASSIST
+            Value: !Ref IsLambdaAgentAssistEnabled
           - Name: REACT_APP_CLOUDFRONT_DOMAIN
             Value: !Sub "https://${WebAppCloudFrontDistribution.DomainName}/"
       TimeoutInMinutes: 10
