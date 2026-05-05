@@ -106,10 +106,10 @@ def query_knowledge_base(query: str) -> str:
 def lambda_handler(event, context):
     print("Event:", json.dumps(event))
 
-    transcript = event.get('transcript', '').strip()
+    transcript = event.get('text', event.get('transcript', '')).strip()
     channel = event.get('channel', event.get('Channel', ''))
     sentiment = event.get('sentiment', event.get('Sentiment', 'NEUTRAL'))
-    call_id = event.get('callId', event.get('CallId', ''))
+    call_id = event.get('call_id', event.get('callId', event.get('CallId', '')))
     segment_id = event.get('segmentId', event.get('SegmentId', ''))
     is_partial = event.get('isPartial', event.get('IsPartial', True))
 
@@ -175,8 +175,4 @@ def lambda_handler(event, context):
 
 
 def build_response(message: str, urgencia: str = 'baja') -> dict:
-    return {
-        'response': message,
-        'urgencia': urgencia,
-        'status': 'success'
-    }
+    return {'message': message}
