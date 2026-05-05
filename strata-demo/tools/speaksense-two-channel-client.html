@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpeakSense — Demo Call Client</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #080C12;
+    --surface: #0F1520;
+    --surface2: #161E2E;
+    --border: #1E2D45;
+    --accent: #00D4FF;
+    --accent2: #00FF9D;
+    --warn: #FF6B35;
+    --text: #E8EDF5;
+    --muted: #5A6A85;
+    --agent: #00D4FF;
+    --caller: #00FF9D;
+    --red: #FF3B5C;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 80% 80%, rgba(0,255,157,0.03) 0%, transparent 60%);
+  }
+
+  .logo {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 40px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  select option { background: var(--surface2); }
+
+  .role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .role-btn {
+    padding: 16px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .role-btn:hover { border-color: var(--muted); }
+
+  .role-btn.selected-agent {
+    border-color: var(--agent);
+    background: rgba(0, 212, 255, 0.06);
+  }
+
+  .role-btn.selected-caller {
+    border-color: var(--caller);
+    background: rgba(0, 255, 157, 0.06);
+  }
+
+  .role-btn .role-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .role-btn .role-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .role-btn .role-desc {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .role-btn.selected-agent .role-name { color: var(--agent); }
+  .role-btn.selected-caller .role-name { color: var(--caller); }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-start {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-start:hover { background: #33DDFF; transform: translateY(-1px); }
+  .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-stop {
+    background: transparent;
+    border: 2px solid var(--red);
+    color: var(--red);
+  }
+
+  .btn-stop:hover { background: rgba(255,59,92,0.1); }
+
+  /* Status */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .status-dot.connecting { background: var(--warn); animation: pulse 1s infinite; }
+  .status-dot.streaming-agent { background: var(--agent); animation: pulse 1.5s infinite; }
+  .status-dot.streaming-caller { background: var(--caller); animation: pulse 1.5s infinite; }
+  .status-dot.error { background: var(--red); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .status-text { color: var(--text); }
+  .status-sub { color: var(--muted); margin-left: auto; font-size: 10px; }
+
+  /* Level meter */
+  .level-meter {
+    display: none;
+    margin-bottom: 20px;
+    gap: 4px;
+    align-items: flex-end;
+    height: 32px;
+  }
+
+  .level-meter.active { display: flex; }
+
+  .level-bar {
+    flex: 1;
+    background: var(--border);
+    border-radius: 2px;
+    transition: height 0.1s, background 0.1s;
+    min-height: 4px;
+  }
+
+  .level-bar.agent { background: var(--agent); }
+  .level-bar.caller { background: var(--caller); }
+
+  /* Info box */
+  .info-box {
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .info-box strong { color: var(--accent); }
+
+  .call-id-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .call-id-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .call-id-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hidden { display: none; }
+
+  .timer {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text);
+    margin: 16px 0;
+    letter-spacing: 4px;
+  }
+
+  .timer.agent { color: var(--agent); }
+  .timer.caller { color: var(--caller); }
+
+  footer {
+    margin-top: 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">SpeakSense AI</div>
+<h1>Demo <span>Call</span> Client</h1>
+<p class="subtitle">// two-channel real-time audio stream</p>
+
+<div class="card">
+
+  <!-- CONFIG SECTION -->
+  <div id="configSection">
+    <p class="section-label">// Configuración</p>
+
+    <div class="field">
+      <label>WebSocket Endpoint</label>
+      <input type="text" id="wsEndpoint" value="wss://d23to8673muyll.cloudfront.net/api/v1/ws?authorization=Bearer%20eyJraWQiOiJ0eXJQWW9pRU5LbGhcL0RWT01GWUpKYjI0UFQyZTlCb0RydmNqYThwSUVGMD0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI2NDI4YzQ4OC1jMGIxLTcwOTItZDhhNy1iNDgxYmJiZjc1ZDQiLCJjb2duaXRvOmdyb3VwcyI6WyJBZG1pbiJdLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtZWFzdC0xLmFtYXpvbmF3cy5jb21cL3VzLWVhc3QtMV95QzluT0g0QmMiLCJjbGllbnRfaWQiOiI3cThoZnMzcHV1aHNia2cyaWhrNjhzYjVhNSIsIm9yaWdpbl9qdGkiOiIyYTcwNDY5MS0yMTU1LTQ5NDItYThhMS1hYWRjN2Y0NTZlZDMiLCJldmVudF9pZCI6ImQ0NDdkODRiLWQ5NzEtNGUyZi04ODViLTgxZTM2M2E5ZTEwNSIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3Nzc1NjY5MDAsImV4cCI6MTc3Nzk5MDUyOCwiaWF0IjoxNzc3OTg2OTI4LCJqdGkiOiJjOTg1N2ZlNC01MWVhLTQzZWEtYTU4OC1jMTRkN2JmNDMyNjYiLCJ1c2VybmFtZSI6IjY0MjhjNDg4LWMwYjEtNzA5Mi1kOGE3LWI0ODFiYmJmNzVkNCJ9.L7Qn-0Z3-w4vv7d7PLZvDCs2WcA7hZM0XqMHshDb94oQhx4RRg3e8NcKheKG61h8HquXSxa6CutXsyw6-Uu4tPQPYRO2CwS0z1yWRUClY44IiVEaJ8rj3aQKtkVXabcAjScnWLso9EMh9jVomipuOaeZ4xUUAxj0lphvwLMr4kOQGuLovqt2b40b3kmjP2cydOErn0dbJ4LQqRpDAtLrgunm0ItuJ83-954EwQc5dZVYfefInTWT8ARPU9C4Irqx6BfIVNWwMSCa3iNEbGCXV3XU0TWxJ6eEsom1_dzoiqUM_B_nzKl9qHq8i9UQoi-MofXOMC0eZaXGUukuP8kh_g">
+    </div>
+
+    <div class="field">
+      <label>Call ID <span style="color:var(--muted);font-size:10px">(compartir con el otro participante)</span></label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="callId" placeholder="Auto-generado al conectar"/>
+        <button class="copy-btn" onclick="generateCallId()" style="padding:8px 12px;font-size:11px">GEN</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Rol en esta llamada</label>
+      <div class="role-selector">
+        <div class="role-btn selected-agent" id="btnAgent" onclick="selectRole('AGENT')">
+          <span class="role-icon">🎧</span>
+          <div class="role-name">AGENT</div>
+          <div class="role-desc">Agente del contact center</div>
+        </div>
+        <div class="role-btn" id="btnCaller" onclick="selectRole('CALLER')">
+          <span class="role-icon">📞</span>
+          <div class="role-name">CALLER</div>
+          <div class="role-desc">Cliente llamante</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Cómo usar:</strong><br>
+      1. La persona que hace de <strong>AGENTE</strong> abre esta página y genera un Call ID<br>
+      2. Comparte el Call ID con quien hace de <strong>CLIENTE</strong><br>
+      3. El cliente abre esta página, pega el Call ID y selecciona CALLER<br>
+      4. Ambos hacen click en Iniciar — el panel del LCA muestra los dos canales
+    </div>
+
+    <button class="btn btn-start" id="startBtn" onclick="startStreaming()">
+      🎙 Iniciar Stream
+    </button>
+  </div>
+
+  <!-- STREAMING SECTION -->
+  <div id="streamingSection" class="hidden">
+    <div class="call-id-display">
+      <span class="call-id-label">CALL ID</span>
+      <span class="call-id-value" id="activeCallId">—</span>
+      <button class="copy-btn" onclick="copyCallId()">COPIAR</button>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span class="status-text" id="statusText">Conectando...</span>
+      <span class="status-sub" id="statusSub"></span>
+    </div>
+
+    <div class="timer hidden" id="timer">00:00</div>
+
+    <div class="level-meter" id="levelMeter">
+      <!-- bars added by JS -->
+    </div>
+
+    <button class="btn btn-stop" onclick="stopStreaming()">
+      ⏹ Detener Stream
+    </button>
+  </div>
+
+</div>
+
+<footer>speaksense copilot rt — poc demo client v1.0</footer>
+
+<script>
+  let ws = null;
+  let mediaStream = null;
+  let audioContext = null;
+  let processor = null;
+  let timerInterval = null;
+  let seconds = 0;
+  let selectedRole = 'AGENT';
+  let currentCallId = '';
+  let analyser = null;
+  let animFrame = null;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function generateCallId() {
+    const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    document.getElementById('callId').value = id;
+  }
+
+  function selectRole(role) {
+    selectedRole = role;
+    document.getElementById('btnAgent').className = 'role-btn' + (role === 'AGENT' ? ' selected-agent' : '');
+    document.getElementById('btnCaller').className = 'role-btn' + (role === 'CALLER' ? ' selected-caller' : '');
+  }
+
+  function copyCallId() {
+    const id = document.getElementById('activeCallId').textContent;
+    navigator.clipboard.writeText(id).then(() => {
+      const btn = event.target;
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = 'COPIAR', 1500);
+    });
+  }
+
+  function setStatus(dot, text, sub) {
+    document.getElementById('statusDot').className = 'status-dot ' + dot;
+    document.getElementById('statusText').textContent = text;
+    document.getElementById('statusSub').textContent = sub || '';
+  }
+
+  function updateTimer() {
+    seconds++;
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+  }
+
+  // ── Level meter ────────────────────────────────────────────────────────────
+  function setupLevelMeter(role) {
+    const meter = document.getElementById('levelMeter');
+    meter.innerHTML = '';
+    const barCount = 24;
+    for (let i = 0; i < barCount; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'level-bar ' + role.toLowerCase();
+      bar.style.height = '4px';
+      meter.appendChild(bar);
+    }
+    meter.classList.add('active');
+  }
+
+  function animateMeter() {
+    if (!analyser) return;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    const bars = document.querySelectorAll('.level-bar');
+    const step = Math.floor(data.length / bars.length);
+    bars.forEach((bar, i) => {
+      const val = data[i * step] / 255;
+      bar.style.height = Math.max(4, val * 32) + 'px';
+      bar.style.opacity = 0.4 + val * 0.6;
+    });
+    animFrame = requestAnimationFrame(animateMeter);
+  }
+
+  // ── Core streaming ─────────────────────────────────────────────────────────
+  async function startStreaming() {
+    const endpoint = document.getElementById('wsEndpoint').value.trim();
+    let callId = document.getElementById('callId').value.trim();
+
+    if (!endpoint) { alert('Falta el WebSocket endpoint'); return; }
+    if (!callId) {
+      generateCallId();
+      callId = document.getElementById('callId').value;
+    }
+
+    currentCallId = callId;
+
+    // Switch UI
+    document.getElementById('configSection').classList.add('hidden');
+    document.getElementById('streamingSection').classList.remove('hidden');
+    document.getElementById('activeCallId').textContent = callId;
+
+    const timer = document.getElementById('timer');
+    timer.className = 'timer ' + selectedRole.toLowerCase();
+    timer.classList.remove('hidden');
+
+    setStatus('connecting', 'Solicitando micrófono...', '');
+
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch (e) {
+      setStatus('error', 'Error: no se pudo acceder al micrófono', e.message);
+      return;
+    }
+
+    setStatus('connecting', 'Conectando al servidor...', endpoint);
+
+    ws = new WebSocket(endpoint);
+    ws.binaryType = 'arraybuffer';
+
+    ws.onopen = () => {
+      const dotClass = selectedRole === 'AGENT' ? 'streaming-agent' : 'streaming-caller';
+      setStatus(dotClass, `Streaming como ${selectedRole}`, callId.substring(0, 8) + '...');
+
+      // Send START event
+      const startMsg = {
+        callId,
+        agentId: 'DemoClient',
+        fromNumber: selectedRole === 'CALLER' ? '+5491155551234' : '+5491155559999',
+        toNumber: selectedRole === 'AGENT' ? '+5491155551234' : '+5491155559999',
+        samplingRate: 16000,
+        callEvent: 'START',
+        channel: selectedRole
+      };
+      ws.send(JSON.stringify(startMsg));
+
+      // Setup audio pipeline
+      audioContext = new AudioContext({ sampleRate: 16000 });
+      const source = audioContext.createMediaStreamSource(mediaStream);
+
+      // Analyser for level meter
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 64;
+      source.connect(analyser);
+
+      setupLevelMeter(selectedRole);
+      animateMeter();
+
+      // Script processor to capture PCM
+      processor = audioContext.createScriptProcessor(512, 1, 1);
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+
+      processor.onaudioprocess = (e) => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        const float32 = e.inputBuffer.getChannelData(0);
+        const int16 = new Int16Array(float32.length);
+        for (let i = 0; i < float32.length; i++) {
+          int16[i] = Math.max(-32768, Math.min(32767, float32[i] * 32768));
+        }
+        ws.send(int16.buffer);
+      };
+
+      // Timer
+      timerInterval = setInterval(updateTimer, 1000);
+    };
+
+    ws.onerror = (e) => {
+      setStatus('error', 'Error de conexión WebSocket', '');
+    };
+
+    ws.onclose = () => {
+      if (timerInterval) {
+        setStatus('error', 'Conexión cerrada', '');
+      }
+    };
+  }
+
+  function stopStreaming() {
+    // Send END event
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const endMsg = {
+        callId: currentCallId,
+        agentId: 'DemoClient',
+        fromNumber: '+5491155551234',
+        toNumber: '+5491155559999',
+        samplingRate: 16000,
+        callEvent: 'END',
+        activeSpeaker: selectedRole
+      };
+      ws.send(JSON.stringify(endMsg));
+      ws.close();
+    }
+
+    if (processor) { processor.disconnect(); processor = null; }
+    if (analyser) { analyser.disconnect(); analyser = null; }
+    if (audioContext) { audioContext.close(); audioContext = null; }
+    if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+
+    seconds = 0;
+
+    // Reset UI
+    document.getElementById('streamingSection').classList.add('hidden');
+    document.getElementById('configSection').classList.remove('hidden');
+    document.getElementById('timer').classList.add('hidden');
+    document.getElementById('levelMeter').classList.remove('active');
+    setStatus('', '', '');
+  }
+
+  // Auto-generate call ID on load
+  generateCallId();
+</script>
+</body>
+</html>

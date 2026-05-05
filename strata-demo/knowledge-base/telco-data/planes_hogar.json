@@ -1,0 +1,73 @@
+{
+  "catalogo": "Planes Internet Hogar",
+  "operador": "TelcoMX",
+  "vigencia": "Mayo 2026",
+  "planes": [
+    {
+      "id": "HOG-50",
+      "nombre": "Internet Hogar 50",
+      "precio_mxn": 349,
+      "velocidad_mbps": 50,
+      "tipo": "Fibra óptica",
+      "instalacion": "Sin costo",
+      "permanencia_meses": 12,
+      "incluye_router": true,
+      "perfil_ideal": "Uso básico, 1-2 personas, navegación y redes sociales",
+      "señales_upsell": ["trabaja desde casa", "hace videollamadas", "tienen más de 2 personas en casa"],
+      "plan_upgrade_sugerido": "HOG-100"
+    },
+    {
+      "id": "HOG-100",
+      "nombre": "Internet Hogar 100",
+      "precio_mxn": 499,
+      "velocidad_mbps": 100,
+      "tipo": "Fibra óptica",
+      "instalacion": "Sin costo",
+      "permanencia_meses": 12,
+      "incluye_router": true,
+      "perfil_ideal": "Familias medianas, home office, streaming HD",
+      "señales_upsell": ["tiene hijos que usan videojuegos", "hace streaming 4K", "trabaja con videoconferencias frecuentes"],
+      "plan_upgrade_sugerido": "HOG-300"
+    },
+    {
+      "id": "HOG-300",
+      "nombre": "Internet Hogar 300",
+      "precio_mxn": 699,
+      "velocidad_mbps": 300,
+      "tipo": "Fibra óptica",
+      "instalacion": "Sin costo",
+      "permanencia_meses": 12,
+      "incluye_router": true,
+      "wifi_extender": true,
+      "perfil_ideal": "Familias grandes, múltiples dispositivos, gaming, streaming 4K simultáneo",
+      "señales_upsell": ["tiene más de 5 dispositivos conectados", "experimenta lentitud en horas pico"],
+      "plan_upgrade_sugerido": "HOG-GIGA"
+    },
+    {
+      "id": "HOG-GIGA",
+      "nombre": "Internet Hogar Giga",
+      "precio_mxn": 999,
+      "velocidad_mbps": 1000,
+      "tipo": "Fibra óptica",
+      "instalacion": "Sin costo",
+      "permanencia_meses": 12,
+      "incluye_router": true,
+      "wifi_extender": true,
+      "ip_fija": true,
+      "perfil_ideal": "Power users, pequeñas empresas en casa, streamers, gamers profesionales",
+      "señales_upsell": [],
+      "plan_upgrade_sugerido": null
+    }
+  ],
+  "bundle_movil_hogar": {
+    "descripcion": "Combina un plan móvil con internet hogar y obtén descuento",
+    "descuento_pct": 15,
+    "ejemplo": "Plan Plus ($299) + Internet Hogar 100 ($499) = $676 en lugar de $798. Ahorro: $122/mes",
+    "señales_cross_sell": [
+      "menciona que paga internet aparte",
+      "tiene Telmex o Izzi en casa",
+      "pregunta si tienen internet hogar",
+      "quiere simplificar sus pagos"
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "catalogo": "Scripts y Frases Sugeridas por Escenario",
+  "operador": "TelcoMX",
+  "escenarios": {
+    "CROSS_SELL": {
+      "apertura": [
+        "Aprovechando que está en línea, ¿me permite comentarle algo que podría ser de su interés?",
+        "Revisando su cuenta veo una oportunidad que podría ahorrarle dinero."
+      ],
+      "manejo_objecion_precio": [
+        "Entiendo, pero si lo vemos a largo plazo el ahorro mensual compensa la diferencia.",
+        "¿Le parece si le muestro exactamente cuánto pagaría y cuánto se ahorraría?"
+      ],
+      "cierre": [
+        "¿Le parece si lo activamos ahora mismo? En menos de 5 minutos está listo.",
+        "¿Quiere aprovechar esta oferta hoy?"
+      ]
+    },
+    "UPSELL": {
+      "apertura": [
+        "Revisando su consumo del último mes, veo que podría beneficiarse de un plan con más gigas.",
+        "Noto que ha comprado paquetes adicionales los últimos meses — hay una opción más económica."
+      ],
+      "manejo_objecion_precio": [
+        "Si sumamos los paquetes adicionales que compra, el nuevo plan le sale igual o más barato.",
+        "La diferencia es de solo $[X] al mes y no volvería a quedarse sin datos."
+      ],
+      "cierre": [
+        "¿Lo activamos ahora? Su nuevo plan entraría en vigor de inmediato.",
+        "¿Le parece bien? Yo me encargo de todo el cambio ahora mismo."
+      ]
+    },
+    "RETENCIÓN": {
+      "apertura": [
+        "Lamento mucho escuchar eso. Su satisfacción es muy importante para nosotros.",
+        "Entiendo su frustración y quiero ayudarle a encontrar la mejor solución."
+      ],
+      "explorar_motivo": [
+        "¿Me podría decir qué es lo que más le ha molestado del servicio?",
+        "¿Hay algo específico que podría mejorar para que se quede con nosotros?"
+      ],
+      "manejo_competencia": [
+        "¿Me puede decir qué le están ofreciendo? Quiero ver si podemos igualarlo o mejorarlo.",
+        "Antes de tomar una decisión, permítame revisar qué podemos hacer por usted."
+      ],
+      "cierre_retención": [
+        "¿Con esta oferta se quedaría con nosotros?",
+        "¿Le parece justo lo que le estoy ofreciendo?"
+      ]
+    },
+    "ESCALACIÓN": {
+      "transición": [
+        "Entiendo perfectamente su molestia. Voy a transferirle con un especialista que puede resolver esto de inmediato.",
+        "Le pido una disculpa por la experiencia. Permítame conectarlo con mi supervisor ahora mismo."
+      ]
+    },
+    "CIERRE": {
+      "señales_de_compra": [
+        "¿Cuánto sería en total?",
+        "¿Cómo lo activo?",
+        "¿Y cuándo entraría en vigor?",
+        "Suena bien",
+        "Me interesa"
+      ],
+      "frases_cierre": [
+        "Perfecto, lo proceso ahora mismo. ¿Me confirma su dirección de correo para enviarle la confirmación?",
+        "Excelente decisión. En menos de 2 minutos ya tiene el nuevo plan activo.",
+        "Listo, ya quedó activado. ¿Hay algo más en lo que pueda ayudarle?"
+      ]
+    }
+  }
+}
