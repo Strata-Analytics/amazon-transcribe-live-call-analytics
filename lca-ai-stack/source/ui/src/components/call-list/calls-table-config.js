@@ -1,18 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Download, MoreHorizontal, RefreshCw, Settings2 } from 'lucide-react';
 
-import Button from '@cloudscape-design/components/button';
-import ButtonDropdown from '@cloudscape-design/components/button-dropdown';
-import CollectionPreferences from '@cloudscape-design/components/collection-preferences';
-import Icon from '@cloudscape-design/components/icon';
-import Link from '@cloudscape-design/components/link';
-import SpaceBetween from '@cloudscape-design/components/space-between';
-import StatusIndicator from '@cloudscape-design/components/status-indicator';
-import Popover from '@cloudscape-design/components/popover';
-
-import rehypeRaw from 'rehype-raw';
-import ReactMarkdown from 'react-markdown';
+import { Button } from '../ui/button';
+import { cn } from '../../lib/utils';
 import { TableHeader } from '../common/table';
 import { CALLS_PATH } from '../../routes/constants';
 import { SentimentIndicator } from '../sentiment-icon/SentimentIcon';
@@ -23,22 +15,96 @@ import { getTextOnlySummary } from '../common/summary';
 
 export const KEY_COLUMN_ID = 'callId';
 
+/* ── Local replacements for removed Cloudscape components ─────────────── */
+
+const statusStyles = {
+  success: 'text-green-600',
+  error: 'text-destructive',
+  warning: 'text-yellow-600',
+  'in-progress': 'text-blue-600',
+  info: 'text-blue-600',
+  stopped: 'text-muted-foreground',
+  loading: 'text-muted-foreground',
+};
+const statusDots = {
+  success: '●',
+  error: '●',
+  warning: '▲',
+  'in-progress': '◐',
+  info: 'ℹ',
+  stopped: '■',
+  loading: '○',
+};
+/* eslint-disable react/prop-types */
+const StatusIndicator = ({ type, children }) => (
+  <span className={cn('inline-flex items-center gap-1.5 text-sm', statusStyles[type] || 'text-muted-foreground')}>
+    <span aria-hidden="true">{statusDots[type] || '●'}</span>
+    {children}
+  </span>
+);
+
+const RowMenu = ({ items }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className="p-1 rounded hover:bg-accent transition-colors"
+        aria-label="Row actions"
+      >
+        <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-white border border-border rounded-md shadow-lg z-20 py-1 min-w-[140px]">
+          {items.map((item) => (
+            item.disabled ? (
+              <span
+                key={item.text}
+                className="block px-3 py-1.5 text-sm text-muted-foreground opacity-50 cursor-not-allowed"
+              >
+                {item.text}
+              </span>
+            ) : (
+              <a
+                key={item.text}
+                href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noreferrer' : undefined}
+                onClick={() => setOpen(false)}
+                className="block px-3 py-1.5 text-sm hover:bg-accent text-foreground"
+              >
+                {item.text}
+              </a>
+            )
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── Column definitions ───────────────────────────────────────────────── */
+
 export const COLUMN_DEFINITIONS_MAIN = [
   {
     id: KEY_COLUMN_ID,
     header: 'Call ID',
-    cell: (item) => <Link href={`#${CALLS_PATH}/${item.callId}`}>{item.callId}</Link>,
+    cell: (item) => (
+      <a href={`#${CALLS_PATH}/${item.callId}`} className="text-primary hover:underline text-sm">
+        {item.callId}
+      </a>
+    ),
     sortingField: 'callId',
     width: 325,
-  },
-  {
-    id: 'alerts',
-    header: '⚠',
-    cell: (item) => (
-      <CategoryAlertPill alertCount={item.alertCount} categories={item.callCategories} />
-    ),
-    sortingField: 'alertCount',
-    width: 85,
   },
   {
     id: 'agentId',
@@ -59,16 +125,11 @@ export const COLUMN_DEFINITIONS_MAIN = [
     header: 'Summary',
     cell: (item) => {
       const summary = getTextOnlySummary(item.callSummaryText);
+      const preview = summary && summary.length > 20 ? `${summary.substring(0, 20)}...` : summary;
       return (
-        <Popover
-          dismissButton={false}
-          position="top"
-          size="large"
-          triggerType="text"
-          content={<ReactMarkdown rehypePlugins={[rehypeRaw]}>{summary ?? ''}</ReactMarkdown>}
-        >
-          {summary && summary.length > 20 ? `${summary.substring(0, 20)}...` : summary}
-        </Popover>
+        <span title={summary ?? ''} className="cursor-help">
+          {preview}
+        </span>
       );
     },
     sortingField: 'summary',
@@ -85,7 +146,7 @@ export const COLUMN_DEFINITIONS_MAIN = [
     header: 'Status',
     cell: (item) => (
       <StatusIndicator type={item.recordingStatusIcon}>
-        {` ${item.recordingStatusLabel} `}
+        {item.recordingStatusLabel}
       </StatusIndicator>
     ),
     sortingField: 'recordingStatusLabel',
@@ -122,27 +183,6 @@ export const COLUMN_DEFINITIONS_MAIN = [
     sortingField: 'conversationDurationTimeStamp',
   },
   {
-    id: 'menu',
-    header: '',
-    cell: (item) => (
-      <ButtonDropdown
-        items={[
-          {
-            text: 'Open in PCA',
-            href: item.pcaUrl,
-            external: true,
-            disabled: !item.pcaUrl,
-            externalIconAriaLabel: '(opens in new tab)',
-          },
-        ]}
-        expandToViewport
-      >
-        <Icon name="menu" />
-      </ButtonDropdown>
-    ),
-    width: 120,
-  },
-  {
     id: 'callCategories',
     header: 'Categories',
     cell: (item) => <CategoryPills categories={item.callCategories} />,
@@ -165,30 +205,7 @@ const PAGE_SIZE_OPTIONS = [
   { value: 50, label: '50 Calls' },
 ];
 
-const VISIBLE_CONTENT_OPTIONS = [
-  {
-    label: 'Call list properties',
-    options: [
-      { id: 'callId', label: 'Call ID', editable: false },
-      { id: 'alerts', label: 'Alerts' },
-      { id: 'agentId', label: 'Agent' },
-      { id: 'initiationTimeStamp', label: 'Initiation Timestamp' },
-      { id: 'callerPhoneNumber', label: 'Caller Phone Number' },
-      { id: 'recordingStatus', label: 'Status' },
-      { id: 'summary', label: 'Summary' },
-      { id: 'callerSentiment', label: 'Caller Sentiment' },
-      { id: 'callerSentimentTrend', label: 'Caller Sentiment Trend' },
-      { id: 'agentSentiment', label: 'Agent Sentiment' },
-      { id: 'agentSentimentTrend', label: 'Agent Sentiment Trend' },
-      { id: 'conversationDuration', label: 'Duration' },
-      { id: 'menu', label: 'Menu' },
-      { id: 'callCategories', label: 'Categories' },
-    ],
-  },
-];
-
 const VISIBLE_CONTENT = [
-  'alerts',
   'agentId',
   'initiationTimeStamp',
   'callerPhoneNumber',
@@ -197,7 +214,6 @@ const VISIBLE_CONTENT = [
   'callerSentiment',
   'callerSentimentTrend',
   'conversationDuration',
-  'menu',
 ];
 
 export const DEFAULT_PREFERENCES = {
@@ -206,37 +222,52 @@ export const DEFAULT_PREFERENCES = {
   wraplines: false,
 };
 
-/* eslint-disable react/prop-types, react/jsx-props-no-spreading */
 export const CallsPreferences = ({
   preferences,
   setPreferences,
   disabled,
   pageSizeOptions = PAGE_SIZE_OPTIONS,
-  visibleContentOptions = VISIBLE_CONTENT_OPTIONS,
-}) => (
-  <CollectionPreferences
-    title="Preferences"
-    confirmLabel="Confirm"
-    cancelLabel="Cancel"
-    disabled={disabled}
-    preferences={preferences}
-    onConfirm={({ detail }) => setPreferences(detail)}
-    pageSizePreference={{
-      title: 'Page size',
-      options: pageSizeOptions,
-    }}
-    wrapLinesPreference={{
-      label: 'Wrap lines',
-      description: 'Check to see all the text and wrap the lines',
-    }}
-    visibleContentPreference={{
-      title: 'Select visible columns',
-      options: visibleContentOptions,
-    }}
-  />
-);
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
 
-// number of shards per day used by the list calls API
+  useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setOpen(!open)}
+        disabled={disabled}
+        aria-label="Table preferences"
+      >
+        <Settings2 className="h-4 w-4" />
+      </Button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-border rounded-md shadow-lg z-20 p-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Page size
+          </p>
+          <select
+            value={preferences.pageSize}
+            onChange={(e) => setPreferences({ ...preferences, pageSize: Number(e.target.value) })}
+            className="w-full text-sm border border-input rounded px-2 py-1.5 bg-background text-foreground"
+          >
+            {pageSizeOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const CALL_LIST_SHARDS_PER_DAY = 6;
 const TIME_PERIOD_DROPDOWN_CONFIG = {
   'refresh-2h': { count: 0.5, text: '2 hrs' },
@@ -253,48 +284,85 @@ const TIME_PERIOD_DROPDOWN_ITEMS = Object.keys(TIME_PERIOD_DROPDOWN_CONFIG).map(
   ...TIME_PERIOD_DROPDOWN_CONFIG[k],
 }));
 
-// local storage key to persist the last periods to load
 export const PERIODS_TO_LOAD_STORAGE_KEY = 'periodsToLoad';
 
 export const CallsCommonHeader = ({ resourceName = 'Calls', ...props }) => {
-  const onPeriodToLoadChange = ({ detail }) => {
-    const { id } = detail;
-    const shardCount = TIME_PERIOD_DROPDOWN_CONFIG[id].count;
-    props.setPeriodsToLoad(shardCount);
-    localStorage.setItem(PERIODS_TO_LOAD_STORAGE_KEY, JSON.stringify(shardCount));
+  const [timePeriodOpen, setTimePeriodOpen] = useState(false);
+  const timePeriodRef = useRef(null);
+
+  useEffect(() => {
+    const close = (e) => {
+      if (timePeriodRef.current && !timePeriodRef.current.contains(e.target)) {
+        setTimePeriodOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
+  const onPeriodChange = (item) => {
+    props.setPeriodsToLoad(item.count);
+    localStorage.setItem(PERIODS_TO_LOAD_STORAGE_KEY, JSON.stringify(item.count));
+    setTimePeriodOpen(false);
   };
 
-  // eslint-disable-next-line
-  const periodText =
-    TIME_PERIOD_DROPDOWN_ITEMS.filter((i) => i.count === props.periodsToLoad)[0]?.text || '';
+  const periodText = TIME_PERIOD_DROPDOWN_ITEMS.find((i) => i.count === props.periodsToLoad)?.text || '';
 
   return (
     <TableHeader
       title={resourceName}
+      selectedItems={props.selectedItems}
+      totalItems={props.totalItems}
+      updateTools={props.updateTools}
       actionButtons={
-        <SpaceBetween size="xxs" direction="horizontal">
-          <ButtonDropdown
-            loading={props.loading}
-            onItemClick={onPeriodToLoadChange}
-            items={TIME_PERIOD_DROPDOWN_ITEMS}
-          >
-            {`Load: ${periodText}`}
-          </ButtonDropdown>
+        <div className="flex items-center gap-2">
+          <div className="relative" ref={timePeriodRef}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTimePeriodOpen(!timePeriodOpen)}
+              disabled={props.loading}
+            >
+              {`Load: ${periodText}`}
+              <ChevronDown className="h-3 w-3 ml-1" />
+            </Button>
+            {timePeriodOpen && (
+              <div className="absolute left-0 top-full mt-1 bg-white border border-border rounded-md shadow-lg z-20 py-1 min-w-[110px]">
+                {TIME_PERIOD_DROPDOWN_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onPeriodChange(item)}
+                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent"
+                  >
+                    {item.text}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Button
-            iconName="refresh"
-            variant="normal"
-            loading={props.loading}
+            variant="outline"
+            size="icon"
+            disabled={props.loading}
             onClick={() => props.setIsLoading(true)}
-          />
+            aria-label="Refresh"
+          >
+            <RefreshCw className={cn('h-4 w-4', props.loading && 'animate-spin')} />
+          </Button>
+
           <Button
-            iconName="download"
-            variant="normal"
-            loading={props.loading}
+            variant="outline"
+            size="icon"
+            disabled={props.loading}
             onClick={() => props.downloadToExcel()}
-          />
-        </SpaceBetween>
+            aria-label="Download"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       }
-      {...props}
     />
   );
 };

@@ -5,13 +5,11 @@
 }
 
 .transcript-segment {
-    display: flex;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .transcript-segment-agent-assist {
-    background-color: #f1faff;
-    padding: 2px;
+    /* sin fondo de color, mismo estilo que los demás segmentos */
 }
 
 .translated-text {
@@ -75,6 +73,24 @@ span.issue-pill {
 
 .hide-transcript {
     display: none;
+}
+
+.markdown-prose p {
+    margin-bottom: 0.6rem;
+    line-height: 1.65;
+}
+.markdown-prose p:last-child {
+    margin-bottom: 0;
+}
+.markdown-prose ol,
+.markdown-prose ul {
+    margin-top: 0.25rem;
+    margin-bottom: 0.6rem;
+    padding-left: 1.25rem;
+}
+.markdown-prose li {
+    margin-bottom: 0.4rem;
+    line-height: 1.6;
 }
 
 .flex {

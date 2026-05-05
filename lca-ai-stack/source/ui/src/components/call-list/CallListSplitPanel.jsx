@@ -1,13 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect } from 'react';
-import SplitPanel from '@cloudscape-design/components/split-panel';
-
 import { Logger } from 'aws-amplify';
 
 import useCallsContext from '../../contexts/calls';
 
-import { getPanelContent, SPLIT_PANEL_I18NSTRINGS } from './calls-split-panel-config';
+import { getPanelContent } from './calls-split-panel-config';
 import { IN_PROGRESS_STATUS } from '../common/get-recording-status';
 
 const logger = new Logger('CallListSplitPanel');
@@ -53,9 +51,14 @@ const CallListSplitPanel = () => {
   }, [selectedItems]);
 
   return (
-    <SplitPanel header={panelHeader} i18nStrings={SPLIT_PANEL_I18NSTRINGS}>
-      {panelBody}
-    </SplitPanel>
+    <div className="h-full flex flex-col">
+      <div className="flex-none px-4 py-2.5 border-b border-border text-sm font-medium text-foreground">
+        {panelHeader}
+      </div>
+      <div className="flex-1 overflow-auto p-4">
+        {panelBody}
+      </div>
+    </div>
   );
 };
 
