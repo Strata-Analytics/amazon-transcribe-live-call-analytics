@@ -1,6 +1,6 @@
 {
   "catalogo": "Ofertas de Retención",
-  "operador": "TelcoMX",
+  "operador": "TelcoStrata",
   "vigencia": "Mayo 2026",
   "politica": "Usar en ese orden: primero Oferta A, si rechaza pasar a B, si rechaza pasar a C. No ofrecer C directamente.",
   "ofertas": [
@@ -11,7 +11,7 @@
       "duracion_meses": 3,
       "aplica_a": "Plan actual del cliente sin cambios",
       "condicion": "Cliente con más de 6 meses de antigüedad",
-      "script_agente": "Entiendo su preocupación. Como cliente valioso, puedo ofrecerle un 20% de descuento en su plan actual durante los próximos 3 meses. Eso significa que en lugar de pagar $[PRECIO] pagaría $[PRECIO_CON_DESCUENTO] mensuales.",
+      "script_agente": "Entiendo su preocupación. Como cliente valioso, puedo ofrecerle un 20% de descuento en su plan actual durante los próximos 3 meses, sin necesidad de cambiar nada.",
       "cuando_usar": "Primera oferta ante intención de cancelar"
     },
     {
@@ -21,7 +21,7 @@
       "duracion_meses": 6,
       "aplica_a": "Plan inmediatamente superior al actual, sin costo adicional por 6 meses",
       "condicion": "Cliente que rechazó RET-A o que tiene más de 12 meses de antigüedad",
-      "script_agente": "Le entiendo perfectamente. ¿Qué le parece si le damos un upgrade al [PLAN_SUPERIOR] sin costo adicional por 6 meses? Tendría [BENEFICIO_EXTRA] sin pagar nada más.",
+      "script_agente": "Le entiendo perfectamente. ¿Qué le parece si le hacemos un upgrade al plan superior sin costo adicional por 6 meses? Tendría más gigas y beneficios sin pagar nada más.",
       "cuando_usar": "Si cliente rechaza descuento pero está dispuesto a escuchar"
     },
     {
@@ -29,9 +29,9 @@
       "nombre": "Oferta Combinada Premium",
       "descuento_pct": 30,
       "duracion_meses": 3,
-      "aplica_a": "Plan superior + beneficio adicional (meses gratis de servicio streaming)",
-      "condicion": "Cliente de alto valor: más de 24 meses de antigüedad O gasto mensual mayor a $500 MXN",
-      "script_agente": "Quiero hacer un esfuerzo especial para mantenerlo con nosotros. Le ofrezco el [PLAN_SUPERIOR] con 30% de descuento por 3 meses y además 3 meses gratis de [SERVICIO_ADICIONAL]. Es nuestra mejor oferta.",
+      "aplica_a": "Plan superior con 30% de descuento por 3 meses",
+      "condicion": "Cliente de alto valor: más de 24 meses de antigüedad o gasto mensual mayor a $500",
+      "script_agente": "Quiero hacer un esfuerzo especial para mantenerlo con nosotros. Le ofrezco el plan superior con un 30% de descuento durante los próximos 3 meses. Es nuestra mejor oferta para clientes como usted.",
       "cuando_usar": "Último recurso antes de perder al cliente. Solo para clientes de alto valor."
     },
     {

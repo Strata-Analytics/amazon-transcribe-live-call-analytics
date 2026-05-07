@@ -47,6 +47,8 @@ This is the custom agent assist Lambda that replaces the QnABot. It receives
 transcript segments in real-time and uses Amazon Bedrock (Nova Lite) to generate
 NBO recommendations for the agent.
 
+**Source code:** `lca-ai-stack/source/lambda_functions/strata_agent_assist/lambda_function.py`
+
 ### Create the Lambda:
 
 ```bash
@@ -55,19 +57,30 @@ aws lambda create-function \
   --runtime python3.12 \
   --role <YOUR_LAMBDA_EXECUTION_ROLE_ARN> \
   --handler lambda_function.lambda_handler \
-  --zip-file fileb://lca-ai-stack/source/lambda/strata_agent_assist/lambda_function.zip \
+  --zip-file fileb://lca-ai-stack/source/lambda_functions/strata_agent_assist/lambda_function.zip \
   --region us-east-1
 ```
 
-**Source code:** `lca-ai-stack/source/lambda/strata_agent_assist/lambda_function.py`
-
-### Permissions — attach Bedrock access:
+### Permissions — attach Bedrock + DynamoDB access:
 
 ```bash
 aws iam attach-role-policy \
   --role-name <LAMBDA_EXECUTION_ROLE_NAME> \
   --policy-arn arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+
+aws iam attach-role-policy \
+  --role-name <LAMBDA_EXECUTION_ROLE_NAME> \
+  --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess
 ```
+
+### Environment variables (optional — for DynamoDB context + KB RAG):
+
+| Variable | Value | Purpose |
+|---|---|---|
+| `DYNAMODB_TABLE_NAME` | `lca-poc-copilot-AISTACK-...-EventSourcingTable-...` | Call history context (last 10 CALLER turns). If unset, skipped. |
+| `KNOWLEDGE_BASE_ID` | Bedrock KB ID | Product catalog RAG. If unset, skipped. |
+
+> The orchestrator also passes `dynamodb_table_name` and `dynamodb_pk` in the event payload — the Lambda uses these directly, so `DYNAMODB_TABLE_NAME` env var is only needed as fallback.
 
 ### Resource-based policy — allow LCA orchestrator to invoke:
 
@@ -97,13 +110,45 @@ def build_response(message):
 
 Any other key (e.g. `response`, `result`) causes a silent KeyError in the orchestrator — the bot panel shows nothing.
 
-### Keyword/sentiment filter behavior
+### Orchestrator payload format (Amazon Connect KVS)
 
-The Lambda only calls Bedrock when at least one of these is true:
-- The transcript contains a configured trigger keyword (e.g. `cancelar`, `terrible`, `pésimo`)
-- AWS Comprehend detects NEGATIVE sentiment
+When using the Amazon Connect KVS audio source, the orchestrator sends a **nested** payload — fields are NOT all at top level:
 
-Neutral phrases with no keywords (e.g. "Hola", "Bien") return `{'message': ''}` in ~2ms without calling Bedrock. This is intentional. Test with a phrase like **"quiero cancelar mi servicio"** to confirm the full pipeline end-to-end.
+```json
+{
+  "text": "quiero cancelar mis servicios",
+  "call_id": "e4b6caef-...",
+  "transcript_segment_args": {
+    "Channel": "AGENT_ASSISTANT",
+    "IsPartial": false,
+    "SegmentId": "...",
+    ...
+  },
+  "dynamodb_table_name": "lca-poc-copilot-...-EventSourcingTable-...",
+  "dynamodb_pk": "c#e4b6caef-..."
+}
+```
+
+Key notes:
+- `Channel` and `IsPartial` are nested inside `transcript_segment_args`, **not** top-level
+- `dynamodb_pk` uses a `c#` prefix — use it directly for DynamoDB queries (do not use bare `call_id`)
+- The orchestrator pre-filters: only CALLER, non-partial segments reach this Lambda
+- `Channel` in `transcript_segment_args` is always `"AGENT_ASSISTANT"` (the write-back channel) — not the speaker channel
+
+### Behavior
+
+Every final CALLER segment (≥5 chars) is sent to Bedrock Nova Lite with:
+- Last 10 CALLER utterances from DynamoDB as conversation context
+- Relevant product catalog snippets from Bedrock Knowledge Base (if `KNOWLEDGE_BASE_ID` set)
+- Current transcript and detected sentiment
+
+Bedrock responds with JSON: `{"accion": "TYPE", "recomendacion": "text", "urgencia": "alta|media|baja"}`
+
+Action types: `CROSS_SELL`, `UPSELL`, `RETENCIÓN`, `OFERTA_ESPECIAL`, `ESCALACIÓN`, `SOPORTE`, `CIERRE`, `ESPERAR`
+
+When `accion == "ESPERAR"` or `recomendacion` is empty, Lambda returns `{"message": ""}` and nothing is shown in the UI (no-op). All other actions return `{"message": "[ACCION] recomendacion text"}`.
+
+Test phrase: **"quiero cancelar mis servicios"** → should trigger `RETENCIÓN`, duration >500ms in logs.
 
 ---
 
@@ -238,7 +283,94 @@ The script builds the Docker image, pushes to ECR, registers a new ECS task defi
 
 ---
 
-## 7. Key Resource Reference
+## 7. Amazon Connect KVS Integration (Demo Setup)
+
+This section documents the migration from Chime SDK Voice Connector (SIPREC) to Amazon Connect Kinesis Video Streams as the audio ingestion source. This enables a full call center demo scenario: customer calls from a phone → human agent answers in Connect CCP → LCA shows real-time transcript and analytics.
+
+### Why Connect KVS instead of Chime SIPREC
+
+The Chime SIPREC path (Section 3) had a known blocker: the phone number `+19105050858` was assigned to the Voice Connector (SIP trunking), making it incompatible with the PSTN Audio SIP Rule trigger required for inbound calls. Rather than unblocking that path, the team migrated to Amazon Connect KVS, which provides native call center routing and a built-in softphone (CCP) for agents.
+
+### Stack Update
+
+In CloudFormation → `lca-poc-copilot` → Update Stack → Use existing template, the following parameters were changed:
+
+| Parameter | Old value | New value |
+|---|---|---|
+| `CallAudioSource` | `Amazon Chime SDK Voice Connector (SIPREC)` | `Amazon Connect Kinesis Video Streams` |
+| `ConnectInstanceArn` | (empty) | `arn:aws:connect:us-east-1:992382598036:instance/37d931e6-3ea0-4055-8f2c-591783bfaf05` |
+
+> Note: `CallAudioProcessor` remains `Amazon Chime SDK Call Analytics` — this parameter only affects the Chime stack and has no impact on the Connect KVS path.
+
+This update deploys the `CONNECTKVSSTACK` nested stack and removes `CHIMEVCSTACK`.
+
+### Amazon Connect Instance
+
+| Field | Value |
+|---|---|
+| Instance alias | `lca-demo-strata` |
+| Instance ARN | `arn:aws:connect:us-east-1:992382598036:instance/37d931e6-3ea0-4055-8f2c-591783bfaf05` |
+| Region | `us-east-1` |
+| Admin user | `sofia` (`sofia.perini@strata-analytics.us`) |
+| Access URL | `https://lca-demo-strata.my.connect.aws` |
+| CCP URL | `https://lca-demo-strata.my.connect.aws/ccp-v2` |
+
+### Connect Instance Configuration
+
+**Data streaming** (Contact Trace Records + Agent Events):
+- Type: Kinesis Stream
+- Stream: `lca-poc-copilot-CallDataStream-USa6pDauvPOj` (same stream used by LCA stack)
+
+**Live Media Streaming** (KVS audio):
+- Prefix: `lca`
+- Retention: No retention (audio is saved to S3 by LCA after processing)
+
+### Phone Number
+
+| Field | Value |
+|---|---|
+| Number | `+1 407-537-3430` |
+| Country | United States |
+| Type | DID |
+| Purpose | Demo and testing (calls from Argentina via VoIP app e.g. Skype) |
+| Assigned contact flow | `LCA-EXAMPLE` (imported from `lca-connect-kvs-stack/lca-contact-flow.json`) |
+
+### Lambda Authorization
+
+The `StartLCA` Lambda (deployed by `CONNECTKVSSTACK`) must be authorized in Connect before it can be invoked from a contact flow:
+
+Connect Console → `lca-demo-strata` → **Flows → AWS Lambda** → search `StartLCA` → **Add Lambda Function**
+
+The function name is available in CloudFormation → `lca-poc-copilot` → **Outputs → `StartLCAFunctionName`**.
+
+### Contact Flow Setup
+
+1. Import `lca-connect-kvs-stack/lca-contact-flow.json` into Connect
+2. Edit block **"Start LCA"** → set Function ARN to `StartLCA` Lambda
+3. Edit block **"Set working queue"** → select `BasicQueue`
+4. Save and Publish
+5. Assign to phone number `+1 407-537-3430`
+
+### Demo Flow
+
+```
+1. Agent opens CCP at lca-demo-strata.my.connect.aws/ccp-v2 → sets status to Available
+2. Customer calls +1 407-537-3430 (from Argentina: use Skype or any VoIP app)
+3. Agent answers in CCP
+4. Contact flow starts media streaming → audio flows to KVS
+5. StartLCA Lambda invoked → CallTranscriberFunction starts consuming KVS
+6. Audio streamed to Amazon Transcribe (es-US, analytics mode)
+7. Transcription events → Kinesis Data Stream → LCA AI Stack
+8. LCA Web UI (CloudFront) → Calls → call appears "In Progress"
+9. Real-time transcript separated by CALLER / AGENT
+10. Sentiment analysis updated every few seconds
+11. Agent Assist panel shows cross-sell recommendations (lca-poc-agent-assist Lambda)
+12. Call ends → post-call summary generated by Bedrock Nova Lite
+```
+
+---
+
+## 8. Key Resource Reference
 
 | Resource | Name / ID |
 |---|---|
@@ -258,5 +390,10 @@ The script builds the Docker image, pushes to ECR, registers a new ECS task defi
 | WebSocket CF Stack | `lca-poc-copilot-WEBSOCKETTRANSCRIBERSTACK-2XZNAMA9OH6E` |
 | AWS Region | `us-east-1` |
 | AWS Account | `992382598036` |
+| Connect Instance | `lca-demo-strata` |
+| Connect Instance ARN | `arn:aws:connect:us-east-1:992382598036:instance/37d931e6-3ea0-4055-8f2c-591783bfaf05` |
+| Connect Phone Number | `+1 407-537-3430` |
+| Connect CCP URL | `https://lca-demo-strata.my.connect.aws/ccp-v2` |
+| StartLCA Lambda | See CloudFormation → `lca-poc-copilot` → Outputs → `StartLCAFunctionName` |
 
 ---

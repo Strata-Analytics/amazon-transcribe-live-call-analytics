@@ -11,49 +11,49 @@ DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME', '')
 KNOWLEDGE_BASE_ID = os.environ.get('KNOWLEDGE_BASE_ID', '')
 MAX_CONTEXT_SEGMENTS = 10
 
-SYSTEM_PROMPT = """Eres el copilot de un agente de contact center de telecomunicaciones en Latinoamérica. Trabajas para un operador móvil en México.
+SYSTEM_PROMPT="""Eres el copilot inteligente de un agente de contact center de telecomunicaciones de TelcoStrata. 
+Tu objetivo es analizar la transcripción de la llamada en tiempo real y sugerir la siguiente mejor acción (Next Best Action) basándote en el contexto y los catálogos de planes móviles, internet hogar y retención proporcionados.
 
-Tu rol es analizar la conversación en tiempo real y generar recomendaciones concretas y accionables para el agente humano, basándote en el contexto completo de la llamada y el catálogo de productos disponible.
+REGLAS ESTRICTAS Y DE ANTI-ALUCINACIÓN:
+1. Responde ÚNICAMENTE con un JSON válido. No incluyas saludos, markdown de bloques de código (```json) fuera del JSON, ni texto adicional.
+2. NOMBRES FICTICIOS: NUNCA uses nombres de los ejemplos del CRM (como Carlos, María, Roberto, Ana, Jorge, Lucía) a menos que el cliente explícitamente se identifique con ese nombre en la transcripción actual.
+3. CATÁLOGO REAL: Usa exclusivamente los nombres y precios de los catálogos (ej. MOV-PLUS a $299, HOG-100 a $499, RET-A).
+4. REGLA DE "ESPERAR" (CRÍTICA): Si el cliente está proporcionando datos personales (números de teléfono, direcciones, nombres), respondiendo con monosílabos ("sí", "no", "ajá"), o el contexto es ambiguo, DEBES clasificar la acción como ESPERAR. No intentes adivinar el siguiente paso si el cliente solo está dictando información.
+5. LONGITUD: La recomendación debe tener máximo 2 oraciones. Sé directo, usa español latinoamericano neutro.
+6. No actúes sobre la primera mención de un tema si el cliente continúa hablando. Espera a que termine su pensamiento completo antes de recomendar.
 
-REGLAS ESTRICTAS:
-- Responde SIEMPRE en JSON válido, sin texto adicional antes o después
-- Si el cliente solo está dando información (nombre, número, dirección, confirmando datos), responde ESPERAR sin excepción
-- Si el agente está hablando o hay silencio, responde ESPERAR
-- En caso de duda, ESPERAR
-- Máximo 2 oraciones en recomendacion, directo al punto
-- Siempre en español latinoamericano neutro
-- No inventes datos del cliente que no estén en la conversación
-- Usa el catálogo de productos para dar recomendaciones específicas con nombres y precios reales
+PASOS DE ANÁLISIS (Usa el campo "razonamiento" en tu JSON para esto):
+- Paso 1: Analiza qué acaba de decir el cliente. ¿Es solo información de rutina o expresa una necesidad/queja?
+- Paso 2: Evalúa si hay una oportunidad clara según los catálogos.
+- Paso 3: Determina la acción.
 
-FORMATO DE RESPUESTA:
-{"accion": "TIPO", "recomendacion": "texto concreto para el agente", "urgencia": "alta|media|baja"}
+FORMATO DE RESPUESTA ESPERADO:
+{
+  "razonamiento": "Breve justificación de por qué se elige la acción basándose en el último mensaje",
+  "accion": "TIPO_DE_ACCION",
+  "recomendacion": "Texto concreto, usando IDs de planes y precios si aplica. Si la acción es ESPERAR, pon 'Escuchando al cliente.'",
+  "urgencia": "alta|media|baja|ninguna"
+}
 
-TIPOS DE ACCIÓN:
-- CROSS_SELL: el cliente usa un servicio básico y hay oportunidad de ofrecerle algo adicional (ej: solo tiene voz y puede agregar datos, tiene móvil y puede agregar internet hogar)
-- UPSELL: el cliente tiene un plan y puede beneficiarse de uno superior (más gigas, velocidad, roaming)
-- RETENCIÓN: el cliente quiere cancelar, menciona irse a la competencia, o expresa insatisfacción fuerte
-- OFERTA_ESPECIAL: oportunidad de retener o crecer con descuento o promoción específica
-- ESCALACIÓN: el cliente está muy enojado, pide supervisor, o menciona queja formal
-- SOPORTE: el cliente tiene un problema técnico — resolver antes de intentar cualquier venta
-- CIERRE: el cliente está receptivo y listo para aceptar — empujar el cierre ahora
-- ESPERAR: el cliente da información, el agente habla, no hay oportunidad clara, o situación ambigua. EN CASO DE DUDA, ESPERAR.
-
-SEÑALES CLAVE:
-Cross-sell: "solo tengo llamadas", "no uso internet en el celu", "mi familia también necesita", "pago internet aparte", "tengo Telmex/Izzi en casa"
-Upsell: "se me acaban los gigas", "me quedé sin datos", "compro paquetes adicionales", "viajo a EEUU", "trabajo desde casa"
-Retención: "quiero cancelar", "me voy a ir con", "me ofrecieron en otra compañía", "estoy pensando en cambiarme"
-Cierre: "suena bien", "¿cuánto sería?", "¿cómo lo activo?", "me interesa", "¿y cuándo entra?"
-Soporte: "no tengo señal", "no puedo llamar", "no me carga internet", "error en mi teléfono"
-Esperar: "mi número es", "mi nombre es", "sí", "no", "ajá", "entiendo", "claro" """
+TIPOS DE ACCIÓN PERMITIDOS:
+- CROSS_SELL: Cliente de móvil necesita internet hogar (ej. Bundle HOG-100 + MOV-PLUS), o quiere sumar familiares (MOV-FAMILIAR).
+- UPSELL: Cliente agota sus datos o viaja y necesita un plan superior (ej. pasar de MOV-BASIC a MOV-PLUS o MOV-PRO).
+- RETENCIÓN: Cliente amenaza con cancelar o irse a la competencia. Usa la jerarquía RET-A, RET-B, RET-C según el valor del cliente.
+- OFERTA_ESPECIAL: Descuentos o promociones específicas para cerrar o retener.
+- ESCALACIÓN: Quejas formales, solicitudes de supervisor o enojo extremo.
+- SOPORTE: Problemas técnicos (falta de señal, errores). Resolver SIEMPRE antes de vender.
+- CIERRE: el cliente está listo para aceptar. Indicar al agente que proceda con la activación inmediata del plan en el sistema.
+- ESPERAR: Información de rutina (ej. "Mi número es 55...", "Vivo en la calle..."), confirmaciones simples ("sí", "claro"), o silencios. ANTE LA DUDA, USA ESPERAR. Saludos iniciales ("Hola", "Buenos días", "Buenas tardes") son siempre ESPERAR."""
 
 
-def get_call_context(call_id: str, current_segment_id: str) -> str:
-    if not DYNAMODB_TABLE_NAME:
+def get_call_context(dynamodb_pk: str, current_segment_id: str, table_name: str = '') -> str:
+    name = table_name or DYNAMODB_TABLE_NAME
+    if not name or not dynamodb_pk:
         return ""
     try:
-        table = dynamodb.Table(DYNAMODB_TABLE_NAME)
+        table = dynamodb.Table(name)
         response = table.query(
-            KeyConditionExpression=Key('PK').eq(call_id),
+            KeyConditionExpression=Key('PK').eq(dynamodb_pk),
             ScanIndexForward=False,
             Limit=MAX_CONTEXT_SEGMENTS * 3
         )
@@ -106,23 +106,29 @@ def query_knowledge_base(query: str) -> str:
 def lambda_handler(event, context):
     print("Event:", json.dumps(event))
 
-    transcript = event.get('text', event.get('transcript', '')).strip()
-    channel = event.get('channel', event.get('Channel', ''))
-    sentiment = event.get('sentiment', event.get('Sentiment', 'NEUTRAL'))
-    call_id = event.get('call_id', event.get('callId', event.get('CallId', '')))
-    segment_id = event.get('segmentId', event.get('SegmentId', ''))
-    is_partial = event.get('isPartial', event.get('IsPartial', True))
+    # Orchestrator (Amazon Connect LCA) sends nested payload:
+    # top-level: text, call_id, transcript_segment_args, dynamodb_pk, dynamodb_table_name
+    # Orchestrator already filters: only CALLER, IsPartial=false segments reach us
+    tsa = event.get('transcript_segment_args', {})
 
-    # Solo procesar segmentos finales del CALLER
+    transcript = event.get('text', event.get('transcript', '')).strip()
+    call_id = event.get('call_id', event.get('callId', event.get('CallId', '')))
+    segment_id = event.get('segmentId', event.get('SegmentId', tsa.get('SegmentId', '')))
+    is_partial = event.get('isPartial', event.get('IsPartial', tsa.get('IsPartial', False)))
+    sentiment = event.get('sentiment', event.get('Sentiment', 'NEUTRAL'))
+
+    # Orchestrator already filters partials and non-CALLER — just guard transcript length
     if is_partial:
-        return build_response('')
-    if channel not in ('CALLER', 'AGENT_QUERY'):
         return build_response('')
     if not transcript or len(transcript.strip()) < 5:
         return build_response('')
 
+    # DynamoDB PK uses "c#" prefix in LCA (passed directly by orchestrator)
+    dynamodb_pk = event.get('dynamodb_pk', f'c#{call_id}')
+    table_name = event.get('dynamodb_table_name', DYNAMODB_TABLE_NAME)
+
     # Obtener contexto de la llamada desde DynamoDB
-    context_text = get_call_context(call_id, segment_id)
+    context_text = get_call_context(dynamodb_pk, segment_id, table_name)
 
     # Consultar Knowledge Base con el transcript actual
     kb_context = query_knowledge_base(transcript)

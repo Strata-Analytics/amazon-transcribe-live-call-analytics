@@ -1,6 +1,6 @@
 {
   "catalogo": "Scripts y Frases Sugeridas por Escenario",
-  "operador": "TelcoMX",
+  "operador": "TelcoStrata",
   "escenarios": {
     "CROSS_SELL": {
       "apertura": [
@@ -23,7 +23,7 @@
       ],
       "manejo_objecion_precio": [
         "Si sumamos los paquetes adicionales que compra, el nuevo plan le sale igual o más barato.",
-        "La diferencia es de solo $[X] al mes y no volvería a quedarse sin datos."
+        "La diferencia mensual es pequeña y no volvería a quedarse sin datos."
       ],
       "cierre": [
         "¿Lo activamos ahora? Su nuevo plan entraría en vigor de inmediato.",
@@ -43,19 +43,19 @@
         "¿Me puede decir qué le están ofreciendo? Quiero ver si podemos igualarlo o mejorarlo.",
         "Antes de tomar una decisión, permítame revisar qué podemos hacer por usted."
       ],
-      "cierre_retención": [
+      "cierre_retencion": [
         "¿Con esta oferta se quedaría con nosotros?",
         "¿Le parece justo lo que le estoy ofreciendo?"
       ]
     },
     "ESCALACIÓN": {
-      "transición": [
+      "transicion": [
         "Entiendo perfectamente su molestia. Voy a transferirle con un especialista que puede resolver esto de inmediato.",
         "Le pido una disculpa por la experiencia. Permítame conectarlo con mi supervisor ahora mismo."
       ]
     },
     "CIERRE": {
-      "señales_de_compra": [
+      "senales_de_compra": [
         "¿Cuánto sería en total?",
         "¿Cómo lo activo?",
         "¿Y cuándo entraría en vigor?",
@@ -63,9 +63,23 @@
         "Me interesa"
       ],
       "frases_cierre": [
-        "Perfecto, lo proceso ahora mismo. ¿Me confirma su dirección de correo para enviarle la confirmación?",
-        "Excelente decisión. En menos de 2 minutos ya tiene el nuevo plan activo.",
+        "Perfecto, lo proceso ahora mismo. En menos de 2 minutos ya tiene el nuevo plan activo.",
+        "Excelente decisión. Queda activado de inmediato, ¿hay algo más en lo que pueda ayudarle?",
         "Listo, ya quedó activado. ¿Hay algo más en lo que pueda ayudarle?"
+      ]
+    },
+    "SOPORTE": {
+      "apertura": [
+        "Entiendo la situación, voy a revisar su cuenta ahora mismo.",
+        "Lamento los inconvenientes. Vamos a resolver esto juntos."
+      ],
+      "mientras_revisa": [
+        "Un momento por favor, estoy verificando el estado de su servicio.",
+        "Ya estoy viendo su caso, dame un instante."
+      ],
+      "resolucion": [
+        "Ya identifiqué el problema. Voy a aplicar la solución ahora mismo.",
+        "Listo, el problema fue resuelto. ¿Puede verificar que el servicio funciona correctamente?"
       ]
     }
   }
