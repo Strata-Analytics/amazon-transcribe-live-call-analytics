@@ -9,7 +9,11 @@
 }
 
 .transcript-segment-agent-assist {
-    /* sin fondo de color, mismo estilo que los demás segmentos */
+    background-color: rgba(16, 7, 160, 0.06);
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
 .translated-text {

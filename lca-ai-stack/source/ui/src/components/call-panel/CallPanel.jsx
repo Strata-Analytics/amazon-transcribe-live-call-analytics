@@ -9,7 +9,7 @@ import { Logger } from 'aws-amplify';
 import { StandardRetryStrategy } from '@aws-sdk/middleware-retry';
 import { ChevronDown, ChevronUp, Download, ExternalLink } from 'lucide-react';
 
-import { getMarkdownSummary } from '../common/summary';
+import { getHtmlSummary } from '../common/summary';
 import RecordingPlayer from '../recording-player';
 import useSettingsContext from '../../contexts/settings';
 import { DONE_STATUS, IN_PROGRESS_STATUS } from '../common/get-recording-status';
@@ -123,7 +123,7 @@ const languageCodes = [
 /* ── Layout primitives ─────────────────────────────────────────────────── */
 
 /* eslint-disable react/prop-types */
-const Card = ({ header, actions, children, className }) => (
+const Card = ({ header, actions, children, className, noPadding }) => (
   <div className={cn('border border-border rounded-lg bg-background overflow-hidden', className)}>
     {(header || actions) && (
       <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
@@ -131,7 +131,7 @@ const Card = ({ header, actions, children, className }) => (
         {actions && <div className="flex items-center gap-1.5">{actions}</div>}
       </div>
     )}
-    <div className="p-4">{children}</div>
+    <div className={noPadding ? '' : 'p-4'}>{children}</div>
   </div>
 );
 
@@ -267,9 +267,17 @@ const CallCategories = ({ item }) => {
     const isAlert = t.match(regex);
     return (
       // eslint-disable-next-line react/no-array-index-key
-      <div key={`call-category-${i}`} className={isAlert ? 'transcript-segment-category-match-alert' : 'transcript-segment-category-match'}>
-        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{t.trim()}</ReactMarkdown>
-      </div>
+      <span
+        key={`call-category-${i}`}
+        className={cn(
+          'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium whitespace-normal break-words',
+          isAlert
+            ? 'bg-red-50 text-red-700 border border-red-200'
+            : 'bg-muted text-foreground border border-border',
+        )}
+      >
+        {t.trim()}
+      </span>
     );
   });
 
@@ -289,7 +297,7 @@ const CallCategories = ({ item }) => {
         </>
       }
     >
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="flex flex-wrap gap-2">
         {categoryComponents}
       </div>
     </Card>
@@ -312,38 +320,11 @@ const CallSummary = ({ item }) => (
       </>
     }
   >
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-      <SimpleTabs
-        tabs={[
-          {
-            label: 'Transcript Summary',
-            id: 'summary',
-            content: (
-              <div className="markdown-prose text-sm text-foreground">
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                  {getMarkdownSummary(item.callSummaryText) ?? 'No summary available'}
-                </ReactMarkdown>
-              </div>
-            ),
-          },
-        ]}
-      />
-      <SimpleTabs
-        tabs={[
-          {
-            label: 'Issues',
-            id: 'issues',
-            content: (
-              <div className="markdown-prose issue-detected text-sm text-foreground">
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                  {item.issuesDetected ?? 'No issue detected'}
-                </ReactMarkdown>
-              </div>
-            ),
-          },
-        ]}
-      />
-    </div>
+    <div
+      className="markdown-prose text-sm text-foreground"
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{ __html: getHtmlSummary(item.callSummaryText) }}
+    />
   </Card>
 );
 
@@ -414,10 +395,10 @@ const TranscriptContent = ({ segment, translateCache }) => {
         break;
       case 'CATEGORY_MATCH':
         if (text.match(regex)) {
-          className = 'transcript-segment-category-match-alert';
+          className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200';
           text = `Alert: ${text}`;
         } else {
-          className = 'transcript-segment-category-match';
+          className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-foreground border border-border';
           text = `Category: ${text}`;
         }
         break;
@@ -455,9 +436,9 @@ const TranscriptSegment = ({ segment, translateCache }) => {
 
   const channelClass = channel === 'AGENT_ASSISTANT' ? 'transcript-segment-agent-assist' : '';
   return (
-    <div className="transcript-segment grid gap-2" style={{ gridTemplateColumns: '32px 1fr' }}>
+    <div className={cn('transcript-segment grid gap-2', channelClass)} style={{ gridTemplateColumns: '32px 1fr' }}>
       {getSentimentImage(segment)}
-      <div className={cn('space-y-0.5', channelClass)}>
+      <div className="space-y-0.5">
         <div className="flex items-center gap-2">
           <strong className="text-xs font-semibold">{segment.channel}</strong>
           <span className="text-xs text-muted-foreground">
@@ -742,6 +723,7 @@ const CallTranscriptContainer = ({
   return (
     <div className={cn('grid gap-4', transcriptCols)}>
       <Card
+        noPadding
         header={
           <>
             Call Transcript
@@ -904,10 +886,7 @@ const CallStatsContainer = ({ item, callTranscriptPerCallId, collapseSentiment, 
 export const CallPanel = ({ item, callTranscriptPerCallId, setToolsOpen }) => {
   const { currentCredentials } = useAppContext();
   const { settings } = useSettingsContext();
-  const [collapseSentiment, setCollapseSentiment] = useState(false);
-  const [collapseVoiceTone, setCollapseVoiceTone] = useState(false);
-
-  const enableVoiceTone = settings?.EnableVoiceToneAnalysis === 'true';
+  const [collapseSentiment, setCollapseSentiment] = useState(true);
 
   const customRetryStrategy = new StandardRetryStrategy(
     async () => MAXIMUM_ATTEMPTS,
@@ -940,21 +919,13 @@ export const CallPanel = ({ item, callTranscriptPerCallId, setToolsOpen }) => {
         <CallSummary item={item} />
         <CallCategories item={item} />
       </div>
-      <div className={cn('grid gap-4', enableVoiceTone ? 'grid-cols-1 sm:grid-cols-[2fr_1fr]' : 'grid-cols-1')}>
+      <div className="grid gap-4 items-start grid-cols-1">
         <CallStatsContainer
           item={item}
           callTranscriptPerCallId={callTranscriptPerCallId}
           collapseSentiment={collapseSentiment}
           setCollapseSentiment={setCollapseSentiment}
         />
-        {enableVoiceTone && (
-          <VoiceToneContainer
-            item={item}
-            callTranscriptPerCallId={callTranscriptPerCallId}
-            collapseVoiceTone={collapseVoiceTone}
-            setCollapseVoiceTone={setCollapseVoiceTone}
-          />
-        )}
       </div>
       <CallTranscriptContainer
         item={item}
