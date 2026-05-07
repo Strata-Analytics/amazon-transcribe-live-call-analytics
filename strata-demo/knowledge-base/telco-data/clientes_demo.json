@@ -6,6 +6,7 @@
     {
       "id": "CLI-001",
       "nombre": "Carlos Mendoza",
+      "telefono":"+9165551234",
       "plan_movil_actual": "MOV-BASIC",
       "precio_movil_actual": 199,
       "antiguedad_meses": 24,
@@ -18,6 +19,7 @@
     {
       "id": "CLI-002",
       "nombre": "María González",
+      "telefono": "+16176754444",
       "plan_movil_actual": "MOV-PLUS",
       "precio_movil_actual": 299,
       "antiguedad_meses": 8,
@@ -32,6 +34,7 @@
     {
       "id": "CLI-003",
       "nombre": "Roberto Hernández",
+      "telefono": "+52 81 5555 1234",
       "plan_movil_actual": "MOV-PRO",
       "precio_movil_actual": 449,
       "antiguedad_meses": 36,
@@ -46,6 +49,7 @@
     {
       "id": "CLI-004",
       "nombre": "Ana Martínez",
+      "telefono": "+52 55 2222 8888",
       "plan_movil_actual": "MOV-BASIC",
       "precio_movil_actual": 199,
       "antiguedad_meses": 3,
@@ -59,6 +63,7 @@
     {
       "id": "CLI-005",
       "nombre": "Jorge Ramírez",
+      "telefono": "+52 55 7777 3333",
       "plan_movil_actual": "MOV-UNLIMITED",
       "precio_movil_actual": 599,
       "antiguedad_meses": 18,
@@ -71,6 +76,7 @@
     {
       "id": "CLI-006",
       "nombre": "Lucía Torres",
+      "telefono": "+52 33 4444 6666",
       "plan_movil_actual": "MOV-PLUS",
       "precio_movil_actual": 299,
       "antiguedad_meses": 14,
