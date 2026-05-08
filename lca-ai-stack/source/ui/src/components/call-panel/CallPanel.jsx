@@ -263,7 +263,7 @@ const CallCategories = ({ item }) => {
   const regex = settings?.CategoryAlertRegex ?? '.*';
   const categories = item.callCategories || [];
 
-  const categoryComponents = categories.map((t, i) => {
+  const categoryComponents = [...new Set(categories)].map((t, i) => {
     const isAlert = t.match(regex);
     return (
       // eslint-disable-next-line react/no-array-index-key
@@ -272,8 +272,8 @@ const CallCategories = ({ item }) => {
         className={cn(
           'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium whitespace-normal break-words',
           isAlert
-            ? 'bg-red-50 text-red-700 border border-red-200'
-            : 'bg-muted text-foreground border border-border',
+            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+            : 'bg-blue-50 text-blue-700 border border-blue-200',
         )}
       >
         {t.trim()}
