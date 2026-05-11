@@ -1,16 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import HelpPanel from '@cloudscape-design/components/help-panel';
 
-const header = <h2>Stream Audio</h2>;
-const content = (
-  <>
-    <p>Stream an audio recording or browser source</p>
-    <p>Stream an audio recording or browser source</p>
-  </>
+const ToolsPanel = () => (
+  <div className="px-4 py-4 text-sm space-y-2">
+    <h2 className="font-semibold text-foreground">Stream Audio</h2>
+    <p className="text-muted-foreground">Stream an audio recording or browser source.</p>
+  </div>
 );
-
-const ToolsPanel = () => <HelpPanel header={header}>{content}</HelpPanel>;
 
 export default ToolsPanel;

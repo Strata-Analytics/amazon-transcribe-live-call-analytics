@@ -38,10 +38,13 @@ const Routes = () => {
     setRedirectParam(redirect);
   }, [urlSearchParams]);
 
-  return !(authState === AuthState.SignedIn && user && currentCredentials) ? (
-    <UnauthRoutes location={location} />
-  ) : (
+  if (!authState) return null;
+  if (authState === AuthState.SignedIn && !currentCredentials) return null;
+
+  return authState === AuthState.SignedIn && user && currentCredentials ? (
     <AuthRoutes redirectParam={redirectParam} />
+  ) : (
+    <UnauthRoutes location={location} />
   );
 };
 

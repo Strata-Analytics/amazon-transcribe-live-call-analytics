@@ -1,20 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import HelpPanel from '@cloudscape-design/components/help-panel';
 
-const header = <h2>Calls</h2>;
-const content = (
-  <>
-    <p>
+const ToolsPanel = () => (
+  <div className="px-4 py-4 text-sm space-y-2">
+    <h2 className="font-semibold text-foreground">Calls</h2>
+    <p className="text-muted-foreground">
       View a list of calls and related information such as phone number, initiation time, sentiment
       and duration.
     </p>
-    <p>Use the search bar to filter on any field.</p>
-    <p>To drill down even further into the details, select an individual call.</p>
-  </>
+    <p className="text-muted-foreground">Use the search bar to filter on any field.</p>
+    <p className="text-muted-foreground">
+      To drill down even further into the details, select an individual call.
+    </p>
+  </div>
 );
-
-const ToolsPanel = () => <HelpPanel header={header}>{content}</HelpPanel>;
 
 export default ToolsPanel;

@@ -1,111 +1,105 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useState } from 'react';
-import Box from '@cloudscape-design/components/box';
-import Button from '@cloudscape-design/components/button';
-import Modal from '@cloudscape-design/components/modal';
-import SpaceBetween from '@cloudscape-design/components/space-between';
-import TopNavigation from '@cloudscape-design/components/top-navigation';
+import React, { useState, useRef, useEffect } from 'react';
 import { Auth, Logger } from 'aws-amplify';
+import { ChevronDown, LogOut, User } from 'lucide-react';
 
 import useAppContext from '../../contexts/app';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog';
 
 const logger = new Logger('TopNavigation');
-
-/* eslint-disable react/prop-types */
-const SignOutModal = ({ visible, setVisible }) => {
-  async function signOut() {
-    try {
-      await Auth.signOut();
-      logger.debug('signed out');
-      window.location.reload();
-    } catch (error) {
-      logger.error('error signing out: ', error);
-    }
-  }
-  return (
-    <Modal
-      onDismiss={() => setVisible(false)}
-      visible={visible}
-      closeAriaLabel="Close modal"
-      size="medium"
-      footer={
-        <Box float="right">
-          <SpaceBetween direction="horizontal" size="xs">
-            <Button variant="link" onClick={() => setVisible(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={() => signOut()}>
-              Sign Out
-            </Button>
-          </SpaceBetween>
-        </Box>
-      }
-      header="Sign Out"
-    >
-      Sign out of the application?
-    </Modal>
-  );
-};
 
 const CallAnalyticsTopNavigation = () => {
   const { user } = useAppContext();
   const userId = user?.attributes?.email || 'user';
-  const [isSignOutModalVisible, setIsSignOutModalVisiblesetVisible] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  async function signOut() {
+    try {
+      await Auth.signOut();
+      logger.debug('signed out');
+    } catch (error) {
+      logger.error('error signing out: ', error);
+    }
+  }
+
+  const handleSignOutClick = () => {
+    setDropdownOpen(false);
+    setSignOutDialogOpen(true);
+  };
+
   return (
     <>
-      <div id="top-navigation" style={{ position: 'sticky', top: 0, zIndex: 1002 }}>
-        <TopNavigation
-          identity={{ href: '#', title: 'Live Call Analytics with Agent Assist' }}
-          i18nStrings={{ overflowMenuTriggerText: 'More' }}
-          utilities={[
-            {
-              type: 'menu-dropdown',
-              text: userId,
-              description: userId,
-              iconName: 'user-profile',
-              items: [
-                {
-                  id: 'signout',
-                  type: 'button',
-                  text: (
-                    <Button
-                      variant="primary"
-                      onClick={() => setIsSignOutModalVisiblesetVisible(true)}
-                    >
-                      Sign out
-                    </Button>
-                  ),
-                },
-                {
-                  id: 'support-group',
-                  text: 'Resources',
-                  items: [
-                    {
-                      id: 'documentation',
-                      text: 'Blog Post',
-                      href: 'https://www.amazon.com/live-call-analytics',
-                      external: true,
-                      externalIconAriaLabel: ' (opens in new tab)',
-                    },
-                    {
-                      id: 'source',
-                      text: 'Source Code',
-                      href: 'https://github.com/aws-samples/amazon-transcribe-live-call-analytics',
-                      external: true,
-                      externalIconAriaLabel: ' (opens in new tab)',
-                    },
-                  ],
-                },
-              ],
-            },
-          ]}
-        />
+      <div id="top-navigation" className="sticky top-0 z-[1002] h-14 bg-primary flex items-center justify-between px-4">
+        <div className="flex items-center gap-2.5">
+          <img src="/strata-logo-white.png" alt="Strata" className="h-7" />
+          <div className="w-px h-5 bg-white/30" />
+          <span className="text-white/70 font-semibold text-sm tracking-wide">Copilot</span>
+        </div>
+
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 text-white text-sm hover:bg-white/10 rounded px-2 py-1.5 transition-colors"
+          >
+            <User className="h-4 w-4" />
+            <span className="max-w-[160px] truncate">{userId}</span>
+            <ChevronDown className="h-3 w-3 opacity-70" />
+          </button>
+
+          {dropdownOpen && (
+            <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-border z-50 py-1">
+              <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border truncate">
+                {userId}
+              </div>
+              <button
+                onClick={handleSignOutClick}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent text-left text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      <SignOutModal
-        visible={isSignOutModalVisible}
-        setVisible={setIsSignOutModalVisiblesetVisible}
-      />
+
+      {/* AlertDialog lives outside the dropdown so it doesn't unmount when dropdown closes */}
+      <AlertDialog open={signOutDialogOpen} onOpenChange={setSignOutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sign out of the application?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={signOut}>Sign Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

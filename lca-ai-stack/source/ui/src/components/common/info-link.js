@@ -1,13 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import Link from '@cloudscape-design/components/link';
 
-/* eslint-disable react/prop-types, jsx-a11y/anchor-is-valid */
+/* eslint-disable react/prop-types */
 export const InfoLink = ({ id, onFollow }) => (
-  <Link variant="info" id={id} onFollow={onFollow}>
+  <button
+    type="button"
+    id={id}
+    onClick={onFollow}
+    className="ml-1 text-xs text-primary hover:underline"
+  >
     Info
-  </Link>
+  </button>
 );
 
 export default InfoLink;

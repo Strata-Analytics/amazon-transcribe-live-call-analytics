@@ -2,63 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect, useRef, useState } from 'react';
 
-import Badge from '@cloudscape-design/components/badge';
-import Box from '@cloudscape-design/components/box';
-import Button from '@cloudscape-design/components/button';
-import ColumnLayout from '@cloudscape-design/components/column-layout';
-import Container from '@cloudscape-design/components/container';
-import Grid from '@cloudscape-design/components/grid';
-import Header from '@cloudscape-design/components/header';
-import Link from '@cloudscape-design/components/link';
-import Popover from '@cloudscape-design/components/popover';
-import SpaceBetween from '@cloudscape-design/components/space-between';
-import StatusIndicator from '@cloudscape-design/components/status-indicator';
-import Tabs from '@cloudscape-design/components/tabs';
-import TextContent from '@cloudscape-design/components/text-content';
-import Toggle from '@cloudscape-design/components/toggle';
-
 import rehypeRaw from 'rehype-raw';
 import ReactMarkdown from 'react-markdown';
 import { TranslateClient, TranslateTextCommand } from '@aws-sdk/client-translate';
 import { Logger } from 'aws-amplify';
 import { StandardRetryStrategy } from '@aws-sdk/middleware-retry';
-import { getMarkdownSummary } from '../common/summary';
+import { ChevronDown, ChevronUp, Download, ExternalLink } from 'lucide-react';
 
+import { getHtmlSummary } from '../common/summary';
 import RecordingPlayer from '../recording-player';
 import useSettingsContext from '../../contexts/settings';
-
 import { DONE_STATUS, IN_PROGRESS_STATUS } from '../common/get-recording-status';
 import { InfoLink } from '../common/info-link';
 import { getWeightedSentimentLabel } from '../common/sentiment';
-
 import {
   VoiceToneFluctuationChart,
   SentimentFluctuationChart,
   SentimentPerQuarterChart,
 } from './sentiment-charts';
-
 import './CallPanel.css';
 import { SentimentTrendIcon } from '../sentiment-trend-icon/SentimentTrendIcon';
 import { SentimentIcon } from '../sentiment-icon/SentimentIcon';
 import { exportToExcel } from '../common/download-func';
 import useAppContext from '../../contexts/app';
 import awsExports from '../../aws-exports';
+import { Button } from '../ui/button';
+import { cn } from '../../lib/utils';
 
 const logger = new Logger('CallPanel');
 
-// comprehend PII types
 const piiTypes = [
-  'BANK_ACCOUNT_NUMBER',
-  'BANK_ROUTING',
-  'CREDIT_DEBIT_NUMBER',
-  'CREDIT_DEBIT_CVV',
-  'CREDIT_DEBIT_EXPIRY',
-  'PIN',
-  'EMAIL',
-  'ADDRESS',
-  'NAME',
-  'PHONE',
-  'SSN',
+  'BANK_ACCOUNT_NUMBER', 'BANK_ROUTING', 'CREDIT_DEBIT_NUMBER', 'CREDIT_DEBIT_CVV',
+  'CREDIT_DEBIT_EXPIRY', 'PIN', 'EMAIL', 'ADDRESS', 'NAME', 'PHONE', 'SSN',
 ];
 const piiTypesSplitRegEx = new RegExp(`\\[(${piiTypes.join('|')})\\]`);
 
@@ -145,293 +120,237 @@ const languageCodes = [
   { value: 'cy', label: 'Welsh' },
 ];
 
-/* eslint-disable react/prop-types, react/destructuring-assignment */
+/* ── Layout primitives ─────────────────────────────────────────────────── */
+
+/* eslint-disable react/prop-types */
+const Card = ({ header, actions, children, className, noPadding }) => (
+  <div className={cn('border border-border rounded-lg bg-background overflow-hidden', className)}>
+    {(header || actions) && (
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">{header}</div>
+        {actions && <div className="flex items-center gap-1.5">{actions}</div>}
+      </div>
+    )}
+    <div className={noPadding ? '' : 'p-4'}>{children}</div>
+  </div>
+);
+
+const FieldLabel = ({ children }) => (
+  <div className="mb-0.5 text-xs font-medium text-muted-foreground">{children}</div>
+);
+
+const statusStyles = {
+  success: 'text-green-600', error: 'text-destructive', warning: 'text-yellow-600',
+  'in-progress': 'text-blue-600', info: 'text-blue-600', stopped: 'text-muted-foreground',
+  loading: 'text-muted-foreground',
+};
+const statusDots = {
+  success: '●', error: '●', warning: '▲', 'in-progress': '◐',
+  info: 'ℹ', stopped: '■', loading: '○',
+};
+const StatusIndicator = ({ type, children }) => (
+  <span className={cn('inline-flex items-center gap-1.5 text-sm', statusStyles[type] || 'text-muted-foreground')}>
+    <span aria-hidden="true">{statusDots[type] || '●'}</span>
+    {children}
+  </span>
+);
+
+const Toggle = ({ checked, onChange, disabled, label }) => (
+  <label className={cn('flex items-center gap-1.5 cursor-pointer text-sm', disabled && 'opacity-50 cursor-not-allowed')}>
+    <input
+      type="checkbox"
+      checked={checked}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.checked)}
+      className="h-4 w-4 rounded border-input accent-primary"
+    />
+    {label && <span>{label}</span>}
+  </label>
+);
+
+const SimpleTabs = ({ tabs }) => {
+  const [active, setActive] = useState(tabs[0]?.id);
+  const current = tabs.find((t) => t.id === active);
+  return (
+    <div>
+      <div className="flex border-b border-border mb-3 gap-1">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setActive(t.id)}
+            className={cn(
+              'px-3 pb-2 text-sm transition-colors',
+              active === t.id
+                ? 'border-b-2 border-primary text-primary font-medium'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div>{current?.content}</div>
+    </div>
+  );
+};
+
+/* ── Sub-components ────────────────────────────────────────────────────── */
+
 const CallAttributes = ({ item, setToolsOpen }) => (
-  <Container
-    header={
-      <Header variant="h4" info={<InfoLink onFollow={() => setToolsOpen(true)} />}>
-        <div className="flex items-center">
-          <div>Call Attributes</div>
-          <div className="btn-download-right">
-            <Button
-              iconName="download"
-              variant="normals"
-              onClick={() => exportToExcel([item], 'call-details')}
-            />
-          </div>
-        </div>
-      </Header>
+  <Card
+    header={<>Call Attributes <InfoLink onFollow={() => setToolsOpen(true)} /></>}
+    actions={
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => exportToExcel([item], 'call-details')}
+        aria-label="Download"
+      >
+        <Download className="h-4 w-4" />
+      </Button>
     }
   >
-    <ColumnLayout columns={6} borders="vertical">
-      <SpaceBetween size="xs">
-        <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>Call ID</strong>
-          </Box>
-          <div>{item.callId}</div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4 divide-x-0">
+      {[
+        { label: 'Call ID', value: item.callId },
+        { label: 'Agent', value: item.agentId },
+        { label: 'Initiation Timestamp', value: item.initiationTimeStamp },
+        { label: 'Last Update Timestamp', value: item.updatedAt },
+        { label: 'Duration', value: item.conversationDurationTimeStamp },
+        { label: 'Caller Phone Number', value: item.callerPhoneNumber },
+        { label: 'System Phone Number', value: item.systemPhoneNumber },
+        {
+          label: 'Status',
+          value: (
+            <StatusIndicator type={item.recordingStatusIcon}>
+              {item.recordingStatusLabel}
+            </StatusIndicator>
+          ),
+        },
+      ].map(({ label, value }) => (
+        <div key={label}>
+          <FieldLabel>{label}</FieldLabel>
+          <div className="text-sm text-foreground">{value}</div>
         </div>
-      </SpaceBetween>
-
-      <SpaceBetween size="xs">
+      ))}
+      {item?.pcaUrl?.length > 0 && (
         <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>Agent</strong>
-          </Box>
-          <div>{item.agentId}</div>
+          <FieldLabel>Post Call Analytics</FieldLabel>
+          <a
+            href={item.pcaUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+          >
+            Open in Post Call Analytics
+            <ExternalLink className="h-3 w-3" />
+          </a>
         </div>
-      </SpaceBetween>
-
-      <SpaceBetween size="xs">
-        <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>Initiation Timestamp</strong>
-          </Box>
-          <div>{item.initiationTimeStamp}</div>
-        </div>
-      </SpaceBetween>
-
-      <SpaceBetween size="xs">
-        <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>Last Update Timestamp</strong>
-          </Box>
-          <div>{item.updatedAt}</div>
-        </div>
-      </SpaceBetween>
-
-      <SpaceBetween size="xs">
-        <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>Duration</strong>
-          </Box>
-          <div>{item.conversationDurationTimeStamp}</div>
-        </div>
-      </SpaceBetween>
-
-      <SpaceBetween size="xs">
-        <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>Caller Phone Number</strong>
-          </Box>
-          <div>{item.callerPhoneNumber}</div>
-        </div>
-      </SpaceBetween>
-
-      <SpaceBetween size="xs">
-        <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>System Phone Number</strong>
-          </Box>
-          <div>{item.systemPhoneNumber}</div>
-        </div>
-      </SpaceBetween>
-
-      <SpaceBetween size="xs">
-        <div>
-          <Box margin={{ bottom: 'xxxs' }} color="text-label">
-            <strong>Status</strong>
-          </Box>
-          <StatusIndicator type={item.recordingStatusIcon}>
-            {` ${item.recordingStatusLabel} `}
-          </StatusIndicator>
-        </div>
-      </SpaceBetween>
-      {item?.pcaUrl?.length && (
-        <SpaceBetween size="xs">
-          <div>
-            <Box margin={{ bottom: 'xxxs' }} color="text-label">
-              <strong>Post Call Analytics</strong>
-            </Box>
-            <Button
-              variant="normal"
-              href={item.pcaUrl}
-              target="_blank"
-              iconAlign="right"
-              iconName="external"
-            >
-              Open in Post Call Analytics
-            </Button>
-          </div>
-        </SpaceBetween>
       )}
-      {item?.recordingUrl?.length && item?.recordingStatusLabel !== IN_PROGRESS_STATUS && (
-        <SpaceBetween size="xs">
-          <div>
-            <Box margin={{ bottom: 'xxxs' }} color="text-label">
-              <strong>Recording Audio</strong>
-            </Box>
-            <RecordingPlayer recordingUrl={item.recordingUrl} />
-          </div>
-        </SpaceBetween>
+      {item?.recordingUrl?.length > 0 && item?.recordingStatusLabel !== IN_PROGRESS_STATUS && (
+        <div>
+          <FieldLabel>Recording Audio</FieldLabel>
+          <RecordingPlayer recordingUrl={item.recordingUrl} />
+        </div>
       )}
-    </ColumnLayout>
-  </Container>
+    </div>
+  </Card>
 );
 
 const CallCategories = ({ item }) => {
   const { settings } = useSettingsContext();
   const regex = settings?.CategoryAlertRegex ?? '.*';
-
   const categories = item.callCategories || [];
 
-  const categoryComponents = categories.map((t, i) => {
-    const className = t.match(regex)
-      ? 'transcript-segment-category-match-alert'
-      : 'transcript-segment-category-match';
-
+  const categoryComponents = [...new Set(categories)].map((t, i) => {
+    const isAlert = t.match(regex);
     return (
-      /* eslint-disable-next-line react/no-array-index-key */
-      <SpaceBetween size="xs" key={`call-category-${i}`}>
-        <div>
-          {/* eslint-disable-next-line react/no-array-index-key */}
-          <TextContent key={`call-category-${i}`} className={className}>
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{t.trim()}</ReactMarkdown>
-          </TextContent>
-        </div>
-      </SpaceBetween>
+      // eslint-disable-next-line react/no-array-index-key
+      <span
+        key={`call-category-${i}`}
+        className={cn(
+          'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium whitespace-normal break-words',
+          isAlert
+            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+            : 'bg-blue-50 text-blue-700 border border-blue-200',
+        )}
+      >
+        {t.trim()}
+      </span>
     );
   });
 
   return (
-    <Container
-      fitHeight="true"
+    <Card
       header={
-        <Header
-          variant="h4"
-          info={
-            <Link
-              variant="info"
-              target="_blank"
-              href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-create-categories.html"
-            >
-              Info
-            </Link>
-          }
-        >
+        <>
           Call Categories
-        </Header>
+          <a
+            className="ml-1 text-xs text-primary hover:underline"
+            target="_blank"
+            rel="noreferrer"
+            href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-create-categories.html"
+          >
+            Info
+          </a>
+        </>
       }
     >
-      <ColumnLayout columns={6} variant="text-grid">
+      <div className="flex flex-wrap gap-2">
         {categoryComponents}
-      </ColumnLayout>
-    </Container>
+      </div>
+    </Card>
   );
 };
 
-// eslint-disable-next-line arrow-body-style
-const CallSummary = ({ item }) => {
-  return (
-    <Container
-      header={
-        <Header
-          variant="h4"
-          info={
-            <Link
-              variant="info"
-              target="_blank"
-              href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-insights.html#call-analytics-insights-summarization"
-            >
-              Info
-            </Link>
-          }
+const CallSummary = ({ item }) => (
+  <Card
+    header={
+      <>
+        Call Summary
+        <a
+          className="ml-1 text-xs text-primary hover:underline"
+          target="_blank"
+          rel="noreferrer"
+          href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-insights.html#call-analytics-insights-summarization"
         >
-          Call Summary
-        </Header>
-      }
-    >
-      <Grid
-        gridDefinition={[{ colspan: { default: 12, xs: 6 } }, { colspan: { default: 12, xs: 6 } }]}
-      >
-        <Tabs
-          tabs={[
-            {
-              label: 'Transcript Summary',
-              id: 'summary',
-              content: (
-                <div>
-                  {/* eslint-disable-next-line react/no-array-index-key */}
-                  <TextContent color="gray">
-                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                      {getMarkdownSummary(item.callSummaryText) ?? 'No summary available'}
-                    </ReactMarkdown>
-                  </TextContent>
-                </div>
-              ),
-            },
-          ]}
-        />
-        <Tabs
-          tabs={[
-            {
-              label: 'Issues',
-              id: 'issues',
-              content: (
-                <div>
-                  {/* eslint-disable-next-line react/no-array-index-key */}
-                  <TextContent color="gray" className="issue-detected">
-                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                      {item.issuesDetected ?? 'No issue detected'}
-                    </ReactMarkdown>
-                  </TextContent>
-                </div>
-              ),
-            },
-          ]}
-        />
-      </Grid>
-    </Container>
-  );
-};
+          Info
+        </a>
+      </>
+    }
+  >
+    <div
+      className="markdown-prose text-sm text-foreground"
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{ __html: getHtmlSummary(item.callSummaryText) }}
+    />
+  </Card>
+);
 
 const getSentimentImage = (segment) => {
   const { sentiment, sentimentScore, sentimentWeighted } = segment;
   if (!sentiment) {
-    // returns an empty div to maintain spacing
     return <div className="sentiment-image" />;
   }
   const weightedSentimentLabel = getWeightedSentimentLabel(sentimentWeighted);
+  const tooltipText = [
+    `Sentiment: ${sentiment}`,
+    `Scores: ${JSON.stringify(sentimentScore)}`,
+    `Weighted: ${sentimentWeighted}`,
+  ].join('\n');
   return (
-    <Popover
-      dismissAriaLabel="Close"
-      header="Sentiment"
-      size="medium"
-      triggerType="custom"
-      content={
-        <SpaceBetween size="s">
-          <div>
-            <Box margin={{ bottom: 'xxxs' }} color="text-label">
-              Sentiment
-            </Box>
-            <div>{sentiment}</div>
-          </div>
-          <div>
-            <Box margin={{ bottom: 'xxxs' }} color="text-label">
-              Sentiment Scores
-            </Box>
-            <div>{JSON.stringify(sentimentScore)}</div>
-          </div>
-          <div>
-            <Box margin={{ bottom: 'xxxs' }} color="text-label">
-              Weighted Sentiment
-            </Box>
-            <div>{sentimentWeighted}</div>
-          </div>
-        </SpaceBetween>
-      }
+    <div
+      className="sentiment-image-popover cursor-help"
+      title={tooltipText}
     >
-      <div className="sentiment-image-popover">
-        <SentimentIcon sentiment={weightedSentimentLabel} />
-      </div>
-    </Popover>
+      <SentimentIcon sentiment={weightedSentimentLabel} />
+    </div>
   );
 };
 
 const getTimestampFromSeconds = (secs) => {
-  if (!secs || Number.isNaN(secs)) {
-    return '00:00.0';
-  }
+  if (!secs || Number.isNaN(secs)) return '00:00.0';
   return new Date(secs * 1000).toISOString().substr(14, 7);
 };
 
@@ -440,25 +359,27 @@ const TranscriptContent = ({ segment, translateCache }) => {
   const regex = settings?.CategoryAlertRegex ?? '.*';
 
   const { transcript, segmentId, channel, targetLanguage, agentTranscript, translateOn } = segment;
-
   const k = segmentId.concat('-', targetLanguage);
 
-  // prettier-ignore
-  const currTranslated = translateOn
-    && targetLanguage !== ''
-    && translateCache[k] !== undefined
-    && translateCache[k].translated !== undefined
-    ? translateCache[k].translated
-    : '';
+  const currTranslated =
+    translateOn && targetLanguage !== '' && translateCache[k]?.translated !== undefined
+      ? translateCache[k].translated
+      : '';
 
-  const result = currTranslated !== undefined ? currTranslated : '';
-
+  const result = currTranslated ?? '';
   const transcriptPiiSplit = transcript.split(piiTypesSplitRegEx);
 
   const transcriptComponents = transcriptPiiSplit.map((t, i) => {
     if (piiTypes.includes(t)) {
-      // eslint-disable-next-line react/no-array-index-key
-      return <Badge key={`${segmentId}-pii-${i}`} color="red">{`${t}`}</Badge>;
+      return (
+        // eslint-disable-next-line react/no-array-index-key
+        <span
+          key={`${segmentId}-pii-${i}`}
+          className="inline-flex items-center rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-xs font-medium"
+        >
+          {t}
+        </span>
+      );
     }
 
     let className = '';
@@ -474,10 +395,10 @@ const TranscriptContent = ({ segment, translateCache }) => {
         break;
       case 'CATEGORY_MATCH':
         if (text.match(regex)) {
-          className = 'transcript-segment-category-match-alert';
+          className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200';
           text = `Alert: ${text}`;
         } else {
-          className = 'transcript-segment-category-match';
+          className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-foreground border border-border';
           text = `Category: ${text}`;
         }
         break;
@@ -486,20 +407,15 @@ const TranscriptContent = ({ segment, translateCache }) => {
     }
 
     return (
-      // prettier-ignore
       // eslint-disable-next-line react/no-array-index-key
-      <TextContent key={`${segmentId}-text-${i}`} color="red" className={className}>
+      <div key={`${segmentId}-text-${i}`} className={className}>
         <ReactMarkdown rehypePlugins={[rehypeRaw]}>{text.trim()}</ReactMarkdown>
         <ReactMarkdown className="translated-text" rehypePlugins={[rehypeRaw]}>{translatedText.trim()}</ReactMarkdown>
-      </TextContent>
+      </div>
     );
   });
 
-  return (
-    <SpaceBetween direction="horizontal" size="xxs">
-      {transcriptComponents}
-    </SpaceBetween>
-  );
+  return <div className="flex flex-wrap items-start gap-1">{transcriptComponents}</div>;
 };
 
 const TranscriptSegment = ({ segment, translateCache }) => {
@@ -507,96 +423,50 @@ const TranscriptSegment = ({ segment, translateCache }) => {
 
   if (channel === 'CATEGORY_MATCH') {
     const categoryText = `${segment.transcript}`;
-    const newSegment = segment;
-    newSegment.transcript = categoryText;
-    // We will return a special version of the grid that's specifically only for category.
+    const newSegment = { ...segment, transcript: categoryText };
     return (
-      <Grid
-        className="transcript-segment"
-        disableGutters
-        gridDefinition={[{ colspan: 1 }, { colspan: 10 }]}
-      >
-        {getSentimentImage(segment)}
-        <SpaceBetween direction="vertical" size="xxs">
+      <div className="transcript-segment grid gap-2" style={{ gridTemplateColumns: '32px 1fr' }}>
+        {getSentimentImage(newSegment)}
+        <div>
           <TranscriptContent segment={newSegment} translateCache={translateCache} />
-        </SpaceBetween>
-      </Grid>
+        </div>
+      </div>
     );
   }
 
   const channelClass = channel === 'AGENT_ASSISTANT' ? 'transcript-segment-agent-assist' : '';
   return (
-    <Grid
-      className="transcript-segment"
-      disableGutters
-      gridDefinition={[{ colspan: 1 }, { colspan: 10 }]}
-    >
+    <div className={cn('transcript-segment grid gap-2', channelClass)} style={{ gridTemplateColumns: '32px 1fr' }}>
       {getSentimentImage(segment)}
-      <SpaceBetween direction="vertical" size="xxs" className={channelClass}>
-        <SpaceBetween direction="horizontal" size="xs">
-          <TextContent>
-            <strong>{segment.channel}</strong>
-          </TextContent>
-          <TextContent>
-            {`${getTimestampFromSeconds(segment.startTime)} -
-              ${getTimestampFromSeconds(segment.endTime)}`}
-          </TextContent>
-        </SpaceBetween>
+      <div className="space-y-0.5">
+        <div className="flex items-center gap-2">
+          <strong className="text-xs font-semibold">{segment.channel}</strong>
+          <span className="text-xs text-muted-foreground">
+            {`${getTimestampFromSeconds(segment.startTime)} - ${getTimestampFromSeconds(segment.endTime)}`}
+          </span>
+        </div>
         <TranscriptContent segment={segment} translateCache={translateCache} />
-      </SpaceBetween>
-    </Grid>
+      </div>
+    </div>
   );
 };
 
 const formatTranscriptExcel = (item, callTranscriptPerCallId) => {
-  // channels: AGENT, AGENT_ASSIST, CALLER, CATEGORY_MATCH
   const maxChannels = 4;
   const { callId } = item;
   const transcriptsForThisCallId = callTranscriptPerCallId[callId] || {};
   const transcriptChannels = Object.keys(transcriptsForThisCallId).slice(0, maxChannels);
-  const data = transcriptChannels
-    .map((c) => {
-      const { segments } = transcriptsForThisCallId[c];
-      return segments;
-    })
-    // sort entries by end time
+  return transcriptChannels
+    .map((c) => transcriptsForThisCallId[c].segments)
     .reduce((p, c) => [...p, ...c].sort((a, b) => a.endTime - b.endTime), [])
-    .map(
-      // prettier-ignore
-      (s) => (
-        s?.segmentId
-        && s?.createdAt
-        && s
-      ),
-    );
-
-  return data;
+    .map((s) => s?.segmentId && s?.createdAt && s);
 };
 
-/**
- * Check whether the current segment should be merged to the previous segment to get better
- * user experience. The conditions for merge are:
- * - Same speaker
- * - Same channel
- * - The gap between two segments is less than PAUSE_TO_MERGE_IN_SECONDS second
- * - Add language code check if available
- * TODO: Check language code once it is returned
- * @param previous previous segment
- * @param current current segment
- * @returns {boolean} indicates whether to merge or not
- */
 const shouldAppendToPreviousSegment = ({ previous, current }) =>
-  // prettier-ignore
-  // eslint-disable-next-line implicit-arrow-linebreak
   previous.speaker === current.speaker
   && previous.channel === current.channel
   && current.startTime - previous.endTime < PAUSE_TO_MERGE_IN_SECONDS;
 
-/**
- * Append current segment to its previous segment
- * @param previous previous segment
- * @param current current segment
- */
 const appendToPreviousSegment = ({ previous, current }) => {
   /* eslint-disable no-param-reassign */
   previous.transcript += ` ${current.transcript}`;
@@ -621,64 +491,40 @@ const CallInProgressTranscript = ({
   const [lastUpdated, setLastUpdated] = useState(Date.now());
   const [updateFlag, setUpdateFlag] = useState(false);
 
-  // channels: AGENT, AGENT_ASSIST, CALLER, CATEGORY_MATCH,
-  // AGENT_VOICETONE, CALLER_VOICETONE
   const maxChannels = 6;
   const { callId } = item;
   const transcriptsForThisCallId = callTranscriptPerCallId[callId] || {};
   const transcriptChannels = Object.keys(transcriptsForThisCallId).slice(0, maxChannels);
 
-  const getSegments = () => {
-    const currentTurnByTurnSegments = transcriptChannels
-      .map((c) => {
-        const { segments } = transcriptsForThisCallId[c];
-        return segments;
-      })
-      // sort entries by end time
+  const getSegments = () =>
+    transcriptChannels
+      .map((c) => transcriptsForThisCallId[c].segments)
       .reduce((p, c) => [...p, ...c].sort((a, b) => a.endTime - b.endTime), [])
       .reduce((accumulator, current) => {
         if (
-          // prettier-ignore
           !accumulator.length
-          || !shouldAppendToPreviousSegment(
-            { previous: accumulator[accumulator.length - 1], current },
-          )
-          // Enable it once it is compatible with translation
+          || !shouldAppendToPreviousSegment({ previous: accumulator[accumulator.length - 1], current })
           || translateOn
         ) {
-          // Get copy of current segment to avoid direct modification
           accumulator.push({ ...current });
         } else {
           appendToPreviousSegment({ previous: accumulator[accumulator.length - 1], current });
         }
         return accumulator;
-      }, [])
-      .map((c) => {
-        const t = c;
-        return t;
-      });
-
-    return currentTurnByTurnSegments;
-  };
+      }, []);
 
   const updateTranslateCache = (seg) => {
     const promises = [];
-    // prettier-ignore
     for (let i = 0; i < seg.length; i += 1) {
       const k = seg[i].segmentId.concat('-', targetLanguage);
-
-      // prettier-ignore
       if (translateCache[k] === undefined) {
-        // Now call translate API
         const params = {
           Text: seg[i].transcript,
           SourceLanguageCode: 'auto',
           TargetLanguageCode: targetLanguage,
         };
         const command = new TranslateTextCommand(params);
-
         logger.debug('Translate API being invoked for:', seg[i].transcript, targetLanguage);
-
         promises.push(
           translateClient.send(command).then(
             (data) => {
@@ -687,9 +533,7 @@ const CallInProgressTranscript = ({
               n[k] = { cacheId: k, transcript: seg[i].transcript, translated: data.TranslatedText };
               return n;
             },
-            (error) => {
-              logger.debug('Error from translate:', error);
-            },
+            (error) => { logger.debug('Error from translate:', error); },
           ),
         );
       }
@@ -697,68 +541,44 @@ const CallInProgressTranscript = ({
     return promises;
   };
 
-  // Translate all segments when the call is completed.
   useEffect(() => {
     if (translateOn && targetLanguage !== '' && item.recordingStatusLabel !== IN_PROGRESS_STATUS) {
       const promises = updateTranslateCache(getSegments());
       Promise.all(promises).then((results) => {
-        // prettier-ignore
         if (results.length > 0) {
-          setTranslateCache((state) => ({
-            ...state,
-            ...results.reduce((a, b) => ({ ...a, ...b })),
-          }));
+          setTranslateCache((state) => ({ ...state, ...results.reduce((a, b) => ({ ...a, ...b })) }));
           setUpdateFlag((state) => !state);
         }
       });
     }
   }, [targetLanguage, agentTranscript, translateOn, item.recordingStatusLabel]);
 
-  // Translate real-time segments when the call is in progress.
   useEffect(() => {
     (async () => {
       const c = getSegments();
-      // prettier-ignore
       if (
-        translateOn
-        && targetLanguage !== ''
-        && c.length > 0
+        translateOn && targetLanguage !== '' && c.length > 0
         && item.recordingStatusLabel === IN_PROGRESS_STATUS
       ) {
         const k = c[c.length - 1].segmentId.concat('-', targetLanguage);
         const n = {};
         if (c[c.length - 1].isPartial === false && cacheSeen[k] === undefined) {
           n[k] = { seen: true };
-          setCacheSeen((state) => ({
-            ...state,
-            ...n,
-          }));
-
-          // prettier-ignore
+          setCacheSeen((state) => ({ ...state, ...n }));
           if (translateCache[k] === undefined) {
-            // Now call translate API
             const params = {
               Text: c[c.length - 1].transcript,
               SourceLanguageCode: 'auto',
               TargetLanguageCode: targetLanguage,
             };
             const command = new TranslateTextCommand(params);
-
             logger.debug('Translate API being invoked for:', c[c.length - 1].transcript, targetLanguage);
-
             try {
               const data = await translateClient.send(command);
               const o = {};
               logger.debug('Translate API response:', c[c.length - 1].transcript, data.TranslatedText);
-              o[k] = {
-                cacheId: k,
-                transcript: c[c.length - 1].transcript,
-                translated: data.TranslatedText,
-              };
-              setTranslateCache((state) => ({
-                ...state,
-                ...o,
-              }));
+              o[k] = { cacheId: k, transcript: c[c.length - 1].transcript, translated: data.TranslatedText };
+              setTranslateCache((state) => ({ ...state, ...o }));
             } catch (error) {
               logger.debug('Error from translate:', error);
             }
@@ -774,12 +594,8 @@ const CallInProgressTranscript = ({
   }, [callTranscriptPerCallId]);
 
   const getTurnByTurnSegments = () => {
-    const currentTurnByTurnSegments = transcriptChannels
-      .map((c) => {
-        const { segments } = transcriptsForThisCallId[c];
-        return segments;
-      })
-      // sort entries by end time
+    const segs = transcriptChannels
+      .map((c) => transcriptsForThisCallId[c].segments)
       .reduce((p, c) => [...p, ...c].sort((a, b) => a.endTime - b.endTime), [])
       .map((c) => {
         const t = c;
@@ -789,36 +605,29 @@ const CallInProgressTranscript = ({
         return t;
       })
       .map(
-        // prettier-ignore
-        (s) => (
-          s?.segmentId
-          && s?.createdAt
-          && (s.agentTranscript === undefined
-            || s.agentTranscript || s.channel !== 'AGENT')
-          && (s.channel !== 'AGENT_VOICETONE')
-          && (s.channel !== 'CALLER_VOICETONE')
-          && <TranscriptSegment key={`${s.segmentId}-${s.createdAt}`} segment={s} translateCache={translateCache} />
-        ),
+        (s) =>
+          s?.segmentId && s?.createdAt
+          && (s.agentTranscript === undefined || s.agentTranscript || s.channel !== 'AGENT')
+          && s.channel !== 'AGENT_VOICETONE'
+          && s.channel !== 'CALLER_VOICETONE'
+          && (
+            <TranscriptSegment
+              key={`${s.segmentId}-${s.createdAt}`}
+              segment={s}
+              translateCache={translateCache}
+            />
+          ),
       );
 
-    // this element is used for scrolling to bottom and to provide padding
-    currentTurnByTurnSegments.push(<div key="bottom" ref={bottomRef} />);
-    return currentTurnByTurnSegments;
+    segs.push(<div key="bottom" ref={bottomRef} />);
+    return segs;
   };
 
   useEffect(() => {
     setTurnByTurnSegments(getTurnByTurnSegments);
-  }, [
-    callTranscriptPerCallId,
-    item.recordingStatusLabel,
-    targetLanguage,
-    agentTranscript,
-    translateOn,
-    updateFlag,
-  ]);
+  }, [callTranscriptPerCallId, item.recordingStatusLabel, targetLanguage, agentTranscript, translateOn, updateFlag]);
 
   useEffect(() => {
-    // prettier-ignore
     if (
       item.recordingStatusLabel === IN_PROGRESS_STATUS
       && autoScroll
@@ -826,28 +635,21 @@ const CallInProgressTranscript = ({
     ) {
       bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [
-    turnByTurnSegments,
-    autoScroll,
-    item.recordingStatusLabel,
-    targetLanguage,
-    agentTranscript,
-    translateOn,
-  ]);
+  }, [turnByTurnSegments, autoScroll, item.recordingStatusLabel, targetLanguage, agentTranscript, translateOn]);
 
   return (
     <div
       style={{
         overflowY: 'auto',
         maxHeight: collapseSentiment ? '34vh' : '68vh',
-        paddingLeft: '10px',
-        paddingTop: '5px',
-        paddingRight: '10px',
+        paddingLeft: 12,
+        paddingTop: 8,
+        paddingRight: 12,
       }}
     >
-      <ColumnLayout borders="horizontal" columns={1}>
+      <div className="divide-y divide-border [&>*]:py-3">
         {turnByTurnSegments}
-      </ColumnLayout>
+      </div>
     </div>
   );
 };
@@ -855,43 +657,24 @@ const CallInProgressTranscript = ({
 const getAgentAssistPanel = (item, collapseSentiment) => {
   if (process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true') {
     return (
-      <Container
-        disableContentPaddings
-        header={
-          <Header
-            variant="h4"
-            info={
-              <Link variant="info" target="_blank" href="https://amazon.com/live-call-analytics">
-                Info
-              </Link>
-            }
-          >
-            Agent Assist Bot
-          </Header>
-        }
-      >
-        <Box style={{ height: collapseSentiment ? '34vh' : '68vh' }}>
+      <Card header="Agent Assist Bot">
+        <div style={{ height: collapseSentiment ? '34vh' : '68vh' }}>
           <iframe
-            style={{ border: '0px', height: collapseSentiment ? '34vh' : '68vh', margin: '0' }}
+            style={{ border: '0px', height: collapseSentiment ? '34vh' : '68vh', margin: 0 }}
             title="Agent Assist"
             src={`/index-lexwebui.html?callId=${item.callId}`}
             width="100%"
           />
-        </Box>
-      </Container>
+        </div>
+      </Card>
     );
   }
   return null;
 };
+
 const getTranscriptContent = ({
-  item,
-  callTranscriptPerCallId,
-  autoScroll,
-  translateClient,
-  targetLanguage,
-  agentTranscript,
-  translateOn,
-  collapseSentiment,
+  item, callTranscriptPerCallId, autoScroll, translateClient,
+  targetLanguage, agentTranscript, translateOn, collapseSentiment,
 }) => {
   switch (item.recordingStatusLabel) {
     case DONE_STATUS:
@@ -919,21 +702,15 @@ const CallTranscriptContainer = ({
   translateClient,
   collapseSentiment,
 }) => {
-  // defaults to auto scroll when call is in progress
   const [autoScroll, setAutoScroll] = useState(item.recordingStatusLabel === IN_PROGRESS_STATUS);
-  const [autoScrollDisabled, setAutoScrollDisabled] = useState(
-    item.recordingStatusLabel !== IN_PROGRESS_STATUS,
-  );
-
+  const [autoScrollDisabled, setAutoScrollDisabled] = useState(item.recordingStatusLabel !== IN_PROGRESS_STATUS);
   const [translateOn, setTranslateOn] = useState(false);
-  const [targetLanguage, setTargetLanguage] = useState(
-    localStorage.getItem('targetLanguage') || '',
-  );
+  const [targetLanguage, setTargetLanguage] = useState(localStorage.getItem('targetLanguage') || '');
   const [agentTranscript, setAgentTranscript] = useState(true);
 
-  const handleLanguageSelect = (event) => {
-    setTargetLanguage(event.target.value);
-    localStorage.setItem('targetLanguage', event.target.value);
+  const handleLanguageSelect = (e) => {
+    setTargetLanguage(e.target.value);
+    localStorage.setItem('targetLanguage', e.target.value);
   };
 
   useEffect(() => {
@@ -941,82 +718,56 @@ const CallTranscriptContainer = ({
     setAutoScroll(item.recordingStatusLabel === IN_PROGRESS_STATUS);
   }, [item.recordingStatusLabel]);
 
-  const languageChoices = () => {
-    if (translateOn) {
-      return (
-        // prettier-ignore
-        // eslint-disable-jsx-a11y/control-has-associated-label
-        <div>
-          <select value={targetLanguage} onChange={handleLanguageSelect}>
-            {languageCodes.map(({ value, label }) => <option value={value}>{label}</option>)}
-          </select>
-        </div>
-      );
-    }
-    return translateOn;
-  };
+  const transcriptCols = process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true' ? 'grid-cols-1 sm:grid-cols-[2fr_1fr]' : 'grid-cols-1';
+
   return (
-    <Grid
-      gridDefinition={[
-        {
-          colspan: {
-            default: 12,
-            xs: process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true' ? 8 : 12,
-          },
-        },
-        {
-          colspan: {
-            default: 12,
-            xs: process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true' ? 4 : 0,
-          },
-        },
-      ]}
-    >
-      <Container
-        fitHeight="true"
-        disableContentPaddings
+    <div className={cn('grid gap-4', transcriptCols)}>
+      <Card
+        noPadding
         header={
-          <Header
-            variant="h4"
-            info={<InfoLink onFollow={() => setToolsOpen(true)} />}
-            actions={
-              <SpaceBetween direction="horizontal" size="xs">
-                <Toggle
-                  onChange={({ detail }) => setAutoScroll(detail.checked)}
-                  checked={autoScroll}
-                  disabled={autoScrollDisabled}
-                />
-                <span>Auto Scroll</span>
-                <Toggle
-                  onChange={({ detail }) => setAgentTranscript(detail.checked)}
-                  checked={agentTranscript}
-                />
-                <span>Show Agent Transcripts?</span>
-                <Toggle
-                  onChange={({ detail }) => setTranslateOn(detail.checked)}
-                  checked={translateOn}
-                />
-                <span>Enable Translation</span>
-                {languageChoices()}
-              </SpaceBetween>
-            }
-          >
-            <div className="flex items-center">
-              <div> Call Transcript </div>
-              <div className="btn-download-right">
-                <Button
-                  iconName="download"
-                  variant="normals"
-                  onClick={() => {
-                    exportToExcel(
-                      formatTranscriptExcel(item, callTranscriptPerCallId),
-                      'call-transcript',
-                    );
-                  }}
-                />
-              </div>
-            </div>
-          </Header>
+          <>
+            Call Transcript
+            <InfoLink onFollow={() => setToolsOpen(true)} />
+          </>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-3">
+            <Toggle
+              checked={autoScroll}
+              onChange={setAutoScroll}
+              disabled={autoScrollDisabled}
+              label="Auto Scroll"
+            />
+            <Toggle
+              checked={agentTranscript}
+              onChange={setAgentTranscript}
+              label="Show Agent Transcripts?"
+            />
+            <Toggle
+              checked={translateOn}
+              onChange={setTranslateOn}
+              label="Enable Translation"
+            />
+            {translateOn && (
+              <select
+                value={targetLanguage}
+                onChange={handleLanguageSelect}
+                className="h-8 rounded border border-input bg-background px-2 text-sm"
+              >
+                {languageCodes.map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => exportToExcel(formatTranscriptExcel(item, callTranscriptPerCallId), 'call-transcript')}
+              aria-label="Download transcript"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
         }
       >
         {getTranscriptContent({
@@ -1029,168 +780,118 @@ const CallTranscriptContainer = ({
           translateOn,
           collapseSentiment,
         })}
-      </Container>
+      </Card>
       {getAgentAssistPanel(item, collapseSentiment)}
-    </Grid>
+    </div>
   );
 };
 
-const VoiceToneContainer = ({
-  item,
-  callTranscriptPerCallId,
-  collapseSentiment,
-  setCollapseSentiment,
-}) => (
-  <Container
-    fitHeight="true"
-    disableContentPaddings={collapseSentiment ? '' : 'true'}
+const VoiceToneContainer = ({ item, callTranscriptPerCallId, collapseVoiceTone, setCollapseVoiceTone }) => (
+  <Card
     header={
-      <Header
-        variant="h4"
-        info={
-          <Link
-            variant="info"
-            target="_blank"
-            href="https://docs.aws.amazon.com/chime-sdk/latest/dg/call-analytics.html"
-          >
-            Info
-          </Link>
-        }
-        actions={
-          <SpaceBetween direction="horizontal" size="xs">
-            <Button
-              variant="inline-icon"
-              iconName={collapseSentiment ? 'angle-up' : 'angle-down'}
-              onClick={() => setCollapseSentiment(!collapseSentiment)}
-            />
-          </SpaceBetween>
-        }
-      >
+      <>
         Voice Tone Analysis
-      </Header>
+        <a
+          className="ml-1 text-xs text-primary hover:underline"
+          target="_blank"
+          rel="noreferrer"
+          href="https://docs.aws.amazon.com/chime-sdk/latest/dg/call-analytics.html"
+        >
+          Info
+        </a>
+      </>
+    }
+    actions={
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setCollapseVoiceTone(!collapseVoiceTone)}
+        aria-label={collapseVoiceTone ? 'Collapse' : 'Expand'}
+      >
+        {collapseVoiceTone ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </Button>
     }
   >
-    {collapseSentiment ? (
+    {collapseVoiceTone && (
       <VoiceToneFluctuationChart item={item} callTranscriptPerCallId={callTranscriptPerCallId} />
-    ) : null}
-  </Container>
+    )}
+  </Card>
 );
 
-const CallStatsContainer = ({
-  item,
-  callTranscriptPerCallId,
-  collapseSentiment,
-  setCollapseSentiment,
-}) => (
-  <Container
-    fitHeight="true"
-    disableContentPaddings={collapseSentiment ? '' : 'true'}
+const CallStatsContainer = ({ item, callTranscriptPerCallId, collapseSentiment, setCollapseSentiment }) => (
+  <Card
     header={
-      <Header
-        variant="h4"
-        info={
-          <Link
-            variant="info"
-            target="_blank"
-            href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-insights.html#call-analytics-insights-sentiment"
-          >
-            Info
-          </Link>
-        }
-        actions={
-          <SpaceBetween direction="horizontal" size="xs">
-            <Button
-              variant="inline-icon"
-              iconName={collapseSentiment ? 'angle-up' : 'angle-down'}
-              onClick={() => setCollapseSentiment(!collapseSentiment)}
-            />
-          </SpaceBetween>
-        }
-      >
+      <>
         Call Sentiment Analysis
-      </Header>
+        <a
+          className="ml-1 text-xs text-primary hover:underline"
+          target="_blank"
+          rel="noreferrer"
+          href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-insights.html#call-analytics-insights-sentiment"
+        >
+          Info
+        </a>
+      </>
+    }
+    actions={
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setCollapseSentiment(!collapseSentiment)}
+        aria-label={collapseSentiment ? 'Collapse' : 'Expand'}
+      >
+        {collapseSentiment ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </Button>
     }
   >
-    {collapseSentiment ? (
+    {collapseSentiment && (
       <>
-        <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
-          <SentimentFluctuationChart
-            item={item}
-            callTranscriptPerCallId={callTranscriptPerCallId}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <SentimentFluctuationChart item={item} callTranscriptPerCallId={callTranscriptPerCallId} />
           <SentimentPerQuarterChart item={item} callTranscriptPerCallId={callTranscriptPerCallId} />
-        </Grid>
-        <ColumnLayout columns={4} variant="text-grid">
-          <SpaceBetween size="xs">
-            <div>
-              <Box margin={{ bottom: 'xxxs' }} color="text-label">
-                <strong>Caller Avg Sentiment:</strong>
-              </Box>
-              <div>
-                <SentimentIcon sentiment={item.callerSentimentLabel} />
-                &nbsp;
-                {item.callerAverageSentiment.toFixed(3)}
-                <br />
-                (min: -5, max: +5)
-              </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <FieldLabel>Caller Avg Sentiment:</FieldLabel>
+            <div className="text-sm">
+              <SentimentIcon sentiment={item.callerSentimentLabel} />
+              &nbsp;{item.callerAverageSentiment?.toFixed(3)}
+              <br />
+              <span className="text-xs text-muted-foreground">(min: -5, max: +5)</span>
             </div>
-          </SpaceBetween>
-          <SpaceBetween size="xs">
-            <div>
-              <Box margin={{ bottom: 'xxxs' }} color="text-label">
-                <strong>Caller Sentiment Trend:</strong>
-              </Box>
-              <div>
-                <SentimentTrendIcon trend={item.callerSentimentTrendLabel} />
-              </div>
+          </div>
+          <div>
+            <FieldLabel>Caller Sentiment Trend:</FieldLabel>
+            <SentimentTrendIcon trend={item.callerSentimentTrendLabel} />
+          </div>
+          <div>
+            <FieldLabel>Agent Avg Sentiment:</FieldLabel>
+            <div className="text-sm">
+              <SentimentIcon sentiment={item.agentSentimentLabel} />
+              &nbsp;{item.agentAverageSentiment?.toFixed(3)}
+              <br />
+              <span className="text-xs text-muted-foreground">(min: -5, max: +5)</span>
             </div>
-          </SpaceBetween>
-          <SpaceBetween size="xs">
-            <div>
-              <Box margin={{ bottom: 'xxxs' }} color="text-label">
-                <strong>Agent Avg Sentiment:</strong>
-              </Box>
-              <div>
-                <SentimentIcon sentiment={item.agentSentimentLabel} />
-                &nbsp;
-                {item.agentAverageSentiment.toFixed(3)}
-                <br />
-                (min: -5, max: +5)
-              </div>
-            </div>
-          </SpaceBetween>
-          <SpaceBetween size="xs">
-            <div>
-              <Box margin={{ bottom: 'xxxs' }} color="text-label">
-                <strong>Agent Sentiment Trend:</strong>
-              </Box>
-              <div>
-                <SentimentTrendIcon trend={item.agentSentimentTrendLabel} />
-              </div>
-            </div>
-          </SpaceBetween>
-        </ColumnLayout>
+          </div>
+          <div>
+            <FieldLabel>Agent Sentiment Trend:</FieldLabel>
+            <SentimentTrendIcon trend={item.agentSentimentTrendLabel} />
+          </div>
+        </div>
       </>
-    ) : null}
-  </Container>
+    )}
+  </Card>
 );
 
 export const CallPanel = ({ item, callTranscriptPerCallId, setToolsOpen }) => {
   const { currentCredentials } = useAppContext();
-
   const { settings } = useSettingsContext();
-  const [collapseSentiment, setCollapseSentiment] = useState(false);
+  const [collapseSentiment, setCollapseSentiment] = useState(true);
 
-  const enableVoiceTone = settings?.EnableVoiceToneAnalysis === 'true';
-
-  // prettier-ignore
   const customRetryStrategy = new StandardRetryStrategy(
     async () => MAXIMUM_ATTEMPTS,
     {
-      delayDecider:
-        (_, attempts) => Math.floor(
-          Math.min(MAXIMUM_RETRY_DELAY, 2 ** attempts * 10),
-        ),
+      delayDecider: (_, attempts) => Math.floor(Math.min(MAXIMUM_RETRY_DELAY, 2 ** attempts * 10)),
     },
   );
 
@@ -1201,9 +902,6 @@ export const CallPanel = ({ item, callTranscriptPerCallId, setToolsOpen }) => {
     retryStrategy: customRetryStrategy,
   });
 
-  /* Get a client with refreshed credentials. Credentials can go stale when user is logged in
-     for an extended period.
-   */
   useEffect(() => {
     logger.debug('Translate client with refreshed credentials');
     translateClient = new TranslateClient({
@@ -1215,36 +913,20 @@ export const CallPanel = ({ item, callTranscriptPerCallId, setToolsOpen }) => {
   }, [currentCredentials]);
 
   return (
-    <SpaceBetween size="s">
+    <div className="space-y-4">
       <CallAttributes item={item} setToolsOpen={setToolsOpen} />
-      <Grid
-        gridDefinition={[{ colspan: { default: 12, xs: 8 } }, { colspan: { default: 12, xs: 4 } }]}
-      >
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-[2fr_1fr]">
         <CallSummary item={item} />
         <CallCategories item={item} />
-      </Grid>
-      <Grid
-        gridDefinition={[
-          { colspan: { default: 12, xs: enableVoiceTone ? 8 : 12 } },
-          { colspan: { default: 12, xs: enableVoiceTone ? 4 : 0 } },
-        ]}
-      >
+      </div>
+      <div className="grid gap-4 items-start grid-cols-1">
         <CallStatsContainer
           item={item}
           callTranscriptPerCallId={callTranscriptPerCallId}
           collapseSentiment={collapseSentiment}
           setCollapseSentiment={setCollapseSentiment}
         />
-        {enableVoiceTone && (
-          <VoiceToneContainer
-            item={item}
-            callTranscriptPerCallId={callTranscriptPerCallId}
-            collapseSentiment={collapseSentiment}
-            setCollapseSentiment={setCollapseSentiment}
-          />
-        )}
-      </Grid>
-
+      </div>
       <CallTranscriptContainer
         item={item}
         setToolsOpen={setToolsOpen}
@@ -1252,7 +934,7 @@ export const CallPanel = ({ item, callTranscriptPerCallId, setToolsOpen }) => {
         translateClient={translateClient}
         collapseSentiment={collapseSentiment}
       />
-    </SpaceBetween>
+    </div>
   );
 };
 

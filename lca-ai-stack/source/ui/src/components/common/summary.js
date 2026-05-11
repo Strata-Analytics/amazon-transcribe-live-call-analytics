@@ -23,21 +23,30 @@ export const getTextOnlySummary = (callSummaryText) => {
   return summary;
 };
 
-export const getMarkdownSummary = (callSummaryText) => {
-  if (!callSummaryText) {
-    return 'Not available';
-  }
-  let summary = callSummaryText;
+const markdownToHtml = (text) =>
+  String(text)
+    .replace(/```[\w]*\n?/g, '')
+    .replace(/\\\*/g, '*')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const html = line.replace(/\*\*(.*?)\*\*/g, '<span style="font-weight:600">$1</span>');
+      return `<p>${html}</p>`;
+    })
+    .join('');
+
+export const getHtmlSummary = (callSummaryText) => {
+  if (!callSummaryText) return '<p>Not available</p>';
   try {
-    const jsonSummary = JSON.parse(summary);
-    summary = '';
-    Object.entries(jsonSummary).forEach(([key, value]) => {
-      summary += `**${key}**\n\n${value}\n\n`;
-    });
+    const jsonSummary = JSON.parse(callSummaryText);
+    return Object.entries(jsonSummary)
+      .map(([key, value], i) => `${i > 0 ? '<hr style="border:none; border-top:1px solid var(--border); margin:0.75rem 0"/>' : ''}<p><strong>${key}</strong></p>${markdownToHtml(String(value))}`)
+      .join('');
   } catch (e) {
-    return callSummaryText;
+    return markdownToHtml(callSummaryText);
   }
-  return summary;
 };
+
+export const getMarkdownSummary = getHtmlSummary;
 
 export default getTextOnlySummary;

@@ -2,20 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 
-import Form from '@cloudscape-design/components/form';
-import FormField from '@cloudscape-design/components/form-field';
-import SpaceBetween from '@cloudscape-design/components/space-between';
-import Container from '@cloudscape-design/components/container';
-import Button from '@cloudscape-design/components/button';
-import Input from '@cloudscape-design/components/input';
-import Header from '@cloudscape-design/components/header';
-import ColumnLayout from '@cloudscape-design/components/column-layout';
-import Select from '@cloudscape-design/components/select';
-
 import useWebSocket from 'react-use-websocket';
 
 import useAppContext from '../../contexts/app';
 import useSettingsContext from '../../contexts/settings';
+
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 let SOURCE_SAMPLING_RATE;
 
@@ -39,67 +33,28 @@ const StreamAudio = () => {
     console.log(`DEBUG - [${new Date().toISOString()}]: Trying to resolve websocket url...`);
     return new Promise((resolve) => {
       if (settings.WSEndpoint) {
-        console.log(`
-          DEBUG - [${new Date().toISOString()}]: Resolved Websocket URL to ${settings.WSEndpoint}
-        `);
+        console.log(`DEBUG - [${new Date().toISOString()}]: Resolved Websocket URL to ${settings.WSEndpoint}`);
         resolve(settings.WSEndpoint);
       }
     });
   }, [settings.WSEndpoint]);
 
   const { sendMessage } = useWebSocket(getSocketUrl, {
-    queryParams: {
-      authorization: `Bearer ${JWT_TOKEN}`,
-    },
-    onOpen: (event) => {
-      console.log(`
-        DEBUG - [${new Date().toISOString()}]: Websocket onOpen Event: ${JSON.stringify(event)}
-      `);
-    },
-    onClose: (event) => {
-      console.log(`
-        DEBUG - [${new Date().toISOString()}]: Websocket onClose Event: ${JSON.stringify(event)}
-      `);
-    },
-    onError: (event) => {
-      console.log(`
-        DEBUG - [${new Date().toISOString()}]: Websocket onError Event: ${JSON.stringify(event)}
-      `);
-    },
+    queryParams: { authorization: `Bearer ${JWT_TOKEN}` },
+    onOpen: (event) => console.log(`DEBUG - [${new Date().toISOString()}]: Websocket onOpen: ${JSON.stringify(event)}`),
+    onClose: (event) => console.log(`DEBUG - [${new Date().toISOString()}]: Websocket onClose: ${JSON.stringify(event)}`),
+    onError: (event) => console.log(`DEBUG - [${new Date().toISOString()}]: Websocket onError: ${JSON.stringify(event)}`),
     shouldReconnect: () => true,
   });
 
-  const handleCallIdChange = (e) => {
-    setCallMetaData({
-      ...callMetaData,
-      callId: e.detail.value,
-    });
-  };
-
-  const handleAgentIdChange = (e) => {
-    setCallMetaData({
-      ...callMetaData,
-      agentId: e.detail.value,
-    });
-  };
-
-  const handlefromNumberChange = (e) => {
-    setCallMetaData({
-      ...callMetaData,
-      fromNumber: e.detail.value,
-    });
-  };
-
-  const handletoNumberChange = (e) => {
-    setCallMetaData({
-      ...callMetaData,
-      toNumber: e.detail.value,
-    });
-  };
-
-  const handleMicInputOptionSelection = (e) => {
-    setMicInputOption(e.detail.selectedOption);
-  };
+  const handleCallIdChange = (e) => setCallMetaData({ ...callMetaData, callId: e.target.value });
+  const handleAgentIdChange = (e) => setCallMetaData({ ...callMetaData, agentId: e.target.value });
+  const handlefromNumberChange = (e) => setCallMetaData({ ...callMetaData, fromNumber: e.target.value });
+  const handletoNumberChange = (e) => setCallMetaData({ ...callMetaData, toNumber: e.target.value });
+  const handleMicInputOptionSelection = (e) => setMicInputOption({
+    value: e.target.value,
+    label: e.target.options[e.target.selectedIndex].text,
+  });
 
   const audioProcessor = useRef();
   const audioContext = useRef();
@@ -122,77 +77,40 @@ const StreamAudio = () => {
     console.log(`DEBUG - [${new Date().toISOString()}]: Stopping recording...`);
 
     if (audioProcessor.current) {
-      audioProcessor.current.port.postMessage({
-        message: 'UPDATE_RECORDING_STATE',
-        setRecording: false,
-      });
+      audioProcessor.current.port.postMessage({ message: 'UPDATE_RECORDING_STATE', setRecording: false });
       audioProcessor.current.port.close();
       audioProcessor.current.disconnect();
-
-      displayStream.current.getTracks().forEach((track) => {
-        track.stop();
-      });
-
-      micStream.current.getTracks().forEach((track) => {
-        track.stop();
-      });
-
-      audioContext.current.close().then(() => {
-        console.log('AudioContext closed.');
-      });
+      displayStream.current.getTracks().forEach((track) => track.stop());
+      micStream.current.getTracks().forEach((track) => track.stop());
+      audioContext.current.close().then(() => console.log('AudioContext closed.'));
     } else {
-      console.log(`
-        DEBUG - [${new Date().toISOString()}]: Error trying to stop recording. AudioWorklet Processor node is not active.
-      `);
+      console.log(`DEBUG - [${new Date().toISOString()}]: Error: AudioWorklet Processor node is not active.`);
       setRecording(false);
     }
     if (streamingStarted && !recording) {
       callMetaData.callEvent = 'END';
-      // eslint-disable-next-line prettier/prettier
-      console.log(`
-        DEBUG - [${new Date().toISOString()}]: Send Call END msg: ${JSON.stringify(callMetaData)}
-      `);
+      console.log(`DEBUG - [${new Date().toISOString()}]: Send Call END msg: ${JSON.stringify(callMetaData)}`);
       sendMessage(JSON.stringify(callMetaData));
       setStreamingStarted(false);
-      setCallMetaData({
-        ...callMetaData,
-        callId: crypto.randomUUID(),
-      });
+      setCallMetaData({ ...callMetaData, callId: crypto.randomUUID() });
     }
   };
 
   const startRecording = async () => {
-    console.log(`
-      DEBUG - [${new Date().toISOString()}]: Start Recording and Streaming Audio to Websocket server.
-    `);
+    console.log(`DEBUG - [${new Date().toISOString()}]: Start Recording and Streaming Audio to Websocket server.`);
 
     try {
       audioContext.current = new window.AudioContext();
-      displayStream.current = await window.navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true,
-      });
-
-      micStream.current = await window.navigator.mediaDevices.getUserMedia({
-        video: false,
-        audio: true,
-      });
+      displayStream.current = await window.navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      micStream.current = await window.navigator.mediaDevices.getUserMedia({ video: false, audio: true });
       SOURCE_SAMPLING_RATE = audioContext.current.sampleRate;
-
-      // callMetaData.samplingRate = TARGET_SAMPLING_RATE;
       callMetaData.samplingRate = SOURCE_SAMPLING_RATE;
-
       callMetaData.callEvent = 'START';
-      // eslint-disable-next-line prettier/prettier
-      console.log(`
-        DEBUG - [${new Date().toISOString()}]: Send Call START msg: ${JSON.stringify(callMetaData)}
-      `);
+      console.log(`DEBUG - [${new Date().toISOString()}]: Send Call START msg: ${JSON.stringify(callMetaData)}`);
       sendMessage(JSON.stringify(callMetaData));
       setStreamingStarted(true);
 
-      displayAudioSource.current = audioContext.current.createMediaStreamSource(
-        displayStream.current,
-      );
+      displayAudioSource.current = audioContext.current.createMediaStreamSource(displayStream.current);
       micAudioSource.current = audioContext.current.createMediaStreamSource(micStream.current);
 
       const monoDisplaySource = convertToMono(displayAudioSource.current);
@@ -207,28 +125,16 @@ const StreamAudio = () => {
         monoDisplaySource.connect(channelMerger.current, 0, 0);
       }
 
-      console.log(`
-        DEBUG - [${new Date().toISOString()}]: Registering and adding AudioWorklet processor to capture audio
-      `);
-
+      console.log(`DEBUG - [${new Date().toISOString()}]: Registering AudioWorklet processor`);
       try {
         await audioContext.current.audioWorklet.addModule('./worklets/recording-processor.js');
       } catch (error) {
-        console.log(`
-          DEBUG - [${new Date().toISOString()}]: Error registering AudioWorklet processor: ${error}
-        `);
+        console.log(`DEBUG - [${new Date().toISOString()}]: Error registering AudioWorklet: ${error}`);
       }
 
       audioProcessor.current = new AudioWorkletNode(audioContext.current, 'recording-processor');
-      audioProcessor.current.port.onmessageerror = (error) => {
-        console.log(`
-          DEBUG - [${new Date().toISOString()}]: Error receving message from worklet ${error}
-        `);
-      };
-      audioProcessor.current.port.onmessage = (event) => {
-        // this is pcm audio
-        sendMessage(event.data);
-      };
+      audioProcessor.current.port.onmessageerror = (error) => console.log(`DEBUG: Error from worklet ${error}`);
+      audioProcessor.current.port.onmessage = (event) => sendMessage(event.data);
       channelMerger.current.connect(audioProcessor.current);
     } catch (error) {
       alert(`An error occurred while recording: ${error}`);
@@ -258,44 +164,74 @@ const StreamAudio = () => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()}>
-      <Form
-        actions={
-          <SpaceBetween direction="horizontal" size="xs">
-            <Button variant="primary" onClick={handleRecording}>
-              {recording ? 'Stop Streaming' : 'Start Streaming'}
-            </Button>
-          </SpaceBetween>
-        }
-      >
-        <Container header={<Header variant="h2">Call Meta data</Header>}>
-          <ColumnLayout columns={2}>
-            <FormField label="Call ID" stretch required description="Auto-generated Unique call ID">
-              <Input value={callMetaData.callId} onChange={handleCallIdChange} />
-            </FormField>
-            <FormField label="Agent ID" stretch required description="Agent ID">
-              <Input value={callMetaData.agentId} onChange={handleAgentIdChange} />
-            </FormField>
-            <FormField label="Customer Phone" stretch required description="Customer Phone">
-              <Input value={callMetaData.fromNumber} onChange={handlefromNumberChange} />
-            </FormField>
-            <FormField label="System Phone" stretch required description="System Phone">
-              <Input value={callMetaData.toNumber} onChange={handletoNumberChange} />
-            </FormField>
-            <FormField label="Microphone Role" stretch required description="Mic input">
-              <Select
-                selectedOption={micInputOption}
-                onChange={handleMicInputOptionSelection}
-                options={[
-                  { label: 'CALLER', value: 'caller' },
-                  { label: 'AGENT', value: 'agent' },
-                ]}
+    <div className="p-6 max-w-2xl">
+      <div className="border border-border rounded-lg bg-background overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
+          <h2 className="text-sm font-semibold text-foreground">Call Metadata</h2>
+        </div>
+        <div className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="callId">Call ID</Label>
+              <p className="text-xs text-muted-foreground">Auto-generated unique call ID</p>
+              <Input
+                id="callId"
+                value={callMetaData.callId}
+                onChange={handleCallIdChange}
+                required
               />
-            </FormField>
-          </ColumnLayout>
-        </Container>
-      </Form>
-    </form>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="agentId">Agent ID</Label>
+              <p className="text-xs text-muted-foreground">Agent ID</p>
+              <Input
+                id="agentId"
+                value={callMetaData.agentId}
+                onChange={handleAgentIdChange}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="fromNumber">Customer Phone</Label>
+              <p className="text-xs text-muted-foreground">Customer Phone</p>
+              <Input
+                id="fromNumber"
+                value={callMetaData.fromNumber}
+                onChange={handlefromNumberChange}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="toNumber">System Phone</Label>
+              <p className="text-xs text-muted-foreground">System Phone</p>
+              <Input
+                id="toNumber"
+                value={callMetaData.toNumber}
+                onChange={handletoNumberChange}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="micRole">Microphone Role</Label>
+              <p className="text-xs text-muted-foreground">Mic input</p>
+              <select
+                id="micRole"
+                value={micInputOption.value}
+                onChange={handleMicInputOptionSelection}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="caller">CALLER</option>
+                <option value="agent">AGENT</option>
+              </select>
+            </div>
+          </div>
+
+          <Button onClick={handleRecording}>
+            {recording ? 'Stop Streaming' : 'Start Streaming'}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,65 +1,64 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import Box from '@cloudscape-design/components/box';
-import Button from '@cloudscape-design/components/button';
-import Header from '@cloudscape-design/components/header';
-import SpaceBetween from '@cloudscape-design/components/space-between';
+import { Info } from 'lucide-react';
 
-import { InfoLink } from './info-link';
+import { Button } from '../ui/button';
 
 export const getFilterCounterText = (count) => `${count} ${count === 1 ? 'match' : 'matches'}`;
-/* prettier-ignore */
+
 const getHeaderCounterText = (items = [], selectedItems = []) => (
   selectedItems && selectedItems.length > 0
     ? `(${selectedItems.length}/${items.length})`
     : `(${items.length})`
 );
+
 const getCounter = (props) => {
-  if (props.counter) {
-    return props.counter;
-  }
-  if (!props.totalItems) {
-    return null;
-  }
+  if (props.counter) return props.counter;
+  if (!props.totalItems) return null;
   return getHeaderCounterText(props.totalItems, props.selectedItems);
 };
 
-/* eslint-disable react/prop-types, react/destructuring-assignment */
+/* eslint-disable react/prop-types */
 export const TableHeader = (props) => (
-  <Header
-    counter={getCounter(props)}
-    info={props.updateTools && <InfoLink onFollow={props.updateTools} />}
-    description={props.description}
-    actions={props.actionButtons}
-  >
-    {props.title}
-  </Header>
+  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+    <div className="flex items-center gap-2">
+      <h2 className="text-base font-semibold text-foreground">{props.title}</h2>
+      {getCounter(props) && (
+        <span className="text-sm text-muted-foreground">{getCounter(props)}</span>
+      )}
+      {props.updateTools && (
+        <button
+          type="button"
+          onClick={props.updateTools}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Show info"
+        >
+          <Info className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+    {props.actionButtons && (
+      <div className="flex items-center gap-2">{props.actionButtons}</div>
+    )}
+  </div>
 );
 
 export const TableEmptyState = ({ resourceName }) => (
-  <Box margin={{ vertical: 'xs' }} textAlign="center" color="inherit">
-    <SpaceBetween size="xxs">
-      <div>
-        <b>{` No ${resourceName.toLowerCase()}s`}</b>
-        <Box variant="p" color="inherit">
-          {`No ${resourceName.toLowerCase()}s found.`}
-        </Box>
-      </div>
-    </SpaceBetween>
-  </Box>
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <p className="font-semibold text-foreground">No {resourceName.toLowerCase()}s</p>
+    <p className="mt-1 text-sm text-muted-foreground">
+      No {resourceName.toLowerCase()}s found.
+    </p>
+  </div>
 );
 
-export const TableNoMatchState = (props) => (
-  <Box margin={{ vertical: 'xs' }} textAlign="center" color="inherit">
-    <SpaceBetween size="xxs">
-      <div>
-        <b>No matches</b>
-        <Box variant="p" color="inherit">
-          We can&apos;t find a match.
-        </Box>
-      </div>
-      <Button onClick={props.onClearFilter}>Clear filter</Button>
-    </SpaceBetween>
-  </Box>
+export const TableNoMatchState = ({ onClearFilter }) => (
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <p className="font-semibold text-foreground">No matches</p>
+    <p className="mt-1 mb-4 text-sm text-muted-foreground">We can&apos;t find a match.</p>
+    <Button variant="outline" size="sm" onClick={onClearFilter}>
+      Clear filter
+    </Button>
+  </div>
 );
