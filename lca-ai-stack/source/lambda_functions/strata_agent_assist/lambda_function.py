@@ -348,16 +348,22 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
     if cliente.get('internet_hogar'):
         proveedor = cliente.get('proveedor_internet_hogar', '')
         precio_ih = cliente.get('precio_internet_hogar_actual', '')
-        extra     = f" con {proveedor} (${precio_ih}/mes)" if proveedor else ''
-        lines.append(f"internet_hogar: SÍ{extra} — NO ofrecer planes HOG ni bundle")
+        if proveedor and proveedor.lower() not in ('telcostrata', ''):
+            lines.append(
+                f"internet_hogar: SÍ con {proveedor} (${precio_ih}/mes) — "
+                f"OPORTUNIDAD_VENTA: si el cliente menciona hogar/internet, ofrecer migración a bundle TelcoStrata con 15% dto. "
+                f"NO ofrecer proactivamente si el cliente no pregunta."
+            )
+        else:
+            lines.append("internet_hogar: SÍ (TelcoStrata) — NO ofrecer planes HOG ni bundle")
     else:
-        lines.append("internet_hogar: NO — oportunidad CROSS_SELL bundle")
+        lines.append("internet_hogar: NO — oportunidad OPORTUNIDAD_VENTA bundle si cliente lo menciona")
 
     if cliente.get('viaja_frecuente_eeuu'):
         lines.append("viaja_frecuente_eeuu: SÍ — oportunidad UPSELL a MOV-PRO (roaming incluido)")
 
     if cliente.get('grupo_familiar'):
-        lines.append("grupo_familiar: SÍ — oportunidad CROSS_SELL plan familiar")
+        lines.append("grupo_familiar: SÍ — oportunidad OPORTUNIDAD_VENTA plan familiar")
 
     if pagos > 0:
         lines.append(f"PAGOS ATRASADOS: {pagos} — NO vender hasta resolver")
@@ -367,7 +373,12 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
         costo_real    = plan_precio + gap['extra_cost_est']
         delta_vs_real = gap['upgrade_precio'] - costo_real
         if delta_vs_real <= 0:
-            net_str = f"ahorro ${abs(delta_vs_real)}/mes vs su gasto real (${costo_real}/mes con paquetes)"
+            net_str = (
+                f"⚠ AHORRO: el upgrade cuesta ${gap['upgrade_precio']}/mes, "
+                f"MENOS que su gasto real de ${costo_real}/mes. "
+                f"El cliente AHORRA ${abs(delta_vs_real)}/mes. "
+                f"NO decir 'solo X más' — decir 'ahorrás $X/mes'."
+            )
         else:
             net_str = f"solo ${delta_vs_real}/mes más vs su gasto real de ${costo_real}/mes (plan + paquetes)"
         lines.append(
@@ -471,7 +482,10 @@ def get_relevant_scripts(transcript: str, cliente: dict) -> str:
     elif not internet_hogar and any(w in tl for w in ["internet", "hogar", "casa",
                                                         "telmex", "izzi", "totalplay",
                                                         "megacable", "fibra", "wifi"]):
-        query, label = "bundle internet hogar móvil ahorro argumento cross-sell", "ARGUMENTO BUNDLE"
+        if not any(w in tl for w in ["familiar", "familia", "esposo", "esposa", "hijo", "líneas", "lineas"]):
+            query, label = "bundle internet hogar móvil ahorro argumento cross-sell", "ARGUMENTO BUNDLE"
+        else:
+            return ''
     else:
         return ''
 
@@ -512,29 +526,58 @@ def build_pricing_context(cliente: dict, plan_data: dict, insights: dict, tl: st
             lines.append(f"      {upgrade_id} con 20% dto (${round(up_precio*0.80)}, 3 meses): {round(up_precio*0.80) - costo_real:+}/mes vs [B]")
             lines.append(f"      {upgrade_id} con 30% dto (${round(up_precio*0.70)}, 3 meses): {round(up_precio*0.70) - costo_real:+}/mes vs [B]")
             lines.append("  REGLA: Si el cliente dice que no siempre compra paquetes → presentar [A] y [B] como dos escenarios sin contradecirle.")
+            if up_precio < costo_real:
+                lines.append(f"  ⚠ FRAMING: cliente AHORRA ${costo_real - up_precio}/mes con el upgrade. Usar 'ahorrás' no 'cuesta X más'.")
         else:
             lines.append(f"{plan_id} con 20% dto: ${round(plan_precio * 0.80)}/mes por 3 meses")
             if upgrade_id and up_precio:
                 lines.append(f"Upgrade a {upgrade_id} (${up_precio}{gb_str}) gratis 6 meses (RET-B)")
                 lines.append(f"{upgrade_id} con 30% dto: ${round(up_precio * 0.70)}/mes por 3 meses (RET-C)")
 
-    if not cliente.get('internet_hogar'):
-        if any(w in tl for w in ["internet", "hogar", "izzi", "telmex", "totalplay"]):
-            bundle_cfg = get_bundle_config()
-            desc_pct   = bundle_cfg.get('descuento_pct', 15) if bundle_cfg else 15
-            proveedor  = cliente.get('proveedor_internet_hogar', '')
-            precio_ih  = cliente.get('precio_internet_hogar_actual', 0)
-            if plan_precio:
-                hog        = get_plan('HOG-100')
-                hog_precio = hog.get('precio', 499) if hog else 499
-                total_sin  = plan_precio + hog_precio
-                total_con  = round(total_sin * (1 - desc_pct / 100))
-                ahorro     = total_sin - total_con
-                competitor = f" (actualmente paga ${precio_ih}/mes con {proveedor})" if precio_ih and proveedor else ''
-                lines.append(
-                    f"Bundle {plan_id} + HOG-100{competitor}: "
-                    f"${total_con}/mes en lugar de ${total_sin} — ahorro ${ahorro}/mes"
-                )
+    # Bundle hogar — SOLO si el cliente menciona internet/hogar explícitamente en este segmento.
+    # NO activar si el contexto es de plan familiar (no mezclar ofertas).
+    familiar_en_tl = any(w in tl for w in [
+        "familiar", "familia", "esposo", "esposa", "hijo", "hija",
+        "líneas", "lineas", "agregar línea"
+    ])
+    hogar_en_tl = any(w in tl for w in [
+        "internet", "hogar", "izzi", "telmex", "totalplay", "megacable", "axtel", "fibra", "wifi"
+    ])
+
+    proveedor_hogar  = cliente.get('proveedor_internet_hogar', '')
+    precio_ih        = cliente.get('precio_internet_hogar_actual', 0)
+    es_proveedor_ext = (
+        cliente.get('internet_hogar') and
+        proveedor_hogar and
+        proveedor_hogar.lower() not in ('telcostrata', '')
+    )
+    sin_hogar = not cliente.get('internet_hogar')
+
+    if hogar_en_tl and not familiar_en_tl and (sin_hogar or es_proveedor_ext) and plan_precio:
+        bundle_cfg = get_bundle_config()
+        desc_pct   = bundle_cfg.get('descuento_pct', 15) if bundle_cfg else 15
+        hog_opciones = [
+            ('HOG-50',   'Hogar 50Mbps'),
+            ('HOG-100',  'Hogar 100Mbps'),
+            ('HOG-300',  'Hogar 300Mbps'),
+            ('HOG-GIGA', 'Hogar 1Gbps'),
+        ]
+        lines.append("OPCIONES BUNDLE MÓVIL + HOGAR (15% dto al combinar):")
+        if es_proveedor_ext and precio_ih:
+            lines.append(f"  Actualmente paga: ${precio_ih}/mes con {proveedor_hogar} + ${plan_precio}/mes móvil = ${precio_ih + plan_precio}/mes total")
+        for hog_id, hog_nombre in hog_opciones:
+            hog_data   = get_plan(hog_id)
+            hog_precio = hog_data.get('precio', 0) if hog_data else 0
+            if not hog_precio:
+                continue
+            total_sin = plan_precio + hog_precio
+            total_con = round(total_sin * (1 - desc_pct / 100))
+            if es_proveedor_ext and precio_ih:
+                ahorro_str = f"ahorro ${(precio_ih + plan_precio) - total_con}/mes vs lo que pagás hoy"
+            else:
+                ahorro_str = f"ahorro ${total_sin - total_con}/mes vs contratar por separado"
+            lines.append(f"  {hog_id} ({hog_nombre}): ${hog_precio}/mes → bundle ${total_con}/mes — {ahorro_str}")
+        lines.append("  REGLA: Usar HOG-100 como opción principal salvo que el cliente mencione necesidad específica de más velocidad.")
 
     return '\n'.join(lines) if lines else ''
 
@@ -562,7 +605,11 @@ def build_familiar_context(cliente: dict, plan_data: dict, tl: str) -> str:
         )
     if fam3:
         p3, gb3, ah3 = fam3.get('precio',749), fam3.get('datos_gb_por_linea',15), fam3.get('ahorro_vs_individual_mxn',148)
-        lines.append(f"• MOV-FAMILIAR-3: ${p3}/mes — 3 líneas, {gb3}GB POR LÍNEA (no compartidos). Ahorro real: ${ah3}/mes vs 3 planes MOV-PLUS individuales.")
+        lines.append(
+            f"• MOV-FAMILIAR-3: ${p3}/mes — 3 líneas, {gb3}GB POR LÍNEA, "
+            f"llamadas ilimitadas nacionales, SMS ilimitados, redes sociales incluidas (WhatsApp, Facebook, Instagram, TikTok). "
+            f"Velocidad 4G. Ahorro real: ${ah3}/mes vs 3 planes MOV-PLUS individuales."
+        )
     if fam5:
         p5, gb5, ah5 = fam5.get('precio',1099), fam5.get('datos_gb_por_linea',15), fam5.get('ahorro_vs_individual_mxn',396)
         lines.append(f"• MOV-FAMILIAR-5: ${p5}/mes — 5 líneas, {gb5}GB POR LÍNEA. Ahorro real: ${ah5}/mes vs 5 planes MOV-PLUS individuales.")
@@ -598,7 +645,11 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
 
 6. NO OFRECER LO QUE YA TIENE: si plan_actual está en DATOS DEL CLIENTE, nunca recomendarlo.
 
-7. NO OPORTUNIDAD_VENTA HOGAR si internet_hogar: SÍ en DATOS DEL CLIENTE.
+7. HOGAR — SOLO SI EL CLIENTE LO MENCIONA EXPLÍCITAMENTE:
+   • NUNCA ofrecer internet hogar ni bundle de forma proactiva. Esperar que el cliente lo pregunte.
+   • Si internet_hogar indica "(TelcoStrata)" → NO ofrecer nada de hogar bajo ninguna circunstancia.
+   • Si internet_hogar dice "con Izzi/Telmex/otro" Y el cliente pregunta por hogar en este turno → OPORTUNIDAD_VENTA bundle.
+   • Si el cliente está hablando de plan familiar → NO mezclar con oferta de hogar aunque tenga proveedor externo.
 
 8. ESPERAR obligatorio — sin excepciones:
    • Menos de 4 palabras: "sí", "no", "ok", "ajá", "um", letras sueltas
