@@ -21,7 +21,7 @@ MAX_CONTEXT_SEGMENTS = 10
 CACHE_TTL_SECONDS    = 300  # 5 min — prevents stale profiles across back-to-back demo calls
 
 VALID_ACTIONS = {
-    'CROSS_SELL', 'UPSELL', 'INFORMACION_ADICIONAL', 'RETENCIÓN', 'MANEJO_OBJECION',
+    'OPORTUNIDAD_VENTA', 'UPSELL', 'INFORMACION_ADICIONAL', 'RETENCIÓN', 'MANEJO_OBJECION',
     'OFERTA_ESPECIAL', 'ESCALACIÓN', 'SOPORTE', 'CIERRE', 'ESPERAR'
 }
 
@@ -642,6 +642,10 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
     • Tono: colega que ayuda, no vendedor que empuja.
     • Sin markdown. Máximo 2 oraciones.
 
+17. PROHIBIDO INVENTAR CONDICIONES: 
+    •nunca ofrecer "primer mes gratis", "período de prueba", "sin costo el primer mes" ni ninguna condición que no esté en el catálogo. 
+    •Si el cliente pregunta si puede probar, decir que el plan se puede cambiar en cualquier momento pero no hay período de prueba gratuito.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMATO DE RESPUESTA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -668,6 +672,8 @@ OPORTUNIDAD_VENTA
     Ejemplo familiar: "¿Cuántas líneas necesitarían en total?"
   → Con datos del cliente confirmados: calcular ahorro concreto y mostrarlo.
   NO usar si internet_hogar: SÍ en DATOS DEL CLIENTE.
+  → Si el cliente ya respondió a la pregunta de descubrimiento o está preguntando activamente sobre planes, pasar directamente a la recomendación concreta. No seguir preguntando.
+  → Si el cliente pregunta "¿qué planes tienen?" o "¿tienen plan familiar?" → responder con la opción más relevante y el ahorro, no con otra pregunta.
 
 UPSELL
   Cliente agota datos, compra paquetes extra frecuentemente, o necesita roaming sin tenerlo.
@@ -717,6 +723,9 @@ CIERRE
   → Confirmar con calidez, resumir lo acordado, dar el próximo paso concreto.
   → No volver a vender ni agregar más información. Solo confirmar y activar.
   → Tono cálido, no mecánico.
+  → Si el cliente mencionó urgencia o necesidad inmediata durante la llamada, confirmar que la activación es inmediata — no "próximo ciclo".
+  → Verificar en el CONTEXTO si el cliente mencionó urgencia antes de usar "próximo ciclo de facturación".
+  → Después de que el cliente confirma y recibe la activación, el CIERRE es solo: confirmar que quedó activo y agradecer.
 
 ESPERAR
   Todo lo demás. Fragmentos cortos, datos personales, monosílabos, saludos, silencios.
