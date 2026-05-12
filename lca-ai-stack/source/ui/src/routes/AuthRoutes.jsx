@@ -12,9 +12,17 @@ import useParameterStore from '../hooks/use-parameter-store';
 import useAppContext from '../contexts/app';
 
 import CallsRoutes from './CallsRoutes';
+import ConnectRoutes from './ConnectRoutes';
 import StreamAudioRoutes from './StreamAudioRoutes';
 
-import { CALLS_PATH, DEFAULT_PATH, LOGIN_PATH, LOGOUT_PATH, STREAM_AUDIO_PATH } from './constants';
+import {
+  CALLS_PATH,
+  CONNECT_PATH,
+  DEFAULT_PATH,
+  LOGIN_PATH,
+  LOGOUT_PATH,
+  STREAM_AUDIO_PATH,
+} from './constants';
 
 const logger = new Logger('AuthRoutes');
 
@@ -44,6 +52,9 @@ const AuthRoutes = ({ redirectParam }) => {
         </Route>
         <Route path={STREAM_AUDIO_PATH}>
           <StreamAudioRoutes />
+        </Route>
+        <Route path={CONNECT_PATH}>
+          <ConnectRoutes />
         </Route>
         <Route>
           <Redirect to={DEFAULT_PATH} />
