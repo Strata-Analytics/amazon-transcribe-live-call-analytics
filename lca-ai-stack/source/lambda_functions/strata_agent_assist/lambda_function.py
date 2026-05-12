@@ -458,20 +458,22 @@ def query_kb(query: str, n: int = 2) -> str:
         return ''
 
 
-def get_relevant_scripts(transcript: str, cliente: dict) -> str:
+def get_relevant_scripts(transcript: str, cliente: dict, context_text: str = '') -> str:
     """Single KB query — highest-priority signal wins. Reduces latency."""
     if not KNOWLEDGE_BASE_ID:
         return ''
 
     tl             = transcript.lower()
+    ctx            = context_text.lower() if context_text else ''
     plan_id        = cliente.get('plan_movil_actual', '')
     internet_hogar = cliente.get('internet_hogar', False)
+
+    _familiar_kw = ["familiar", "familia", "esposo", "esposa", "hijo", "líneas", "lineas", "varias líneas"]
 
     if any(w in tl for w in ["cancelar", "baja", "portarme", "otra empresa",
                                "movistar", "at&t", "telcel", "competencia", "me voy"]):
         query, label = "script retención cancelar qué decirle al cliente que quiere cancelar", "SCRIPTS RETENCIÓN"
-    elif any(w in tl for w in ["familiar", "familia", "esposo", "esposa", "hijo",
-                                 "líneas", "lineas", "varias líneas"]):
+    elif any(w in tl for w in _familiar_kw) or any(w in ctx for w in _familiar_kw):
         query, label = "plan familiar múltiples líneas argumento cross-sell familia", "ARGUMENTO PLAN FAMILIAR"
     elif any(w in tl for w in ["caro", "costoso", "no me alcanza", "más barato",
                                  "descuento", "sale muy"]):
@@ -516,15 +518,16 @@ def build_pricing_context(cliente: dict, plan_data: dict, insights: dict, tl: st
 
         if gap and up_precio:
             costo_real = plan_precio + gap['extra_cost_est']
-            lines.append("TABLA DE COSTOS (usar EXACTAMENTE estos números):")
+            def _delta(v): return f"+${v}" if v >= 0 else f"-${abs(v)}"
+            lines.append("usar EXACTAMENTE estos números:")
             lines.append(f"  [A] Diferencia pura entre planes (meses SIN paquetes):")
             lines.append(f"      {upgrade_id} (${up_precio}{gb_str}) − {plan_id} (${plan_precio}) = ${up_precio - plan_precio}/mes más")
             lines.append(f"      → Si el cliente afirma '${up_precio - plan_precio} de diferencia', TIENE RAZÓN. No corregirle.")
             lines.append(f"  [B] Costo real actual (meses CON paquetes):")
             lines.append(f"      ${plan_precio} (plan) + ${gap['extra_cost_est']} (paquetes estimados) = ${costo_real}/mes")
-            lines.append(f"      {upgrade_id} regular (${up_precio}{gb_str}): {up_precio - costo_real:+}/mes vs [B]")
-            lines.append(f"      {upgrade_id} con 20% dto (${round(up_precio*0.80)}, 3 meses): {round(up_precio*0.80) - costo_real:+}/mes vs [B]")
-            lines.append(f"      {upgrade_id} con 30% dto (${round(up_precio*0.70)}, 3 meses): {round(up_precio*0.70) - costo_real:+}/mes vs [B]")
+            lines.append(f"      {upgrade_id} regular (${up_precio}{gb_str}): {_delta(up_precio - costo_real)}/mes vs [B]")
+            lines.append(f"      {upgrade_id} con 20% dto (${round(up_precio*0.80)}, 3 meses): {_delta(round(up_precio*0.80) - costo_real)}/mes vs [B]")
+            lines.append(f"      {upgrade_id} con 30% dto (${round(up_precio*0.70)}, 3 meses): {_delta(round(up_precio*0.70) - costo_real)}/mes vs [B]")
             lines.append("  REGLA: Si el cliente dice que no siempre compra paquetes → presentar [A] y [B] como dos escenarios sin contradecirle.")
             if up_precio < costo_real:
                 lines.append(f"  ⚠ FRAMING: cliente AHORRA ${costo_real - up_precio}/mes con el upgrade. Usar 'ahorrás' no 'cuesta X más'.")
@@ -582,12 +585,12 @@ def build_pricing_context(cliente: dict, plan_data: dict, insights: dict, tl: st
     return '\n'.join(lines) if lines else ''
 
 
-def build_familiar_context(cliente: dict, plan_data: dict, tl: str) -> str:
-    if not any(w in tl for w in [
-        "familiar", "familia", "esposo", "esposa", "hijo", "hija",
-        "líneas", "lineas", "dos líneas", "varias líneas", "agregar línea"
-    ]):
-        return ''
+def build_familiar_context(cliente: dict, plan_data: dict, tl: str, context_text: str = '') -> str:
+    _kw = ["familiar", "familia", "esposo", "esposa", "hijo", "hija",
+           "líneas", "lineas", "dos líneas", "varias líneas", "agregar línea"]
+    if not any(w in tl for w in _kw):
+        if not context_text or not any(w in context_text.lower() for w in _kw):
+            return ''
 
     fam3        = get_plan('MOV-FAMILIAR-3')
     fam5        = get_plan('MOV-FAMILIAR-5')
@@ -613,8 +616,79 @@ def build_familiar_context(cliente: dict, plan_data: dict, tl: str) -> str:
     if fam5:
         p5, gb5, ah5 = fam5.get('precio',1099), fam5.get('datos_gb_por_linea',15), fam5.get('ahorro_vs_individual_mxn',396)
         lines.append(f"• MOV-FAMILIAR-5: ${p5}/mes — 5 líneas, {gb5}GB POR LÍNEA. Ahorro real: ${ah5}/mes vs 5 planes MOV-PLUS individuales.")
-    lines.append("REGLA: No existe plan de 2 líneas. Para 2 personas → 2 planes individuales O MOV-FAMILIAR-3 con 1 línea extra disponible.")
-    lines.append("PROHIBIDO: No inventar descuentos, no usar precios de retención en este contexto.")
+    if plus:
+        precio_plus = plus.get('precio', 299)
+        precio_duo  = round(precio_plus * 0.80)
+        total_duo   = precio_plus + precio_duo
+        ahorro_duo  = (precio_plus * 2) - total_duo
+        lines.append(
+            f"• PROMO DÚO — solo cuando 2 personas contratan JUNTAS en la misma llamada: "
+            f"20% dto en la 2ª línea los primeros 3 meses. "
+            f"MOV-PLUS + MOV-PLUS: ${precio_plus} + ${precio_duo} = ${total_duo}/mes — "
+            f"ahorrás ${ahorro_duo}/mes vs contratar por separado. "
+            f"Desde el 4° mes: ${precio_plus * 2}/mes."
+        )
+    lines.append("REGLA: No existe plan de 2 líneas. Para 2 personas → PROMO DÚO (si contratan juntas) O MOV-FAMILIAR-3 si quieren escalar después.")
+    lines.append("REGLA PARA 2 LÍNEAS: Si el cliente rechaza MOV-FAMILIAR-3 porque 'solo son dos' → ofrecer PROMO DÚO como alternativa concreta.")
+    lines.append("PROHIBIDO: No inventar descuentos adicionales, no usar precios de retención en este contexto.")
+    return '\n'.join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Dynamic plan catalog from DynamoDB
+# ---------------------------------------------------------------------------
+
+def _plan_features_str(plan: dict) -> str:
+    feats = ["llamadas y SMS ilimitados nacionales"]
+    gb = plan.get('datos_gb')
+    feats.insert(0, f"{gb}GB" if gb else "datos ilimitados")
+    vel = plan.get('velocidad_max', '')
+    if vel:
+        feats.append(vel)
+    if plan.get('redes_sociales'):
+        feats.append("redes sociales incluidas (WhatsApp, Facebook, Instagram, TikTok)")
+    if plan.get('roaming'):
+        paises = plan.get('roaming_paises', [])
+        p_str  = ', '.join(paises) if paises else 'Estados Unidos, Canadá'
+        feats.append(f"roaming en {p_str} incluido")
+    hs = plan.get('hotspot_gb')
+    if hs:
+        feats.append(f"hotspot {hs}GB")
+    return ' · '.join(feats)
+
+
+def build_catalog_section() -> str:
+    lines = ["CATÁLOGO DE PLANES (fuente: sistema — usar EXACTAMENTE estos datos, sin inventar):"]
+    for pid in ['MOV-BASIC', 'MOV-PLUS', 'MOV-PRO', 'MOV-UNLIMITED']:
+        p = get_plan(pid)
+        if not p:
+            continue
+        lines.append(f"  {pid} ${p.get('precio', '?')}/mes · {_plan_features_str(p)}")
+    for pid in ['MOV-FAMILIAR-3', 'MOV-FAMILIAR-5']:
+        p = get_plan(pid)
+        if not p:
+            continue
+        gb  = p.get('datos_gb_por_linea', '?')
+        lin = p.get('lineas', '?')
+        rs  = ' · redes sociales incluidas (WhatsApp, Facebook, Instagram, TikTok)' if p.get('redes_sociales') else ''
+        lines.append(
+            f"  {pid} ${p.get('precio', '?')}/mes · {lin} líneas · {gb}GB/línea · "
+            f"{p.get('velocidad_max', '4G')} · llamadas y SMS ilimitados{rs}"
+        )
+    for pid in ['HOG-50', 'HOG-100', 'HOG-300', 'HOG-GIGA']:
+        p = get_plan(pid)
+        if not p:
+            continue
+        extras = []
+        if p.get('incluye_router'): extras.append("router incluido")
+        if p.get('wifi_extender'):  extras.append("extender WiFi")
+        if p.get('ip_fija'):        extras.append("IP fija")
+        ex = f" · {' · '.join(extras)}" if extras else ''
+        lines.append(f"  {pid} ${p.get('precio', '?')}/mes · {p.get('velocidad_mbps', '?')}Mbps{ex}")
+    bundle = get_plan('CONFIG#BUNDLE')
+    if bundle:
+        lines.append(f"  BUNDLE móvil + hogar: {bundle.get('descuento_pct', 15)}% dto al contratar ambos")
+    lines.append("PROHIBIDO: 'MOV-ULTRA', 'Plan Familiar Plus', precios o GB distintos a los anteriores, planes no listados.")
     return '\n'.join(lines)
 
 
@@ -631,17 +705,16 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
 
 1. JSON PURO: Responde ÚNICAMENTE con un JSON válido. Sin markdown, sin texto adicional.
 
-2. CATÁLOGO CERRADO — solo estos IDs, precios y GB existen:
-   MOV-BASIC $199/5GB · MOV-PLUS $299/15GB · MOV-PRO $449/30GB · MOV-UNLIMITED $599/ilimitado
-   MOV-FAMILIAR-3 $749 (3 líneas, 15GB c/u) · MOV-FAMILIAR-5 $1099 (5 líneas, 15GB c/u)
-   HOG-50 $349 · HOG-100 $499 · HOG-300 $699 · HOG-GIGA $999
-   PROHIBIDO: "MOV-ULTRA", "10GB en MOV-PLUS", "Plan Familiar Plus", cualquier plan no listado.
+2. CATÁLOGO CERRADO — usar ÚNICAMENTE el CATÁLOGO DE PLANES inyectado al inicio del mensaje del usuario: contiene IDs exactos, precios, GB y features actualizados desde la base de datos. Para responder "¿qué incluye el plan X?" leer directamente de ahí.
+   PROHIBIDO: "MOV-ULTRA", "10GB en MOV-PLUS", "Plan Familiar Plus", precios o GB distintos a los del catálogo.
 
 3. PRECIOS Y GB: usar SOLO los de DATOS DEL CLIENTE, TABLA DE COSTOS o el catálogo. Nunca inventar.
+   Si DATOS DEL CLIENTE tiene `plan_actual` → NO preguntar al cliente cuál es su plan, ni siquiera si el perfil está NO CONFIRMADO. Usarlo directamente.
 
 4. NOMBRE DEL CLIENTE: usar el nombre de DATOS DEL CLIENTE. NUNCA escribir "[Nombre]", "[nombre del cliente]" ni ningún placeholder.
 
-5. PERFIL NO CONFIRMADO: si DATOS DEL CLIENTE incluye ":warning: PERFIL NO CONFIRMADO", tratar como referencia orientativa. Si el cliente menciona algo distinto, priorizar lo que dice el cliente.
+5. PERFIL NO CONFIRMADO: si DATOS DEL CLIENTE incluye "⚠ PERFIL NO CONFIRMADO", tratar como referencia orientativa. Si el cliente menciona algo distinto, priorizar lo que dice el cliente.
+   IMPORTANTE: PERFIL NO CONFIRMADO no significa preguntar datos que ya están en el perfil. Solo aplica si el cliente contradice el perfil explícitamente. Si no hay contradicción → usar los datos del perfil tal como están.
 
 6. NO OFRECER LO QUE YA TIENE: si plan_actual está en DATOS DEL CLIENTE, nunca recomendarlo.
 
@@ -666,6 +739,8 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
     • Si el cliente ya aceptó → CIERRE, no seguir vendiendo.
     • Si el cliente dijo "cancelar" en turno anterior → mantener contexto de RETENCIÓN.
     • Si el cliente ya rechazó una categoría de producto → NO volver a ofrecerla.
+    • ANTI-LOOP: Si el CONTEXTO muestra que Copilot ya hizo una pregunta de descubrimiento Y el cliente respondió en el turno siguiente → el dato está confirmado. No repetir esa pregunta bajo ninguna circunstancia.
+    • RECUPERAR CONTEXTO PROPIO: Si el cliente pregunta "¿me habías dicho...?" o "¿tenías un plan...?" → buscar en las líneas "Copilot:" del CONTEXTO y responder con esa información directamente. Nunca pedirle al cliente que recuerde lo que el Copilot mismo dijo.
 
 12. RETENCIÓN — JERARQUÍA ESTRICTA:
     • Orden: exploración → RET-A → RET-B → RET-C. Avanzar solo si el anterior fue rechazado explícitamente.
@@ -727,15 +802,17 @@ OPORTUNIDAD_VENTA
   OPORTUNIDAD_VENTA familiar:
   → Si el cliente ya dijo cuántas personas/líneas necesita → presentar las opciones DIRECTAMENTE. No preguntar de nuevo.
   → "Solo seríamos dos", "somos dos", "dos líneas" = respuesta recibida. Pasar a: mostrar opciones con precios.
-  → Si ya preguntaste cuántas personas y el cliente repite la misma respuesta → es señal de frustración. 
+  → Si ya preguntaste cuántas personas y el cliente repite la misma respuesta → es señal de frustración.
     Dar la oferta concreta sin más preguntas.
+  → Para 2 personas que rechazan MOV-FAMILIAR-3 ("solo somos dos", "tengo una línea de más"): ofrecer PROMO DÚO del CONTEXTO PLAN FAMILIAR. No repetir las mismas opciones.
   NO usar si internet_hogar: SÍ en DATOS DEL CLIENTE.
   → Si el cliente ya respondió a la pregunta de descubrimiento o está preguntando activamente sobre planes, pasar directamente a la recomendación concreta. No seguir preguntando.
   → Si el cliente pregunta "¿qué planes tienen?" o "¿tienen plan familiar?" → responder con la opción más relevante y el ahorro, no con otra pregunta.
 
 UPSELL
   Cliente agota datos, compra paquetes extra frecuentemente, o necesita roaming sin tenerlo.
-  → Primera vez que se detecta la señal: hacer una pregunta de descubrimiento antes de ofrecer.
+  → Si el GAP está en DATOS DEL CLIENTE (consumo_promedio > límite_plan): el patrón de consumo ya es conocido — ofrecer directamente con los números del GAP, sin preguntar.
+  → Primera vez que se detecta la señal SIN GAP en perfil: hacer una pregunta de descubrimiento antes de ofrecer.
     Ejemplo: "¿Qué tan seguido te quedás sin datos — todos los meses o solo algunos?"
     Ejemplo roaming: "¿Con qué frecuencia viajás? ¿Es por trabajo o vacaciones?"
   → Si ya hay contexto de uso confirmado en la llamada: ofrecer el plan correcto con beneficio concreto.
@@ -759,8 +836,15 @@ RETENCIÓN
 
 MANEJO_OBJECION
   Cliente rechaza oferta o dice que es caro, sin amenazar cancelar.
-  Con GAP: mostrar costo real [B] vs upgrade. Sin GAP: ofrecer 20% dto en plan actual.
+  Con GAP, cliente dice "está caro" / "no me convence" / "es mucho":
+    → Ofrecer upgrade con 20% dto por 3 meses (usar línea "con 20% dto" de TABLA DE COSTOS).
+    → NOTA: este descuento es sobre el plan de UPGRADE, no es un descuento de retención. No viola Regla 12.
+  Con GAP, cliente cuestiona el supuesto de paquetes ("no siempre compro paquetes"):
+    → Presentar [A] y [B] como dos escenarios sin contradecir. No ofrecer descuento en este caso.
+  Sin GAP: ofrecer 20% dto en plan actual.
+  Sin GAP, contexto familiar, cliente con solo 2 líneas que rechazó MOV-FAMILIAR-3: ofrecer PROMO DÚO (ver CONTEXTO PLAN FAMILIAR).
   → Tono empático, no defensivo. Mostrar el valor antes del precio.
+  → Preguntas de información o aclaración de números sin rechazo explícito → INFORMACION_ADICIONAL.
 
 OFERTA_ESPECIAL
   Opciones estándar ya rechazadas. Usar solo si RETENCIÓN y MANEJO_OBJECION no funcionaron.
@@ -769,7 +853,10 @@ ESCALACIÓN
   Solo si el cliente pide supervisor explícitamente. No usar por frustración general.
 
 SOPORTE
-  Problema técnico activo (sin señal, sin datos, error de red, facturación incorrecta).
+  Problema técnico activo: sin señal, error de red, falla de servicio inesperada, facturación incorrecta.
+  "sin datos" — depende del perfil:
+  • Si hay GAP en DATOS DEL CLIENTE (consumo_promedio > límite_plan): el cliente regularmente excede su plan → UPSELL, no SOPORTE. Explicar que se agotaron porque su uso supera el plan.
+  • Si NO hay GAP y el cliente dice que agotó datos inesperadamente: investigar (posible error, consumo por app en segundo plano) → SOPORTE.
   → La recomendación es para el AGENTE, no para el cliente. Decirle al agente qué hacer:
     verificar si la cuenta tiene pagos pendientes, pedir al cliente que reinicie en modo avión
     30 segundos, preguntar si otros teléfonos tienen señal en la misma zona, verificar si hay
@@ -899,6 +986,30 @@ CONTEXTO: Copilot acaba de ofrecer "2 planes MOV-PLUS a $598 o MOV-FAMILIAR-3 a 
    "accion": "INFORMACION_ADICIONAL",
    "recomendacion": "MOV-PLUS ($299/línea): 15GB, llamadas y SMS ilimitados, redes sociales incluidas. MOV-FAMILIAR-3 ($749/mes total): lo mismo pero en 3 líneas independientes, así si agregás a tu hija después no cambiás de plan.",
    "urgencia": "baja"}
+
+# EJEMPLO 19 — MANEJO_OBJECION familiar: cliente dice "no hay beneficio para dos líneas" → PROMO DÚO
+DATOS DEL CLIENTE: nombre: María · plan_actual: MOV-PLUS ($299).
+CONTEXTO PLAN FAMILIAR: 2×MOV-PLUS = $598 · MOV-FAMILIAR-3 = $749 · PROMO DÚO: $299+$239 = $538/mes primeros 3 meses.
+CONTEXTO: Copilot presentó las opciones. Cliente rechazó MOV-FAMILIAR-3 porque son solo dos personas.
+ÚLTIMO MENSAJE: "Al parecer son dos planes individuales al mismo costo que si contratara por separado, no hay un beneficio por contratar en paquete."
+→ {"razonamiento": "Cliente identifica correctamente que 2 individuales = $598. Hay PROMO DÚO disponible — exactamente lo que busca.", "accion": "MANEJO_OBJECION", "recomendacion": "Tenés razón, María, y hay una promo para eso: si los dos contratan juntos en la misma llamada, la segunda línea tiene 20% de descuento los primeros 3 meses — quedarían en $538/mes en lugar de $598. ¿Los dos están disponibles ahora para avanzar?", "urgencia": "alta"}
+
+# EJEMPLO 21 — MANEJO_OBJECION con GAP: ofrecer 20% dto en upgrade
+DATOS DEL CLIENTE: nombre: Carlos · plan_actual: MOV-BASIC ($199, 5GB) · GAP activo: $90/mes en paquetes.
+TABLA DE COSTOS: [A] $100/mes más · [B] costo real $289 → MOV-PLUS $299 = +$10 · MOV-PLUS con 20% dto ($239, 3 meses): -$50/mes vs [B].
+CONTEXTO: Copilot ofreció MOV-PLUS ($299) en turno anterior.
+ÚLTIMO MENSAJE: "Me parece caro ese plan, no sé si vale la pena."
+→ {"razonamiento": "Objeción de precio sobre el upgrade con GAP activo. Ofrecer 20% dto en MOV-PLUS por 3 meses según TABLA.", "accion": "MANEJO_OBJECION", "recomendacion": "Entiendo, Carlos. Por los próximos 3 meses te lo dejamos en $239/mes en lugar de $299 — y como ya gastás $90 en paquetes, en esos meses te saldrías ahorrando $50 contra lo que pagás hoy. Después del descuento quedarías en $299, pero sin comprar paquetes extras.", "urgencia": "media"}
+
+# EJEMPLO 22 — INFORMACION_ADICIONAL: cliente pregunta por oferta que el Copilot ya hizo
+CONTEXTO: Copilot ofreció "PROMO DÚO: si contratan juntos, la segunda línea tiene 20% dto los primeros 3 meses — $538/mes en lugar de $598."
+ÚLTIMO MENSAJE: "Me habías dicho que tenías un plan para ofrecerme con un descuento."
+→ {"razonamiento": "El Copilot ya ofreció PROMO DÚO en el contexto. Recuperar y repetir — no pedir al cliente que recuerde.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Claro, María. La promo es para cuando los dos contratan juntos: la segunda línea tiene 20% de descuento los primeros 3 meses — $538/mes en lugar de $598. Desde el 4° mes quedan en $598/mes.", "urgencia": "alta"}
+
+# EJEMPLO 23 — UPSELL: sin datos ahora mismo, no entiende por qué
+DATOS DEL CLIENTE: nombre: Laura · plan_actual: MOV-BASIC ($199, 5GB) · consumo_promedio: 7GB · GAP activo.
+ÚLTIMO MENSAJE: "Me quedé sin datos de repente y no entiendo por qué, el mes recién empezó."
+→ {"razonamiento": "GAP activo: consume 7GB pero plan incluye 5GB. Sin datos ahora porque excedió el límite. No es falla técnica — es límite de plan. Explicar y ofrecer upgrade.", "accion": "UPSELL", "recomendacion": "Laura, tu plan MOV-BASIC incluye 5GB y en promedio usás cerca de 7GB al mes, así que el plan se agota antes de que termine el ciclo. MOV-PLUS (15GB, $299) te triplicaría el espacio y evitaría estos cortes — ¿querés que te lo activemos?", "urgencia": "alta"}
 """
 
 
@@ -939,10 +1050,11 @@ def lambda_handler(event, context):
     # --- 4. Build prompt blocks ---
     tl = transcript.lower()
 
+    catalog_section  = build_catalog_section()
     profile_section  = build_profile_section(cliente, plan_data, insights, confirmado)
     pricing_context  = build_pricing_context(cliente, plan_data, insights, tl)
-    kb_scripts       = get_relevant_scripts(transcript, cliente)
-    familiar_context = build_familiar_context(cliente, plan_data, tl)
+    kb_scripts       = get_relevant_scripts(transcript, cliente, context_text)
+    familiar_context = build_familiar_context(cliente, plan_data, tl, context_text)
 
     # Retention block — check current segment AND accumulated context (FIX)
     retencion_signals = any(w in tl for w in [
@@ -956,6 +1068,8 @@ def lambda_handler(event, context):
     retencion_block = compute_retencion_oferta(cliente, plan_data) if retencion_signals else ''
 
     parts = []
+    if catalog_section:
+        parts.append(catalog_section)
     if profile_section:
         parts.append(profile_section)
     if familiar_context:
