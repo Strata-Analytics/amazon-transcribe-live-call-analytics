@@ -17,7 +17,7 @@ TABLA_OFERTAS   = os.environ.get('TABLA_OFERTAS',  'lca-poc-copilot-telco-oferta
 
 KNOWLEDGE_BASE_ID    = os.environ.get('KNOWLEDGE_BASE_ID', '')
 MODEL_ID             = os.environ.get('MODEL_ID', 'us.anthropic.claude-haiku-4-5-20251001-v1:0')
-MAX_CONTEXT_SEGMENTS = 10
+MAX_CONTEXT_SEGMENTS = 25
 CACHE_TTL_SECONDS    = 300  # 5 min — prevents stale profiles across back-to-back demo calls
 
 VALID_ACTIONS = {
@@ -741,6 +741,7 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
     • Si el cliente ya rechazó una categoría de producto → NO volver a ofrecerla.
     • ANTI-LOOP: Si el CONTEXTO muestra que Copilot ya hizo una pregunta de descubrimiento Y el cliente respondió en el turno siguiente → el dato está confirmado. No repetir esa pregunta bajo ninguna circunstancia.
     • RECUPERAR CONTEXTO PROPIO: Si el cliente pregunta "¿me habías dicho...?" o "¿tenías un plan...?" → buscar en las líneas "Copilot:" del CONTEXTO y responder con esa información directamente. Nunca pedirle al cliente que recuerde lo que el Copilot mismo dijo.
+    • PRECIO DEL CIERRE: Al hacer CIERRE, buscar en el CONTEXTO si Copilot ofreció un precio con descuento en algún turno anterior. Si existe → confirmar ese precio. NUNCA confirmar el precio base si se ofreció descuento en la misma llamada.
 
 12. RETENCIÓN — JERARQUÍA ESTRICTA:
     • Orden: exploración → RET-A → RET-B → RET-C. Avanzar solo si el anterior fue rechazado explícitamente.
@@ -818,6 +819,8 @@ UPSELL
   → Si ya hay contexto de uso confirmado en la llamada: ofrecer el plan correcto con beneficio concreto.
     Ejemplo: "Con ese uso, MOV-PLUS (15GB, $299) te elimina los paquetes extras — diferencia de $100/mes o $10 si contás lo que ya gastás en paquetes."
   Usar TABLA DE COSTOS cuando esté disponible.
+  → Si el cliente menciona urgencia ("no tengo datos ahora", "me quedé sin datos", "necesito reactivar urgente") Y todavía no aceptó el upgrade: mencionar que 
+    se puede activar un paquete adicional de datos para cubrir lo inmediato mientras se procesa el cambio de plan. Ejemplo: "Para cubrirte ahora mismo te activo un paquete adicional, y el cambio de plan entra en el próximo ciclo."
 
 INFORMACION_ADICIONAL
   Pregunta específica sin intención de compra ni cancelación.
@@ -873,6 +876,10 @@ CIERRE
   → Después de que el cliente confirma y recibe la activación, el CIERRE es solo: confirmar que quedó activo y agradecer.
   → Si en algún turno anterior se ofreció un descuento y el cliente lo aceptó, el CIERRE debe confirmar el precio CON descuento, no el precio base.
   → Revisar el CONTEXTO completo antes de confirmar el precio final.
+  → Cuando el cliente confirma con "dale", "activalo", "confirmo", "listo", "sí":
+        Primero confirmar que la activación está en proceso, luego agregar una frase de cierre protocolaria: "¿Hay algo más en lo que pueda ayudarte?" o 
+        "Que tengas buen día, [nombre]. Fue un placer ayudarte."
+        Tono cálido, no mecánico. Máximo 2 oraciones.
 
 ESPERAR
   Todo lo demás. Fragmentos cortos, datos personales, monosílabos, saludos, silencios.
@@ -1010,6 +1017,33 @@ CONTEXTO: Copilot ofreció "PROMO DÚO: si contratan juntos, la segunda línea t
 DATOS DEL CLIENTE: nombre: Laura · plan_actual: MOV-BASIC ($199, 5GB) · consumo_promedio: 7GB · GAP activo.
 ÚLTIMO MENSAJE: "Me quedé sin datos de repente y no entiendo por qué, el mes recién empezó."
 → {"razonamiento": "GAP activo: consume 7GB pero plan incluye 5GB. Sin datos ahora porque excedió el límite. No es falla técnica — es límite de plan. Explicar y ofrecer upgrade.", "accion": "UPSELL", "recomendacion": "Laura, tu plan MOV-BASIC incluye 5GB y en promedio usás cerca de 7GB al mes, así que el plan se agota antes de que termine el ciclo. MOV-PLUS (15GB, $299) te triplicaría el espacio y evitaría estos cortes — ¿querés que te lo activemos?", "urgencia": "alta"}
+
+# EJEMPLO 24 — CIERRE: cliente acepta "la que tiene el descuento" → confirmar la PROMO ofrecida
+CONTEXTO: Copilot ofreció PROMO DÚO ($538/mes) como la opción con descuento.
+ÚLTIMO MENSAJE: "Obviamente me interesa la que tenga el descuento."
+→ {"razonamiento": "Cliente acepta la oferta con descuento. La única oferta con descuento presentada fue PROMO DÚO ($538/mes). Confirmar esa, no inventar otra.",
+   "accion": "CIERRE",
+   "recomendacion": "Perfecto, María. Entonces confirmamos la PROMO DÚO: tu línea MOV-PLUS a $299/mes y la segunda línea para tu esposo a $239/mes los primeros 3 meses — total $538/mes. Desde el 4° mes ambas quedan en $299. ¿Activamos ahora?",
+   "urgencia": "alta"}
+
+# EJEMPLO 25b — CIERRE: confirmar siempre el precio con descuento si se ofreció en la llamada
+CONTEXTO: Copilot ofreció MOV-PRO con 20% dto ($314/mes por 3 meses) en turno anterior.
+ÚLTIMO MENSAJE: "Dale, activalo."
+→ {"razonamiento": "Cliente confirma. En el contexto visible Copilot ofreció 20% dto = $314/mes. 
+    Confirmar ESE precio, no el base.",
+   "accion": "CIERRE",
+   "recomendacion": "Listo, Lucía. MOV-PRO queda activado a $314/mes los primeros 3 meses, 
+    luego $449/mes — con 30GB, 5G y roaming en EEUU y Canadá. Tus datos se reactivan 
+    en menos de 2 minutos. ¿Hay algo más en lo que pueda ayudarte?",
+   "urgencia": "alta"}
+
+# EJEMPLO 26 — INFORMACION_ADICIONAL: cliente pregunta precio del plan que Copilot acaba de ofrecer
+CONTEXTO: Copilot ofreció MOV-PRO ($449) en turno anterior.
+ÚLTIMO MENSAJE: "¿Cuánto sale el plan?"
+→ {"razonamiento": "Cliente pide el precio del plan que acabo de ofrecer. No preguntar de vuelta — dar el precio directamente.",
+   "accion": "INFORMACION_ADICIONAL",
+   "recomendacion": "MOV-PRO sale $449/mes — incluye 30GB, 5G y roaming en Estados Unidos y Canadá sin costo adicional.",
+   "urgencia": "baja"}
 """
 
 
@@ -1027,7 +1061,13 @@ def lambda_handler(event, context):
     is_partial = event.get('isPartial', event.get('IsPartial', tsa.get('IsPartial', False)))
     sentiment  = event.get('sentiment', event.get('Sentiment', 'NEUTRAL'))
 
-    if is_partial or len(transcript.split()) < 4:
+    CIERRE_CORTO = {
+    "dale", "activalo", "actívalo", "confirmado", "confirmo", "listo",
+    "adelante", "sí dale", "dale sí", "lo activo", "lo quiero",
+    "avancemos", "vamos", "perfecto sí", "sí confirmo"
+    }
+    tl_stripped = transcript.lower().strip().rstrip('.').rstrip(',')
+    if is_partial or (len(transcript.split()) < 4 and tl_stripped not in CIERRE_CORTO):
         return build_response('')
 
     table_name  = event.get('dynamodb_table_name', DYNAMODB_TABLE_NAME)
