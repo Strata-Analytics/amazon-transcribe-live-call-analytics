@@ -13,7 +13,6 @@ import { getHtmlSummary } from '../common/summary';
 import RecordingPlayer from '../recording-player';
 import useSettingsContext from '../../contexts/settings';
 import { DONE_STATUS, IN_PROGRESS_STATUS } from '../common/get-recording-status';
-import { InfoLink } from '../common/info-link';
 import { getWeightedSentimentLabel } from '../common/sentiment';
 import {
   VoiceToneFluctuationChart,
@@ -32,8 +31,17 @@ import { cn } from '../../lib/utils';
 const logger = new Logger('CallPanel');
 
 const piiTypes = [
-  'BANK_ACCOUNT_NUMBER', 'BANK_ROUTING', 'CREDIT_DEBIT_NUMBER', 'CREDIT_DEBIT_CVV',
-  'CREDIT_DEBIT_EXPIRY', 'PIN', 'EMAIL', 'ADDRESS', 'NAME', 'PHONE', 'SSN',
+  'BANK_ACCOUNT_NUMBER',
+  'BANK_ROUTING',
+  'CREDIT_DEBIT_NUMBER',
+  'CREDIT_DEBIT_CVV',
+  'CREDIT_DEBIT_EXPIRY',
+  'PIN',
+  'EMAIL',
+  'ADDRESS',
+  'NAME',
+  'PHONE',
+  'SSN',
 ];
 const piiTypesSplitRegEx = new RegExp(`\\[(${piiTypes.join('|')})\\]`);
 
@@ -127,7 +135,9 @@ const Card = ({ header, actions, children, className, noPadding }) => (
   <div className={cn('border border-border rounded-lg bg-background overflow-hidden', className)}>
     {(header || actions) && (
       <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">{header}</div>
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+          {header}
+        </div>
         {actions && <div className="flex items-center gap-1.5">{actions}</div>}
       </div>
     )}
@@ -140,23 +150,42 @@ const FieldLabel = ({ children }) => (
 );
 
 const statusStyles = {
-  success: 'text-green-600', error: 'text-destructive', warning: 'text-yellow-600',
-  'in-progress': 'text-blue-600', info: 'text-blue-600', stopped: 'text-muted-foreground',
+  success: 'text-green-600',
+  error: 'text-destructive',
+  warning: 'text-yellow-600',
+  'in-progress': 'text-blue-600',
+  info: 'text-blue-600',
+  stopped: 'text-muted-foreground',
   loading: 'text-muted-foreground',
 };
 const statusDots = {
-  success: '●', error: '●', warning: '▲', 'in-progress': '◐',
-  info: 'ℹ', stopped: '■', loading: '○',
+  success: '●',
+  error: '●',
+  warning: '▲',
+  'in-progress': '◐',
+  info: 'ℹ',
+  stopped: '■',
+  loading: '○',
 };
 const StatusIndicator = ({ type, children }) => (
-  <span className={cn('inline-flex items-center gap-1.5 text-sm', statusStyles[type] || 'text-muted-foreground')}>
+  <span
+    className={cn(
+      'inline-flex items-center gap-1.5 text-sm',
+      statusStyles[type] || 'text-muted-foreground',
+    )}
+  >
     <span aria-hidden="true">{statusDots[type] || '●'}</span>
     {children}
   </span>
 );
 
 const Toggle = ({ checked, onChange, disabled, label }) => (
-  <label className={cn('flex items-center gap-1.5 cursor-pointer text-sm', disabled && 'opacity-50 cursor-not-allowed')}>
+  <label
+    className={cn(
+      'flex items-center gap-1.5 cursor-pointer text-sm',
+      disabled && 'opacity-50 cursor-not-allowed',
+    )}
+  >
     <input
       type="checkbox"
       checked={checked}
@@ -199,7 +228,7 @@ const SimpleTabs = ({ tabs }) => {
 
 const CallAttributes = ({ item, setToolsOpen }) => (
   <Card
-    header={<>Call Attributes <InfoLink onFollow={() => setToolsOpen(true)} /></>}
+    header="Call Attributes"
     actions={
       <Button
         variant="ghost"
@@ -283,42 +312,16 @@ const CallCategories = ({ item }) => {
 
   return (
     <Card
-      header={
-        <>
-          Call Categories
-          <a
-            className="ml-1 text-xs text-primary hover:underline"
-            target="_blank"
-            rel="noreferrer"
-            href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-create-categories.html"
-          >
-            Info
-          </a>
-        </>
-      }
+      header="Call Categories"
     >
-      <div className="flex flex-wrap gap-2">
-        {categoryComponents}
-      </div>
+      <div className="flex flex-wrap gap-2">{categoryComponents}</div>
     </Card>
   );
 };
 
 const CallSummary = ({ item }) => (
   <Card
-    header={
-      <>
-        Call Summary
-        <a
-          className="ml-1 text-xs text-primary hover:underline"
-          target="_blank"
-          rel="noreferrer"
-          href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-insights.html#call-analytics-insights-summarization"
-        >
-          Info
-        </a>
-      </>
-    }
+    header="Call Summary"
   >
     <div
       className="markdown-prose text-sm text-foreground"
@@ -340,10 +343,7 @@ const getSentimentImage = (segment) => {
     `Weighted: ${sentimentWeighted}`,
   ].join('\n');
   return (
-    <div
-      className="sentiment-image-popover cursor-help"
-      title={tooltipText}
-    >
+    <div className="sentiment-image-popover cursor-help" title={tooltipText}>
       <SentimentIcon sentiment={weightedSentimentLabel} />
     </div>
   );
@@ -395,10 +395,12 @@ const TranscriptContent = ({ segment, translateCache }) => {
         break;
       case 'CATEGORY_MATCH':
         if (text.match(regex)) {
-          className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200';
+          className =
+            'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200';
           text = `Alert: ${text}`;
         } else {
-          className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-foreground border border-border';
+          className =
+            'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-foreground border border-border';
           text = `Category: ${text}`;
         }
         break;
@@ -410,7 +412,9 @@ const TranscriptContent = ({ segment, translateCache }) => {
       // eslint-disable-next-line react/no-array-index-key
       <div key={`${segmentId}-text-${i}`} className={className}>
         <ReactMarkdown rehypePlugins={[rehypeRaw]}>{text.trim()}</ReactMarkdown>
-        <ReactMarkdown className="translated-text" rehypePlugins={[rehypeRaw]}>{translatedText.trim()}</ReactMarkdown>
+        <ReactMarkdown className="translated-text" rehypePlugins={[rehypeRaw]}>
+          {translatedText.trim()}
+        </ReactMarkdown>
       </div>
     );
   });
@@ -436,13 +440,18 @@ const TranscriptSegment = ({ segment, translateCache }) => {
 
   const channelClass = channel === 'AGENT_ASSISTANT' ? 'transcript-segment-agent-assist' : '';
   return (
-    <div className={cn('transcript-segment grid gap-2', channelClass)} style={{ gridTemplateColumns: '32px 1fr' }}>
+    <div
+      className={cn('transcript-segment grid gap-2', channelClass)}
+      style={{ gridTemplateColumns: '32px 1fr' }}
+    >
       {getSentimentImage(segment)}
       <div className="space-y-0.5">
         <div className="flex items-center gap-2">
           <strong className="text-xs font-semibold">{segment.channel}</strong>
           <span className="text-xs text-muted-foreground">
-            {`${getTimestampFromSeconds(segment.startTime)} - ${getTimestampFromSeconds(segment.endTime)}`}
+            {`${getTimestampFromSeconds(segment.startTime)} - ${getTimestampFromSeconds(
+              segment.endTime,
+            )}`}
           </span>
         </div>
         <TranscriptContent segment={segment} translateCache={translateCache} />
@@ -463,9 +472,9 @@ const formatTranscriptExcel = (item, callTranscriptPerCallId) => {
 };
 
 const shouldAppendToPreviousSegment = ({ previous, current }) =>
-  previous.speaker === current.speaker
-  && previous.channel === current.channel
-  && current.startTime - previous.endTime < PAUSE_TO_MERGE_IN_SECONDS;
+  previous.speaker === current.speaker &&
+  previous.channel === current.channel &&
+  current.startTime - previous.endTime < PAUSE_TO_MERGE_IN_SECONDS;
 
 const appendToPreviousSegment = ({ previous, current }) => {
   /* eslint-disable no-param-reassign */
@@ -496,22 +505,25 @@ const CallInProgressTranscript = ({
   const transcriptsForThisCallId = callTranscriptPerCallId[callId] || {};
   const transcriptChannels = Object.keys(transcriptsForThisCallId).slice(0, maxChannels);
 
-  const getSegments = () =>
-    transcriptChannels
-      .map((c) => transcriptsForThisCallId[c].segments)
-      .reduce((p, c) => [...p, ...c].sort((a, b) => a.endTime - b.endTime), [])
-      .reduce((accumulator, current) => {
-        if (
-          !accumulator.length
-          || !shouldAppendToPreviousSegment({ previous: accumulator[accumulator.length - 1], current })
+  // prettier-ignore
+  const getSegments = () => transcriptChannels
+    .map((c) => transcriptsForThisCallId[c].segments)
+    .reduce((p, c) => [...p, ...c].sort((a, b) => a.endTime - b.endTime), [])
+    .reduce((accumulator, current) => {
+      if (
+        !accumulator.length
+          || !shouldAppendToPreviousSegment({
+            previous: accumulator[accumulator.length - 1],
+            current,
+          })
           || translateOn
-        ) {
-          accumulator.push({ ...current });
-        } else {
-          appendToPreviousSegment({ previous: accumulator[accumulator.length - 1], current });
-        }
-        return accumulator;
-      }, []);
+      ) {
+        accumulator.push({ ...current });
+      } else {
+        appendToPreviousSegment({ previous: accumulator[accumulator.length - 1], current });
+      }
+      return accumulator;
+    }, []);
 
   const updateTranslateCache = (seg) => {
     const promises = [];
@@ -529,11 +541,18 @@ const CallInProgressTranscript = ({
           translateClient.send(command).then(
             (data) => {
               const n = {};
-              logger.debug('Translate API response:', seg[i].transcript, targetLanguage, data.TranslatedText);
+              logger.debug(
+                'Translate API response:',
+                seg[i].transcript,
+                targetLanguage,
+                data.TranslatedText,
+              );
               n[k] = { cacheId: k, transcript: seg[i].transcript, translated: data.TranslatedText };
               return n;
             },
-            (error) => { logger.debug('Error from translate:', error); },
+            (error) => {
+              logger.debug('Error from translate:', error);
+            },
           ),
         );
       }
@@ -546,7 +565,10 @@ const CallInProgressTranscript = ({
       const promises = updateTranslateCache(getSegments());
       Promise.all(promises).then((results) => {
         if (results.length > 0) {
-          setTranslateCache((state) => ({ ...state, ...results.reduce((a, b) => ({ ...a, ...b })) }));
+          setTranslateCache((state) => ({
+            ...state,
+            ...results.reduce((a, b) => ({ ...a, ...b })),
+          }));
           setUpdateFlag((state) => !state);
         }
       });
@@ -557,8 +579,10 @@ const CallInProgressTranscript = ({
     (async () => {
       const c = getSegments();
       if (
-        translateOn && targetLanguage !== '' && c.length > 0
-        && item.recordingStatusLabel === IN_PROGRESS_STATUS
+        translateOn &&
+        targetLanguage !== '' &&
+        c.length > 0 &&
+        item.recordingStatusLabel === IN_PROGRESS_STATUS
       ) {
         const k = c[c.length - 1].segmentId.concat('-', targetLanguage);
         const n = {};
@@ -572,12 +596,24 @@ const CallInProgressTranscript = ({
               TargetLanguageCode: targetLanguage,
             };
             const command = new TranslateTextCommand(params);
-            logger.debug('Translate API being invoked for:', c[c.length - 1].transcript, targetLanguage);
+            logger.debug(
+              'Translate API being invoked for:',
+              c[c.length - 1].transcript,
+              targetLanguage,
+            );
             try {
               const data = await translateClient.send(command);
               const o = {};
-              logger.debug('Translate API response:', c[c.length - 1].transcript, data.TranslatedText);
-              o[k] = { cacheId: k, transcript: c[c.length - 1].transcript, translated: data.TranslatedText };
+              logger.debug(
+                'Translate API response:',
+                c[c.length - 1].transcript,
+                data.TranslatedText,
+              );
+              o[k] = {
+                cacheId: k,
+                transcript: c[c.length - 1].transcript,
+                translated: data.TranslatedText,
+              };
               setTranslateCache((state) => ({ ...state, ...o }));
             } catch (error) {
               logger.debug('Error from translate:', error);
@@ -606,11 +642,11 @@ const CallInProgressTranscript = ({
       })
       .map(
         (s) =>
-          s?.segmentId && s?.createdAt
-          && (s.agentTranscript === undefined || s.agentTranscript || s.channel !== 'AGENT')
-          && s.channel !== 'AGENT_VOICETONE'
-          && s.channel !== 'CALLER_VOICETONE'
-          && (
+          s?.segmentId &&
+          s?.createdAt &&
+          (s.agentTranscript === undefined || s.agentTranscript || s.channel !== 'AGENT') &&
+          s.channel !== 'AGENT_VOICETONE' &&
+          s.channel !== 'CALLER_VOICETONE' && (
             <TranscriptSegment
               key={`${s.segmentId}-${s.createdAt}`}
               segment={s}
@@ -625,17 +661,31 @@ const CallInProgressTranscript = ({
 
   useEffect(() => {
     setTurnByTurnSegments(getTurnByTurnSegments);
-  }, [callTranscriptPerCallId, item.recordingStatusLabel, targetLanguage, agentTranscript, translateOn, updateFlag]);
+  }, [
+    callTranscriptPerCallId,
+    item.recordingStatusLabel,
+    targetLanguage,
+    agentTranscript,
+    translateOn,
+    updateFlag,
+  ]);
 
   useEffect(() => {
     if (
-      item.recordingStatusLabel === IN_PROGRESS_STATUS
-      && autoScroll
-      && bottomRef.current?.scrollIntoView
+      item.recordingStatusLabel === IN_PROGRESS_STATUS &&
+      autoScroll &&
+      bottomRef.current?.scrollIntoView
     ) {
       bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [turnByTurnSegments, autoScroll, item.recordingStatusLabel, targetLanguage, agentTranscript, translateOn]);
+  }, [
+    turnByTurnSegments,
+    autoScroll,
+    item.recordingStatusLabel,
+    targetLanguage,
+    agentTranscript,
+    translateOn,
+  ]);
 
   return (
     <div
@@ -647,9 +697,7 @@ const CallInProgressTranscript = ({
         paddingRight: 12,
       }}
     >
-      <div className="divide-y divide-border [&>*]:py-3">
-        {turnByTurnSegments}
-      </div>
+      <div className="divide-y divide-border [&>*]:py-3">{turnByTurnSegments}</div>
     </div>
   );
 };
@@ -673,8 +721,14 @@ const getAgentAssistPanel = (item, collapseSentiment) => {
 };
 
 const getTranscriptContent = ({
-  item, callTranscriptPerCallId, autoScroll, translateClient,
-  targetLanguage, agentTranscript, translateOn, collapseSentiment,
+  item,
+  callTranscriptPerCallId,
+  autoScroll,
+  translateClient,
+  targetLanguage,
+  agentTranscript,
+  translateOn,
+  collapseSentiment,
 }) => {
   switch (item.recordingStatusLabel) {
     case DONE_STATUS:
@@ -703,9 +757,13 @@ const CallTranscriptContainer = ({
   collapseSentiment,
 }) => {
   const [autoScroll, setAutoScroll] = useState(item.recordingStatusLabel === IN_PROGRESS_STATUS);
-  const [autoScrollDisabled, setAutoScrollDisabled] = useState(item.recordingStatusLabel !== IN_PROGRESS_STATUS);
+  const [autoScrollDisabled, setAutoScrollDisabled] = useState(
+    item.recordingStatusLabel !== IN_PROGRESS_STATUS,
+  );
   const [translateOn, setTranslateOn] = useState(false);
-  const [targetLanguage, setTargetLanguage] = useState(localStorage.getItem('targetLanguage') || '');
+  const [targetLanguage, setTargetLanguage] = useState(
+    localStorage.getItem('targetLanguage') || '',
+  );
   const [agentTranscript, setAgentTranscript] = useState(true);
 
   const handleLanguageSelect = (e) => {
@@ -718,17 +776,17 @@ const CallTranscriptContainer = ({
     setAutoScroll(item.recordingStatusLabel === IN_PROGRESS_STATUS);
   }, [item.recordingStatusLabel]);
 
-  const transcriptCols = process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true' ? 'grid-cols-1 sm:grid-cols-[2fr_1fr]' : 'grid-cols-1';
+  const transcriptCols =
+    process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true'
+      ? 'grid-cols-1 sm:grid-cols-[2fr_1fr]'
+      : 'grid-cols-1';
 
   return (
     <div className={cn('grid gap-4', transcriptCols)}>
       <Card
         noPadding
         header={
-          <>
-            Call Transcript
-            <InfoLink onFollow={() => setToolsOpen(true)} />
-          </>
+          "Call Transcript"
         }
         actions={
           <div className="flex flex-wrap items-center gap-3">
@@ -743,11 +801,7 @@ const CallTranscriptContainer = ({
               onChange={setAgentTranscript}
               label="Show Agent Transcripts?"
             />
-            <Toggle
-              checked={translateOn}
-              onChange={setTranslateOn}
-              label="Enable Translation"
-            />
+            <Toggle checked={translateOn} onChange={setTranslateOn} label="Enable Translation" />
             {translateOn && (
               <select
                 value={targetLanguage}
@@ -755,14 +809,21 @@ const CallTranscriptContainer = ({
                 className="h-8 rounded border border-input bg-background px-2 text-sm"
               >
                 {languageCodes.map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
             )}
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => exportToExcel(formatTranscriptExcel(item, callTranscriptPerCallId), 'call-transcript')}
+              onClick={() =>
+                exportToExcel(
+                  formatTranscriptExcel(item, callTranscriptPerCallId),
+                  'call-transcript',
+                )
+              }
               aria-label="Download transcript"
             >
               <Download className="h-4 w-4" />
@@ -786,7 +847,12 @@ const CallTranscriptContainer = ({
   );
 };
 
-const VoiceToneContainer = ({ item, callTranscriptPerCallId, collapseVoiceTone, setCollapseVoiceTone }) => (
+const VoiceToneContainer = ({
+  item,
+  callTranscriptPerCallId,
+  collapseVoiceTone,
+  setCollapseVoiceTone,
+}) => (
   <Card
     header={
       <>
@@ -808,7 +874,11 @@ const VoiceToneContainer = ({ item, callTranscriptPerCallId, collapseVoiceTone, 
         onClick={() => setCollapseVoiceTone(!collapseVoiceTone)}
         aria-label={collapseVoiceTone ? 'Collapse' : 'Expand'}
       >
-        {collapseVoiceTone ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        {collapseVoiceTone ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
       </Button>
     }
   >
@@ -818,21 +888,14 @@ const VoiceToneContainer = ({ item, callTranscriptPerCallId, collapseVoiceTone, 
   </Card>
 );
 
-const CallStatsContainer = ({ item, callTranscriptPerCallId, collapseSentiment, setCollapseSentiment }) => (
+const CallStatsContainer = ({
+  item,
+  callTranscriptPerCallId,
+  collapseSentiment,
+  setCollapseSentiment,
+}) => (
   <Card
-    header={
-      <>
-        Call Sentiment Analysis
-        <a
-          className="ml-1 text-xs text-primary hover:underline"
-          target="_blank"
-          rel="noreferrer"
-          href="https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics-insights.html#call-analytics-insights-sentiment"
-        >
-          Info
-        </a>
-      </>
-    }
+    header="Call Sentiment Analysis"
     actions={
       <Button
         variant="ghost"
@@ -840,14 +903,21 @@ const CallStatsContainer = ({ item, callTranscriptPerCallId, collapseSentiment, 
         onClick={() => setCollapseSentiment(!collapseSentiment)}
         aria-label={collapseSentiment ? 'Collapse' : 'Expand'}
       >
-        {collapseSentiment ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        {collapseSentiment ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
       </Button>
     }
   >
     {collapseSentiment && (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <SentimentFluctuationChart item={item} callTranscriptPerCallId={callTranscriptPerCallId} />
+          <SentimentFluctuationChart
+            item={item}
+            callTranscriptPerCallId={callTranscriptPerCallId}
+          />
           <SentimentPerQuarterChart item={item} callTranscriptPerCallId={callTranscriptPerCallId} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -855,7 +925,8 @@ const CallStatsContainer = ({ item, callTranscriptPerCallId, collapseSentiment, 
             <FieldLabel>Caller Avg Sentiment:</FieldLabel>
             <div className="text-sm">
               <SentimentIcon sentiment={item.callerSentimentLabel} />
-              &nbsp;{item.callerAverageSentiment?.toFixed(3)}
+              &nbsp;
+              {item.callerAverageSentiment?.toFixed(3)}
               <br />
               <span className="text-xs text-muted-foreground">(min: -5, max: +5)</span>
             </div>
@@ -868,7 +939,8 @@ const CallStatsContainer = ({ item, callTranscriptPerCallId, collapseSentiment, 
             <FieldLabel>Agent Avg Sentiment:</FieldLabel>
             <div className="text-sm">
               <SentimentIcon sentiment={item.agentSentimentLabel} />
-              &nbsp;{item.agentAverageSentiment?.toFixed(3)}
+              &nbsp;
+              {item.agentAverageSentiment?.toFixed(3)}
               <br />
               <span className="text-xs text-muted-foreground">(min: -5, max: +5)</span>
             </div>
@@ -888,12 +960,9 @@ export const CallPanel = ({ item, callTranscriptPerCallId, setToolsOpen }) => {
   const { settings } = useSettingsContext();
   const [collapseSentiment, setCollapseSentiment] = useState(true);
 
-  const customRetryStrategy = new StandardRetryStrategy(
-    async () => MAXIMUM_ATTEMPTS,
-    {
-      delayDecider: (_, attempts) => Math.floor(Math.min(MAXIMUM_RETRY_DELAY, 2 ** attempts * 10)),
-    },
-  );
+  const customRetryStrategy = new StandardRetryStrategy(async () => MAXIMUM_ATTEMPTS, {
+    delayDecider: (_, attempts) => Math.floor(Math.min(MAXIMUM_RETRY_DELAY, 2 ** attempts * 10)),
+  });
 
   let translateClient = new TranslateClient({
     region: awsExports.aws_project_region,
