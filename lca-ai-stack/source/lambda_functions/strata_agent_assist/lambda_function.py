@@ -25,6 +25,16 @@ VALID_ACTIONS = {
     'OFERTA_ESPECIAL', 'ESCALACIÓN', 'SOPORTE', 'CIERRE', 'ESPERAR'
 }
 
+# Short closing phrases that bypass the 4-word filter
+CIERRE_CORTO = {
+    "dale", "activalo", "actívalo", "confirmado", "confirmo", "listo",
+    "adelante", "sí dale", "dale sí", "lo activo", "lo quiero",
+    "avancemos", "vamos", "perfecto sí", "sí confirmo", "sí activalo",
+    "dale activalo", "dale actívalo", "sí listo", "listo dale",
+    "muchas gracias", "gracias", "hasta luego", "chau", "adiós",
+    "no eso es todo", "eso es todo", "no nada más", "nada más"
+}
+
 # Module-level caches: key → (item_dict, timestamp)
 _cliente_cache: dict = {}
 _plan_cache:    dict = {}
@@ -873,13 +883,16 @@ CIERRE
   → Tono cálido, no mecánico.
   → Si el cliente mencionó urgencia o necesidad inmediata durante la llamada, confirmar que la activación es inmediata — no "próximo ciclo".
   → Verificar en el CONTEXTO si el cliente mencionó urgencia antes de usar "próximo ciclo de facturación".
-  → Después de que el cliente confirma y recibe la activación, el CIERRE es solo: confirmar que quedó activo y agradecer.
-  → Si en algún turno anterior se ofreció un descuento y el cliente lo aceptó, el CIERRE debe confirmar el precio CON descuento, no el precio base.
+  → PRECIO DEL CIERRE: buscar en el CONTEXTO si Copilot ofreció precio con descuento en algún turno anterior. Si existe → confirmar ese precio. NUNCA confirmar el precio base si se ofreció descuento en la misma llamada.
   → Revisar el CONTEXTO completo antes de confirmar el precio final.
   → Cuando el cliente confirma con "dale", "activalo", "confirmo", "listo", "sí":
-        Primero confirmar que la activación está en proceso, luego agregar una frase de cierre protocolaria: "¿Hay algo más en lo que pueda ayudarte?" o 
-        "Que tengas buen día, [nombre]. Fue un placer ayudarte."
-        Tono cálido, no mecánico. Máximo 2 oraciones.
+    Confirmar activación + frase de cierre protocolar:
+    "Muchas gracias por comunicarte con TelcoStrata, [nombre]. Que tengas un excelente día."
+    Tono cálido, no mecánico. Máximo 2 oraciones.
+  → Cuando el cliente dice "gracias", "muchas gracias", "hasta luego", "chau", o "eso es todo":
+    Responder con frase de cierre protocolar completa:
+    "Muchas gracias a vos, [nombre]. Fue un placer ayudarte. Que tengas un excelente día — cualquier consulta, estamos a tu disposición."
+    NO intentar vender nada más. Solo despedida cálida.
 
 ESPERAR
   Todo lo demás. Fragmentos cortos, datos personales, monosílabos, saludos, silencios.
@@ -1044,6 +1057,22 @@ CONTEXTO: Copilot ofreció MOV-PRO ($449) en turno anterior.
    "accion": "INFORMACION_ADICIONAL",
    "recomendacion": "MOV-PRO sale $449/mes — incluye 30GB, 5G y roaming en Estados Unidos y Canadá sin costo adicional.",
    "urgencia": "baja"}
+
+# EJEMPLO 27 — CIERRE: cliente se despide o agradece → frase de cierre protocolar
+CONTEXTO: Todo acordado. Cliente activo con nuevo plan.
+ÚLTIMO MENSAJE: "No, eso es todo. Muchas gracias."
+→ {"razonamiento": "Cliente se despide. Llamada concluida. Dar frase de cierre protocolar cálida.",
+   "accion": "CIERRE",
+   "recomendacion": "Muchas gracias a vos, Lucía. Fue un placer ayudarte. Que tengas un excelente día — cualquier consulta, estamos a tu disposición.",
+   "urgencia": "ninguna"}
+
+# EJEMPLO 28 — CIERRE: cliente confirma activación de plan con descuento acordado
+CONTEXTO: Copilot ofreció MOV-PRO con 20% dto ($314/mes) + paquete 3GB de emergencia.
+ÚLTIMO MENSAJE: "Bueno, sí, dale. Activalo con el descuento."
+→ {"razonamiento": "Cliente confirma. Copilot ofreció $314/mes (20% dto 3 meses) + paquete 3GB. Confirmar ambos con precio correcto.",
+   "accion": "CIERRE",
+   "recomendacion": "Perfecto, Lucía. Te activo el paquete de 3GB ahora mismo y MOV-PRO a $314/mes los primeros 3 meses — luego $449/mes. Tus datos se reactivan en menos de 2 minutos. Muchas gracias por comunicarte con TelcoStrata, que tengas un excelente día.",
+   "urgencia": "alta"}
 """
 
 
@@ -1061,11 +1090,6 @@ def lambda_handler(event, context):
     is_partial = event.get('isPartial', event.get('IsPartial', tsa.get('IsPartial', False)))
     sentiment  = event.get('sentiment', event.get('Sentiment', 'NEUTRAL'))
 
-    CIERRE_CORTO = {
-    "dale", "activalo", "actívalo", "confirmado", "confirmo", "listo",
-    "adelante", "sí dale", "dale sí", "lo activo", "lo quiero",
-    "avancemos", "vamos", "perfecto sí", "sí confirmo"
-    }
     tl_stripped = transcript.lower().strip().rstrip('.').rstrip(',')
     if is_partial or (len(transcript.split()) < 4 and tl_stripped not in CIERRE_CORTO):
         return build_response('')
