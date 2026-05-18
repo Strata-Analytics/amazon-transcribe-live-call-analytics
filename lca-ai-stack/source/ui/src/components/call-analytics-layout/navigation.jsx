@@ -1,11 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import { Route, Switch, useLocation } from 'react-router-dom';
-import { PhoneCall, Radio } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Headphones, PhoneCall, Radio } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
-import { CALLS_PATH, DEFAULT_PATH, STREAM_AUDIO_PATH } from '../../routes/constants';
+import { CALLS_PATH, CONNECT_PATH, DEFAULT_PATH, STREAM_AUDIO_PATH } from '../../routes/constants';
 
 export const callsNavHeader = { text: 'Call Analytics', href: `#${DEFAULT_PATH}` };
 export const callsNavItems = [
@@ -48,22 +48,19 @@ const NavLink = ({ href, icon: Icon, children, external }) => {
 };
 
 const Navigation = () => (
-  <Switch>
-    <Route path={CALLS_PATH}>
-      <nav className="h-full flex flex-col py-4 px-2 overflow-y-auto">
-        <div className="mb-4 px-3">
-          <a href={`#${DEFAULT_PATH}`} className="text-sm font-semibold text-foreground">
-            Call Analytics
-          </a>
-        </div>
+  <nav className="h-full flex flex-col py-4 px-2 overflow-y-auto">
+    <div className="mb-4 px-3">
+      <a href={`#${DEFAULT_PATH}`} className="text-sm font-semibold text-foreground">
+        Call Analytics
+      </a>
+    </div>
 
-        <div className="space-y-0.5">
-          <NavLink href={`#${CALLS_PATH}`} icon={PhoneCall}>Calls</NavLink>
-          <NavLink href={`#${STREAM_AUDIO_PATH}`} icon={Radio} external>Stream Audio</NavLink>
-        </div>
-      </nav>
-    </Route>
-  </Switch>
+    <div className="space-y-0.5">
+      <NavLink href={`#${CALLS_PATH}`} icon={PhoneCall}>Calls</NavLink>
+      <NavLink href={`#${STREAM_AUDIO_PATH}`} icon={Radio} external>Stream Audio</NavLink>
+      <NavLink href={`#${CONNECT_PATH}`} icon={Headphones}>Amazon Connect</NavLink>
+    </div>
+  </nav>
 );
 
 export default Navigation;
