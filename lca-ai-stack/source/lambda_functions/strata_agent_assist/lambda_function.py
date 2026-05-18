@@ -27,7 +27,7 @@ VALID_ACTIONS = {
 
 # Short closing phrases that bypass the 4-word filter
 CIERRE_CORTO = {
-    "dale", "activalo", "actívalo", "confirmado", "confirmo", "listo",
+    "dale", "activalo", "actívalo", "activemoslo","activamelo", "confirmado", "confirmo", "listo",
     "adelante", "sí dale", "dale sí", "lo activo", "lo quiero",
     "avancemos", "vamos", "perfecto sí", "sí confirmo", "sí activalo",
     "dale activalo", "dale actívalo", "sí listo", "listo dale",
@@ -517,7 +517,9 @@ def build_pricing_context(cliente: dict, plan_data: dict, insights: dict, tl: st
     gap         = insights.get('data_gap')
 
     price_signals = any(w in tl for w in [
-        "caro", "costoso", "descuento", "más barato", "cuánto", "precio", "diferencia"
+        "caro", "costoso", "descuento", "más barato", "cuánto", "precio", "diferencia",
+        "activalo", "actívalo", "activame", "actívame", "dale", "confirmo", "confirmamos",
+        "me interesa", "lo quiero", "avancemos"
     ])
 
     if price_signals and plan_precio:
@@ -541,6 +543,8 @@ def build_pricing_context(cliente: dict, plan_data: dict, insights: dict, tl: st
             lines.append("  REGLA: Si el cliente dice que no siempre compra paquetes → presentar [A] y [B] como dos escenarios sin contradecirle.")
             if up_precio < costo_real:
                 lines.append(f"  ⚠ FRAMING: cliente AHORRA ${costo_real - up_precio}/mes con el upgrade. Usar 'ahorrás' no 'cuesta X más'.")
+            lines.append(f"  ⚠ PRECIO POST-DESCUENTO: después de los 3 meses el precio regular es ${up_precio}/mes (NO confundir con otros planes del catálogo).")
+            lines.append(f"  ⚠ PRECIO DE CIERRE: si el cliente acepta con descuento, confirmar SIEMPRE ${round(up_precio*0.80)}/mes los primeros 3 meses → luego ${up_precio}/mes. NUNCA usar ${up_precio}/mes como precio de activación cuando hay descuento activo.")
         else:
             lines.append(f"{plan_id} con 20% dto: ${round(plan_precio * 0.80)}/mes por 3 meses")
             if upgrade_id and up_precio:
@@ -996,7 +1000,11 @@ CONTEXTO: Copilot preguntó "¿cuántas líneas?" en turno anterior. Cliente res
 ÚLTIMO MENSAJE: "Por ahora solo seríamos dos personas."
 → {"razonamiento": "Cliente ya confirmó 2 líneas por tercera vez. Dar opciones directas sin preguntar de nuevo.",
    "accion": "OPORTUNIDAD_VENTA",
-   "recomendacion": "Perfecto, María. Para dos líneas tenés dos opciones: 2 planes MOV-PLUS individuales a $598/mes, o MOV-FAMILIAR-3 a $749/mes — incluye 3 líneas con 15GB cada una, así cuando se agregue alguien más no hay que cambiar nada. ¿Cuál preferís?",
+   "recomendacion": "Perfecto, María. Para dos personas tenés dos caminos: 
+si solo van a ser ustedes dos, la PROMO DÚO son $538/mes los primeros 
+3 meses (luego $598). Si en el futuro puede sumarse alguien más — una 
+hija, un familiar — MOV-FAMILIAR-3 son $749/mes con 3 líneas de 15GB 
+cada una, y no necesitás cambiar nada después. ¿Cómo ven el futuro?"
    "urgencia": "media"}
 
 # EJEMPLO 18 — INFORMACION_ADICIONAL: cliente pide detalles de opciones ya mencionadas
@@ -1045,9 +1053,17 @@ CONTEXTO: Copilot ofreció MOV-PRO con 20% dto ($314/mes por 3 meses) en turno a
 → {"razonamiento": "Cliente confirma. En el contexto visible Copilot ofreció 20% dto = $314/mes. 
     Confirmar ESE precio, no el base.",
    "accion": "CIERRE",
-   "recomendacion": "Listo, Lucía. MOV-PRO queda activado a $314/mes los primeros 3 meses, 
+   "recomendacion": "Listo, [nombre]. MOV-PRO queda activado a $314/mes los primeros 3 meses, 
     luego $449/mes — con 30GB, 5G y roaming en EEUU y Canadá. Tus datos se reactivan 
     en menos de 2 minutos. ¿Hay algo más en lo que pueda ayudarte?",
+   "urgencia": "alta"}
+
+# EJEMPLO 25c — CIERRE con descuento: confirmar precio con Y SIN descuento correctamente
+CONTEXTO: Copilot ofreció MOV-PLUS ($299) con 20% dto = $239/mes por 3 meses.
+ÚLTIMO MENSAJE: "Sí, con ese descuento me interesa."
+→ {"razonamiento": "Cliente acepta MOV-PLUS con 20% dto. MOV-PLUS = $299/mes. Con dto = $239. Después del período = $299, NO $449 (ese es MOV-PRO).",
+   "accion": "CIERRE",
+   "recomendacion": "Perfecto, [nombre]. MOV-PLUS queda activado a $239/mes los primeros 3 meses — luego $299/mes. Con 15GB eliminás los paquetes extras y ahorrás $20/mes contra lo que pagás hoy. ¿Confirmamos ahora?",
    "urgencia": "alta"}
 
 # EJEMPLO 26 — INFORMACION_ADICIONAL: cliente pregunta precio del plan que Copilot acaba de ofrecer
