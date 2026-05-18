@@ -1,0 +1,11 @@
+{
+ "oferta_id": "RET-C",
+ "antiguedad_minima_meses": 24,
+ "aplica_a": "plan_upgrade",
+ "cuando_usar": "Último recurso. Solo clientes de alto valor",
+ "descuento_pct": 30,
+ "duracion_meses": 3,
+ "gasto_minimo_mxn": 500,
+ "nombre": "Oferta Combinada Premium",
+ "orden": 3
+}

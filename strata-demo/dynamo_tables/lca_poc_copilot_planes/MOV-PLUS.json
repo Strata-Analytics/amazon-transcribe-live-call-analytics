@@ -1,0 +1,12 @@
+{
+ "plan_id": "MOV-PLUS",
+ "datos_gb": 15,
+ "lineas": 1,
+ "nombre": "Plan Plus",
+ "precio": 299,
+ "redes_sociales": true,
+ "roaming": false,
+ "tipo": "movil",
+ "upgrade": "MOV-PRO",
+ "velocidad_max": "4G"
+}

@@ -1,0 +1,16 @@
+{
+ "plan_id": "MOV-PRO",
+ "datos_gb": 30,
+ "lineas": 1,
+ "nombre": "Plan Pro",
+ "precio": 449,
+ "redes_sociales": true,
+ "roaming": true,
+ "roaming_paises": [
+  "Estados Unidos",
+  "Canadá"
+ ],
+ "tipo": "movil",
+ "upgrade": "MOV-UNLIMITED",
+ "velocidad_max": "5G"
+}

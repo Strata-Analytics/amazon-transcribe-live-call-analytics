@@ -1,0 +1,12 @@
+{
+ "plan_id": "MOV-BASIC",
+ "datos_gb": 5,
+ "lineas": 1,
+ "nombre": "Plan Básico",
+ "precio": 199,
+ "redes_sociales": false,
+ "roaming": false,
+ "tipo": "movil",
+ "upgrade": "MOV-PLUS",
+ "velocidad_max": "4G"
+}

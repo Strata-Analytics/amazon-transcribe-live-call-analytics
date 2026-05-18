@@ -1,0 +1,11 @@
+{
+ "plan_id": "HOG-GIGA",
+ "incluye_router": true,
+ "ip_fija": true,
+ "nombre": "Internet Hogar Giga",
+ "permanencia_meses": 12,
+ "precio": 999,
+ "tipo": "hogar",
+ "velocidad_mbps": 1000,
+ "wifi_extender": true
+}

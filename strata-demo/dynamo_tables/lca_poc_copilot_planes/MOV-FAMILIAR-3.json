@@ -1,0 +1,13 @@
+{
+ "plan_id": "MOV-FAMILIAR-3",
+ "ahorro_vs_individual_mxn": 148,
+ "datos_gb_por_linea": 15,
+ "lineas": 3,
+ "nombre": "Plan Familiar 3 líneas",
+ "precio": 749,
+ "redes_sociales": true,
+ "roaming": false,
+ "tipo": "familiar",
+ "upgrade": "MOV-FAMILIAR-5",
+ "velocidad_max": "4G"
+}

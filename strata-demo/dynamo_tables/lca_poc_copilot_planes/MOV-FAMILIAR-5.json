@@ -1,0 +1,12 @@
+{
+ "plan_id": "MOV-FAMILIAR-5",
+ "ahorro_vs_individual_mxn": 396,
+ "datos_gb_por_linea": 15,
+ "lineas": 5,
+ "nombre": "Plan Familiar 5 líneas",
+ "precio": 1099,
+ "redes_sociales": true,
+ "roaming": false,
+ "tipo": "familiar",
+ "velocidad_max": "4G"
+}

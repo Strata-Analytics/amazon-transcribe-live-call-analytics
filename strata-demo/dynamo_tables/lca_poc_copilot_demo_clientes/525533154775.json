@@ -1,0 +1,16 @@
+{
+ "telefono": "525533154775",
+ "antiguedad_meses": 8,
+ "consumo_promedio_gb": 12,
+ "grupo_familiar": false,
+ "id": "CLI-002",
+ "internet_hogar": true,
+ "limite_plan_gb": 15,
+ "nombre": "Veronica Rivera",
+ "pagos_atrasados": 0,
+ "plan_movil_actual": "MOV-PLUS",
+ "precio_internet_hogar_actual": 450,
+ "precio_movil_actual": 299,
+ "proveedor_internet_hogar": "Izzi",
+ "viaja_frecuente_eeuu": false
+}

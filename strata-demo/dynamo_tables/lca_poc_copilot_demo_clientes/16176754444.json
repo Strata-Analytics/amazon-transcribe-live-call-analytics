@@ -1,0 +1,15 @@
+{
+ "telefono": "16176754444",
+ "antiguedad_meses": 16,
+ "consumo_promedio_gb": 9,
+ "gasto_paquetes_mensual": 120,
+ "grupo_familiar": false,
+ "id": "CLI-004",
+ "internet_hogar": false,
+ "limite_plan_gb": 5,
+ "nombre": "Ana Martínez",
+ "pagos_atrasados": 0,
+ "plan_movil_actual": "MOV-BASIC",
+ "precio_movil_actual": 199,
+ "viaja_frecuente_eeuu": false
+}

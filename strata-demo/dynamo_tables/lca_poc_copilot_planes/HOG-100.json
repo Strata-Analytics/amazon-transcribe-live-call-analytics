@@ -1,0 +1,11 @@
+{
+ "plan_id": "HOG-100",
+ "incluye_router": true,
+ "nombre": "Internet Hogar 100",
+ "permanencia_meses": 12,
+ "precio": 499,
+ "tipo": "hogar",
+ "upgrade": "HOG-300",
+ "velocidad_mbps": 100,
+ "wifi_extender": false
+}

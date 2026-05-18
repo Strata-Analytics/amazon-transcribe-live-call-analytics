@@ -1,0 +1,17 @@
+{
+ "plan_id": "MOV-UNLIMITED",
+ "hotspot_gb": 20,
+ "lineas": 1,
+ "nombre": "Plan Ilimitado",
+ "precio": 599,
+ "redes_sociales": true,
+ "roaming": true,
+ "roaming_paises": [
+  "Estados Unidos",
+  "Canadá",
+  "España",
+  "40 países adicionales"
+ ],
+ "tipo": "movil",
+ "velocidad_max": "5G"
+}

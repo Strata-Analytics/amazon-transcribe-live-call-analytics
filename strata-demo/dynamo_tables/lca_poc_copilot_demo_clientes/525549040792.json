@@ -1,0 +1,14 @@
+{
+ "telefono": "525549040792",
+ "antiguedad_meses": 14,
+ "consumo_promedio_gb": 15,
+ "grupo_familiar": false,
+ "id": "CLI-006",
+ "internet_hogar": false,
+ "limite_plan_gb": 15,
+ "nombre": "Juan Percovich",
+ "pagos_atrasados": 0,
+ "plan_movil_actual": "MOV-PLUS",
+ "precio_movil_actual": 299,
+ "viaja_frecuente_eeuu": true
+}

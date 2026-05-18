@@ -1,0 +1,10 @@
+{
+ "oferta_id": "RET-B",
+ "antiguedad_minima_meses": 12,
+ "aplica_a": "plan_upgrade",
+ "cuando_usar": "Si cliente rechazó RET-A o tiene más de 12 meses de antigüedad",
+ "descuento_pct": 0,
+ "duracion_meses": 6,
+ "nombre": "Upgrade Gratuito",
+ "orden": 2
+}

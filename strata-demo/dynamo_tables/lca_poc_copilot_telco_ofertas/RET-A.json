@@ -1,0 +1,10 @@
+{
+ "oferta_id": "RET-A",
+ "antiguedad_minima_meses": 6,
+ "aplica_a": "plan_actual",
+ "cuando_usar": "Primera oferta ante intención de cancelar",
+ "descuento_pct": 20,
+ "duracion_meses": 3,
+ "nombre": "Descuento Lealtad",
+ "orden": 1
+}

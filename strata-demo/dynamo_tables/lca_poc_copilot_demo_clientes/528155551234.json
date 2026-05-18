@@ -1,0 +1,16 @@
+{
+ "telefono": "528155551234",
+ "antiguedad_meses": 36,
+ "consumo_promedio_gb": 28,
+ "grupo_familiar": false,
+ "id": "CLI-003",
+ "internet_hogar": true,
+ "limite_plan_gb": 30,
+ "nombre": "Roberto Hernández",
+ "pagos_atrasados": 0,
+ "plan_hogar_actual": "HOG-100",
+ "plan_movil_actual": "MOV-PRO",
+ "precio_hogar_actual": 499,
+ "precio_movil_actual": 449,
+ "viaja_frecuente_eeuu": false
+}

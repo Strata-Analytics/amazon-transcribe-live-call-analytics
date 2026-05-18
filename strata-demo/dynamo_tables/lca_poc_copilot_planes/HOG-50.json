@@ -1,0 +1,11 @@
+{
+ "plan_id": "HOG-50",
+ "incluye_router": true,
+ "nombre": "Internet Hogar 50",
+ "permanencia_meses": 12,
+ "precio": 349,
+ "tipo": "hogar",
+ "upgrade": "HOG-100",
+ "velocidad_mbps": 50,
+ "wifi_extender": false
+}

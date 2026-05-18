@@ -1,0 +1,13 @@
+{
+ "telefono": "525577773333",
+ "antiguedad_meses": 18,
+ "consumo_promedio_gb": 45,
+ "grupo_familiar": false,
+ "id": "CLI-005",
+ "internet_hogar": false,
+ "nombre": "Jorge Ramírez",
+ "pagos_atrasados": 2,
+ "plan_movil_actual": "MOV-UNLIMITED",
+ "precio_movil_actual": 599,
+ "viaja_frecuente_eeuu": false
+}

@@ -1,0 +1,7 @@
+{
+ "plan_id": "CONFIG#PAQUETES",
+ "nombre": "Precio estimado paquete datos adicional",
+ "nota": "Fallback cuando el cliente no tiene gasto_paquetes_mensual registrado. Basado en $80-120 MXN por 3GB extra (CLI-001).",
+ "precio_paquete_gb": 30,
+ "tipo": "config"
+}

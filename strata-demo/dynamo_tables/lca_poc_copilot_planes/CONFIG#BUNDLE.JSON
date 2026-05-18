@@ -1,0 +1,7 @@
+{
+ "plan_id": "CONFIG#BUNDLE",
+ "descuento_pct": 15,
+ "nombre": "Descuento Bundle Móvil + Hogar",
+ "nota": "Aplica al combinar cualquier plan móvil con cualquier plan hogar",
+ "tipo": "config"
+}

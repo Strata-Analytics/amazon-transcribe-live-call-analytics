@@ -1,0 +1,10 @@
+{
+ "oferta_id": "RET-D",
+ "antiguedad_minima_meses": 0,
+ "aplica_a": "suspension_temporal",
+ "cuando_usar": "Cliente menciona dificultades económicas o situación temporal",
+ "descuento_pct": 0,
+ "duracion_meses": 3,
+ "nombre": "Pausa de Servicio",
+ "orden": 4
+}
