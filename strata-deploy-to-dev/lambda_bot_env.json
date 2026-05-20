@@ -1,0 +1,6 @@
+{
+  "Variables": {
+    "DYNAMODB_TABLE_NAME": "agent-copilot-dev-AISTACK-8IXJ9O4VGDT-EventSourcingTable-TAN6LRM187VE",
+    "KNOWLEDGE_BASE_ID": "AIYIMOJHD9"
+  }
+}
