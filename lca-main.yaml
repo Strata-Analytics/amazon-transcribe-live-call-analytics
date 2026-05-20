@@ -1397,6 +1397,9 @@ Resources:
       StreamEncryption:
         EncryptionType: KMS
         KeyId: alias/aws/kinesis
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   # Initialise LCASettingsParameter as empty (so it never gets replaced)
   # and use CR UpdateLCASettingsFunction to add/update values
@@ -1405,6 +1408,8 @@ Resources:
     Properties:
       Type: String
       Value: "{}"
+      Tags:
+        aws-apn-id: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   UpdateLCASettingsFunctionRole:
     Type: "AWS::IAM::Role"
@@ -1503,6 +1508,9 @@ Resources:
     Condition: ShouldCreateRecordingBucket
     Properties:
       AccessControl: LogDeliveryWrite
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
       OwnershipControls:
         Rules:
           - ObjectOwnership: ObjectWriter
@@ -1595,6 +1603,9 @@ Resources:
         EmbeddingsBedrockModelId: "amazon.titan-embed-text-v2"
         LLMApi: "DISABLED"  # LMA configures its own KB/QBusiness LambdaHooks
         LogRetentionPeriod: 30
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   LLMTEMPLATESTACK:
     Type: AWS::CloudFormation::Stack
@@ -1603,6 +1614,9 @@ Resources:
       - ValidateParameters
     Properties:
       TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-llm-template-setup-stack/llm-template-setup.yaml
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   AISTACK:
     Type: AWS::CloudFormation::Stack
@@ -1661,6 +1675,9 @@ Resources:
         CallDataStream: !Ref CallDataStream
         CallDataStreamArn: !GetAtt CallDataStream.Arn
         LCASettingsParameterName: !Ref LCASettingsParameter
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   BEDROCKKB:
     Type: AWS::CloudFormation::Stack
@@ -1675,6 +1692,9 @@ Resources:
         pInputDocumentUploadFolderPrefix: !Ref BedrockKnowledgeBaseS3DocumentUploadFolderPrefix
         pWebCrawlerURLs: !Ref AgentAssistWebCrawlURLs
         pWebCrawlerScope: !Ref AgentAssistWebCrawlSyncScope
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   # Format nested JSON strings before nesting them in QnABotSettings in AGENTASSISTSETUP
   SettingsJSON:
@@ -1783,6 +1803,9 @@ Resources:
         SentimentNegativeScoreThreshold: !Ref SentimentNegativeScoreThreshold
         SentimentPositiveScoreThreshold: !Ref SentimentPositiveScoreThreshold
         Version: v0.9.0
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   VPCSTACK:
     Type: AWS::CloudFormation::Stack
@@ -1796,6 +1819,9 @@ Resources:
       # yamllint enable rule:line-length
       Parameters:
         LCAStackName: !Ref "AWS::StackName"
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   CHIMEVCSTACK:
     Type: AWS::CloudFormation::Stack
@@ -1860,8 +1886,11 @@ Resources:
         PublicSubnet1: !If
           - ShouldCreateVPC
           - !GetAtt VPCSTACK.Outputs.PublicSubnet1
-          - !Ref PublicSubnet1     
+          - !Ref PublicSubnet1
         Version: <VERSION_TOKEN>
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   CONNECTKVSSTACK:
     Type: AWS::CloudFormation::Stack
@@ -1894,6 +1923,9 @@ Resources:
         CustomLanguageModelName: !Ref CustomLanguageModelName
         EventSourcingTableName: !GetAtt AISTACK.Outputs.EventSourcingTableName
         EventSourcingTableArn: !GetAtt AISTACK.Outputs.EventSourcingTableArn
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   GENESYSAUDIOHOOKTRANSCRIBERSTACK:
     Type: AWS::CloudFormation::Stack
@@ -1949,6 +1981,9 @@ Resources:
           - ShouldCreateVPC
           - !GetAtt VPCSTACK.Outputs.PrivateSubnet2
           - !Ref PrivateSubnet2
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   TALKDESKSTACK:
     Type: AWS::CloudFormation::Stack
@@ -2002,8 +2037,10 @@ Resources:
           - ShouldCreateVPC
           - !GetAtt VPCSTACK.Outputs.PrivateSubnet2
           - !Ref PrivateSubnet2
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
-          
   WEBSOCKETTRANSCRIBERSTACK:
     Type: AWS::CloudFormation::Stack
     Condition: ShouldInstallWebSocketStack
@@ -2075,6 +2112,9 @@ Resources:
           - ShouldCreateVPC
           - !GetAtt VPCSTACK.Outputs.PrivateSubnet2
           - !Ref PrivateSubnet2
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   CONNECTINTEGRATIONSTACK:
     Type: AWS::CloudFormation::Stack
@@ -2093,6 +2133,9 @@ Resources:
         CallDataStreamArn: !GetAtt CallDataStream.Arn
         EventSourcingTableName: !GetAtt AISTACK.Outputs.EventSourcingTableName
         EventSourcingTableArn: !GetAtt AISTACK.Outputs.EventSourcingTableArn
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   WHISPERSAGEMAKERSTACK:
     Type: AWS::CloudFormation::Stack
@@ -2119,6 +2162,9 @@ Resources:
         AutoScalingTargetGpuUtilization: !Ref WhisperSageMakerAutoScalingTargetGpuUtilization
         AutoScalingScaleOutCooldown: !Ref WhisperSageMakerAutoScalingScaleOutCooldown
         AutoScalingScaleInCooldown: !Ref WhisperSageMakerAutoScalingScaleInCooldown
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
 Outputs:
   ApplicationCloudfrontEndpoint:

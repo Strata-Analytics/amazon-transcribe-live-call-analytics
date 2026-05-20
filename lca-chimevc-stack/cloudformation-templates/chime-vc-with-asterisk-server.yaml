@@ -550,6 +550,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "AsteriskInstance-${AWS::StackName}"
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
       UserData:
         Fn::Base64: !Sub |
           Content-Type: multipart/mixed; boundary="//"
