@@ -1,0 +1,10 @@
+{
+  "Variables": {
+    "DYNAMODB_TABLE_NAME": "agent-copilot-dev-AISTACK-8IXJ9O4VGDT-EventSourcingTable-TAN6LRM187VE",
+    "MODEL_ID": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "TABLA_PLANES": "agent-copilot-dev-telco-planes",
+    "TABLA_CLIENTES": "agent-copilot-dev-telco-clientes",
+    "TABLA_OFERTAS": "agent-copilot-dev-telco-ofertas",
+    "KNOWLEDGE_BASE_ID": ""
+  }
+}

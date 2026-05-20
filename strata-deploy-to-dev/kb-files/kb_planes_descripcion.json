@@ -1,0 +1,116 @@
+{
+  "catalogo": "Descripciones y Argumentarios de Planes",
+  "operador": "TelcoStrata",
+  "vigencia": "Mayo 2026",
+  "nota": "Este documento es para búsqueda semántica. Los precios exactos y reglas de cálculo están en DynamoDB.",
+  "planes_moviles": [
+    {
+      "id": "MOV-BASIC",
+      "nombre": "Plan Básico",
+      "descripcion": "Plan de entrada ideal para usuarios de bajo consumo: adultos mayores, segundo teléfono, o quien solo necesita llamadas y uso ocasional de datos. Incluye 5GB de datos y llamadas ilimitadas nacionales.",
+      "perfil_ideal": "Usuario de bajo consumo, adultos mayores, segundo teléfono",
+      "señales_de_que_necesita_upgrade": [
+        "Se queda sin datos antes del fin de mes",
+        "Compra paquetes adicionales de datos frecuentemente",
+        "Usa redes sociales o streaming desde el celular",
+        "Trabaja desde el celular y necesita conectividad constante",
+        "Su consumo promedio supera los 5GB mensuales"
+      ],
+      "argumento_upgrade_a_plus": "Con Plan Plus tiene 15GB por solo $100 más al mes. Si compra paquetes extras cada mes, el upgrade le sale igual o más barato y nunca se queda sin datos."
+    },
+    {
+      "id": "MOV-PLUS",
+      "nombre": "Plan Plus",
+      "descripcion": "Plan intermedio con 15GB, SMS ilimitados, y redes sociales incluidas (WhatsApp, Facebook, Instagram, TikTok). Ideal para uso moderado, jóvenes, y quienes trabajan desde el celular.",
+      "perfil_ideal": "Usuarios moderados, jóvenes, trabajo básico desde celular",
+      "señales_de_que_necesita_upgrade": [
+        "Consume streaming de video frecuentemente",
+        "Hace videollamadas de trabajo frecuentes",
+        "Viaja a Estados Unidos y necesita roaming",
+        "Su consumo promedio se acerca o supera los 15GB"
+      ],
+      "argumento_upgrade_a_pro": "Plan Pro incluye 30GB, velocidad 5G, y roaming en EEUU y Canadá sin costo extra. Para quien viaja o necesita más datos, la diferencia de $150 se amortiza rápido."
+    },
+    {
+      "id": "MOV-PRO",
+      "nombre": "Plan Pro",
+      "descripcion": "Plan para usuarios intensivos y viajeros frecuentes. Incluye 30GB en velocidad 5G, llamadas ilimitadas a EEUU y Canadá, y roaming en EEUU y Canadá sin cargo adicional.",
+      "perfil_ideal": "Usuarios intensivos, viajeros a EEUU, profesionistas",
+      "señales_de_que_necesita_upgrade": [
+        "Viaja frecuentemente a países fuera de EEUU y Canadá",
+        "Necesita datos realmente ilimitados sin preocupaciones",
+        "Usa hotspot frecuentemente para conectar otros dispositivos"
+      ],
+      "argumento_upgrade_a_unlimited": "Plan Ilimitado tiene datos sin límite, hotspot de 20GB, y roaming en más de 40 países incluyendo España."
+    },
+    {
+      "id": "MOV-UNLIMITED",
+      "nombre": "Plan Ilimitado",
+      "descripcion": "Plan premium para usuarios que necesitan máxima conectividad. Datos ilimitados en 5G, hotspot de 20GB, y roaming en EEUU, Canadá, España y más de 40 países. Ideal para ejecutivos y viajeros frecuentes internacionales.",
+      "perfil_ideal": "Usuarios premium, ejecutivos, viajeros internacionales frecuentes"
+    },
+    {
+      "id": "MOV-FAMILIAR-3",
+      "nombre": "Plan Familiar 3 líneas",
+      "descripcion": "Ideal para familias o parejas con hijos. 3 líneas con 15GB cada una, llamadas ilimitadas entre sí y a cualquier número, redes sociales incluidas. Ahorra $148 vs contratar 3 planes Plus individuales.",
+      "perfil_ideal": "Familias pequeñas, parejas con hijos",
+      "señales_de_que_aplica": [
+        "El cliente menciona que su familia también necesita plan",
+        "Tiene esposo/a o hijos que usan celular",
+        "Paga actualmente dos planes separados",
+        "Busca una solución para toda la familia"
+      ]
+    },
+    {
+      "id": "MOV-FAMILIAR-5",
+      "nombre": "Plan Familiar 5 líneas",
+      "descripcion": "Para familias grandes o pequeñas empresas. 5 líneas con 15GB cada una, ahorra $396 vs 5 planes Plus individuales.",
+      "perfil_ideal": "Familias grandes, pequeñas empresas",
+      "señales_de_que_aplica": [
+        "Tiene familia numerosa",
+        "Tiene empleados que necesitan líneas corporativas"
+      ]
+    }
+  ],
+  "planes_hogar": [
+    {
+      "id": "HOG-50",
+      "nombre": "Internet Hogar 50",
+      "descripcion": "Internet de fibra óptica de 50Mbps, ideal para 1-2 personas con uso básico: navegación, redes sociales, videollamadas ocasionales. Instalación sin costo y router incluido.",
+      "perfil_ideal": "Hogares de 1-2 personas, uso básico",
+      "señales_de_que_necesita_upgrade": [
+        "Trabaja desde casa con videoconferencias frecuentes",
+        "Tienen más de 2 personas conectadas simultáneamente",
+        "Experimenta lentitud durante el día"
+      ]
+    },
+    {
+      "id": "HOG-100",
+      "nombre": "Internet Hogar 100",
+      "descripcion": "Fibra óptica de 100Mbps para familias medianas, home office y streaming HD. Soporta múltiples dispositivos conectados simultáneamente.",
+      "perfil_ideal": "Familias medianas, home office, streaming HD"
+    },
+    {
+      "id": "HOG-300",
+      "nombre": "Internet Hogar 300",
+      "descripcion": "300Mbps con WiFi extender incluido. Para familias grandes con múltiples dispositivos, gaming, y streaming 4K simultáneo en varios televisores.",
+      "perfil_ideal": "Familias grandes, gaming, streaming 4K simultáneo"
+    },
+    {
+      "id": "HOG-GIGA",
+      "nombre": "Internet Hogar Giga",
+      "descripcion": "1000Mbps con WiFi extender e IP fija incluida. Para power users, pequeñas empresas en casa, streamers profesionales y gamers. La conexión más rápida disponible.",
+      "perfil_ideal": "Power users, pequeñas empresas, streamers, gamers profesionales"
+    }
+  ],
+  "bundle_movil_hogar": {
+    "descripcion": "Al combinar cualquier plan móvil con cualquier plan de internet hogar, el cliente obtiene un 15% de descuento sobre el total. Ejemplo: Plan Plus ($299) + Hogar 100 ($499) = $676 en lugar de $798. Ahorro: $122/mes.",
+    "señales_de_oportunidad": [
+      "El cliente menciona que paga internet con Telmex, Izzi, Totalplay, Megacable o Axtel",
+      "Pregunta si TelcoStrata tiene internet para el hogar",
+      "Quiere simplificar sus pagos en una sola factura",
+      "Tiene internet_hogar: false en su perfil"
+    ],
+    "argumento": "Si ya paga internet con otro proveedor, con nuestro bundle paga todo junto y ahorra un 15%. Un solo pago, una sola empresa, mejor precio."
+  }
+}

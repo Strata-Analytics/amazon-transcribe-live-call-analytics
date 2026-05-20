@@ -1,0 +1,8 @@
+{
+    "MODEL_ID": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "KNOWLEDGE_BASE_ID": "UPVUAPSQW3",
+    "TABLA_OFERTAS": "lca-poc-copilot-telco-ofertas",
+    "TABLA_PLANES": "lca-poc-copilot-telco-planes",
+    "DYNAMODB_TABLE_NAME": "lca-poc-copilot-AISTACK-1Y2O3J3MDOH6R-EventSourcingTable-3KHT1JCM1TUW",
+    "TABLA_CLIENTES": "lca-poc-copilot-telco-clientes"
+}

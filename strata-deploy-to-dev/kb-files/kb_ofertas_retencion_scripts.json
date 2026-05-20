@@ -1,0 +1,32 @@
+{
+  "catalogo": "Scripts de Retención por Oferta",
+  "operador": "TelcoStrata",
+  "nota": "Scripts de lenguaje para cada oferta de retención. Las reglas (descuento %, duración, condición) están en DynamoDB tabla telco-ofertas.",
+  "politica_general": "Usar en orden: primero RET-A, si rechaza pasar a RET-B, si rechaza pasar a RET-C. No ofrecer RET-C directamente. RET-D es para situaciones económicas temporales, puede ofrecerse en cualquier punto.",
+  "scripts": [
+    {
+      "oferta_id": "RET-A",
+      "nombre": "Descuento Lealtad",
+      "script_agente": "Entiendo su preocupación. Como cliente valioso, puedo ofrecerle un 20% de descuento en su plan actual durante los próximos 3 meses, sin necesidad de cambiar nada.",
+      "cuando_usar": "Primera oferta ante intención de cancelar. Cliente tiene más de 6 meses."
+    },
+    {
+      "oferta_id": "RET-B",
+      "nombre": "Upgrade Gratuito",
+      "script_agente": "Le entiendo perfectamente. ¿Qué le parece si le hacemos un upgrade al plan superior sin costo adicional por 6 meses? Tendría más gigas y beneficios sin pagar nada más.",
+      "cuando_usar": "Si cliente rechaza RET-A o tiene más de 12 meses."
+    },
+    {
+      "oferta_id": "RET-C",
+      "nombre": "Oferta Combinada Premium",
+      "script_agente": "Quiero hacer un esfuerzo especial para mantenerlo con nosotros. Le ofrezco el plan superior con un 30% de descuento durante los próximos 3 meses. Es nuestra mejor oferta para clientes como usted.",
+      "cuando_usar": "Último recurso antes de perder al cliente. Solo para clientes de alto valor: más de 24 meses o gasto mensual mayor a $500."
+    },
+    {
+      "oferta_id": "RET-D",
+      "nombre": "Pausa de Servicio",
+      "script_agente": "Entiendo que es un momento difícil. Podemos pausar su servicio por hasta 3 meses sin cargo y sin perder su número. Cuando esté listo lo reactivamos en minutos.",
+      "cuando_usar": "Cliente menciona dificultades económicas, viaje largo, o situación temporal."
+    }
+  ]
+}
