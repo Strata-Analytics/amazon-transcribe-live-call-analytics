@@ -1,15 +1,38 @@
 import boto3, json, time, glob, os
 
 import boto3.session
-session = boto3.session.Session(profile_name='dev')
+
+
+def make_session():
+    try:
+        s = boto3.session.Session(profile_name='dev')
+        s.client('sts', region_name='us-east-1').get_caller_identity()
+        return s
+    except Exception:
+        import subprocess
+        creds = json.loads(subprocess.check_output(
+            ['aws', 'configure', 'export-credentials', '--profile', 'dev', '--format', 'process']
+        ))
+        return boto3.session.Session(
+            aws_access_key_id=creds['AccessKeyId'],
+            aws_secret_access_key=creds['SecretAccessKey'],
+            aws_session_token=creds['SessionToken'],
+        )
+
+
+session = make_session()
 transcribe = session.client('transcribe', region_name='us-east-1')
 s3_client = session.client('s3', region_name='us-east-1')
 s3_bucket = "agent-copilot-dev-recordingsbucket-fikuwc9oggyj"
+
 
 def transcribe_file(filepath: str) -> dict:
     filename = os.path.basename(filepath)
     job_name = f"benchmark-{filename.replace('.wav','')}-{int(time.time())}"
     s3_key = f"benchmark-audio-transcribe/{filename}"
+
+    print(f"  Uploading {filename} to S3...")
+    s3_client.upload_file(filepath, s3_bucket, s3_key)
 
     start = time.time()
     transcribe.start_transcription_job(
@@ -20,7 +43,6 @@ def transcribe_file(filepath: str) -> dict:
         Settings={'ShowSpeakerLabels': True, 'MaxSpeakerLabels': 2}
     )
 
-    # Polling hasta que termine
     while True:
         response = transcribe.get_transcription_job(TranscriptionJobName=job_name)
         status = response['TranscriptionJob']['TranscriptionJobStatus']
@@ -33,7 +55,6 @@ def transcribe_file(filepath: str) -> dict:
     if status == 'FAILED':
         return {"file": filename, "error": "FAILED", "latency_seconds": round(latency, 2)}
 
-    # Bajar el resultado
     import urllib.request
     result_url = response['TranscriptionJob']['Transcript']['TranscriptFileUri']
     with urllib.request.urlopen(result_url) as r:
@@ -41,7 +62,7 @@ def transcribe_file(filepath: str) -> dict:
 
     transcript = result['results']['transcripts'][0]['transcript']
     items = result['results'].get('items', [])
-    speakers = set(i.get('speaker_label','') for i in items if i.get('speaker_label'))
+    speakers = set(i.get('speaker_label', '') for i in items if i.get('speaker_label'))
 
     return {
         "file": filename,
@@ -51,7 +72,9 @@ def transcribe_file(filepath: str) -> dict:
         "speakers_detected": list(speakers),
     }
 
-files = sorted(glob.glob("deepgram-test-benchmark-audio/*.wav"))
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+files = sorted(glob.glob(os.path.join(script_dir, "*.wav")))
 print(f"Found {len(files)} files\n")
 results = []
 
