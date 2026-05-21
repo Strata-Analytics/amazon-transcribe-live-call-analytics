@@ -1178,6 +1178,8 @@ Resources:
             else:
               print(f"Request type is {event['RequestType']} - skipping")
             cfnresponse.send(event, context, status, {}, reason=reason)
+      Tags:
+        aws-apn-id: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   IsStacknameLengthOK:
     Type: Custom::StacknameCheck
@@ -1344,6 +1346,8 @@ Resources:
       LoggingConfig:
         LogGroup:
           Ref: ValidateParametersFunctionLogGroup
+      Tags:
+        aws-apn-id: pc:4da0ebcd14f35cd0p3n9zpm5l
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -1358,6 +1362,9 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   ValidateParameters:
     Type: Custom::ValidateParameters
@@ -1475,6 +1482,9 @@ Resources:
                 reason = f"Exception thrown: {e}"
                 status = cfnresponse.FAILED              
             cfnresponse.send(event, context, status, responseData, reason=reason)
+      Tags:
+        - Key: aws-apn-id
+          Value: pc:4da0ebcd14f35cd0p3n9zpm5l
 
     Metadata:
       cfn_nag:
@@ -1574,6 +1584,8 @@ Resources:
             else:
               print(f"Request type is {event['RequestType']} - skipping")
             cfnresponse.send(event, context, status, result, reason=reason)
+      Tags:
+        aws-apn-id: pc:4da0ebcd14f35cd0p3n9zpm5l
 
   QNABOT:
     Type: AWS::CloudFormation::Stack
