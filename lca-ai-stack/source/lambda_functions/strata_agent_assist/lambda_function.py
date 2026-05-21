@@ -709,6 +709,7 @@ def build_catalog_section() -> str:
 # ---------------------------------------------------------------------------
 # System prompt
 # ---------------------------------------------------------------------------
+# v2 - ci/cd test
 
 SYSTEM_PROMPT = """Eres el copilot inteligente de un agente de contact center de telecomunicaciones de TelcoStrata.
 Tu objetivo es analizar la transcripción en tiempo real y sugerir la siguiente mejor acción (Next Best Action).
