@@ -131,15 +131,16 @@ jobs:
 
           # Construir parameter overrides desde el JSON de parámetros
           # Excluye valores enmascarados (****) — CloudFormation usa el valor anterior
-          PARAMS=$(jq -r \
+          # Se usa array para manejar correctamente valores con espacios (ej: "Amazon Connect")
+          mapfile -t PARAMS < <(jq -r \
             '.[] | select(.ParameterValue != "****") | .ParameterKey + "=" + .ParameterValue' \
-            strata-deploy-to-dev/lca-stack-parameters-dev.json | tr '\n' ' ')
+            strata-deploy-to-dev/lca-stack-parameters-dev.json)
 
           aws cloudformation deploy \
             --region         ${{ env.REGION }} \
             --template-file  /tmp/lca-main-processed.yaml \
             --stack-name     ${{ env.STACK_NAME }} \
-            --parameter-overrides $PARAMS \
+            --parameter-overrides "${PARAMS[@]}" \
             --capabilities   CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --no-fail-on-empty-changeset
 
