@@ -27,7 +27,12 @@ jobs:
   deploy:
     name: 🚀 Deploy ${{ github.ref_name }} → agent-copilot-demo
     runs-on: ubuntu-latest
-    environment: demo      # GitHub Environment → secrets de cuenta demo + gate de aprobación
+    environment: demo      # GitHub Environment → role ARN de cuenta demo + gate de aprobación
+
+    # Permisos necesarios para OIDC — solicita token de identidad a GitHub
+    permissions:
+      id-token: write   # permite solicitar el JWT de OIDC
+      contents: read    # permite el checkout del repo
 
     # Evita deploys paralelos sobre el mismo stack
     concurrency:
@@ -39,13 +44,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── 2. Credenciales AWS (cuenta demo) ────────────────────────────────────
+      # ── 2. Credenciales AWS via OIDC (sin access keys de larga vida) ─────────
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            ${{ env.REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.REGION }}
 
       # ── 3. Leer versión ──────────────────────────────────────────────────────
       - name: Read VERSION
