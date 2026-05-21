@@ -1,38 +1,37 @@
-name: Deploy to Dev
+name: Deploy to Demo
 
 # ─── Cuándo corre ─────────────────────────────────────────────────────────────
 on:
   push:
     branches:
-      - develop          # auto-deploy en cada merge a develop
+      - demo             # auto-deploy en cada merge a demo
 
   workflow_dispatch:     # trigger manual desde GitHub Actions UI
     inputs:
       confirm:
-        description: '¿Confirmar deploy? (escribir "deploy")'
+        description: '¿Confirmar deploy a DEMO? (escribir "deploy")'
         required: true
 
 # ─── Variables globales ────────────────────────────────────────────────────────
 env:
-  STACK_NAME:      agent-copilot-dev
+  STACK_NAME:      agent-copilot-demo
   REGION:          us-east-1
-  CFN_BUCKET:      agent-copilot-dev-cfn-templates
+  CFN_BUCKET:      agent-copilot-demo-cfn-templates   # bucket en cuenta demo
 
   # Bucket público de AWS donde están los artefactos originales de LCA
-  # (nested stacks que NO modificamos siguen apuntando acá)
   AWS_ARTIFACT_BUCKET: aws-ml-blog-us-east-1
   AWS_ARTIFACT_PREFIX: artifacts/lca
 
 # ─────────────────────────────────────────────────────────────────────────────
 jobs:
   deploy:
-    name: 🚀 Deploy ${{ github.ref_name }} → agent-copilot-dev
+    name: 🚀 Deploy ${{ github.ref_name }} → agent-copilot-demo
     runs-on: ubuntu-latest
-    environment: dev        # GitHub Environment → secrets y protecciones de la cuenta dev
+    environment: demo      # GitHub Environment → secrets de cuenta demo + gate de aprobación
 
     # Evita deploys paralelos sobre el mismo stack
     concurrency:
-      group: deploy-dev
+      group: deploy-demo
       cancel-in-progress: false
 
     steps:
@@ -40,7 +39,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── 2. Credenciales AWS ──────────────────────────────────────────────────
+      # ── 2. Credenciales AWS (cuenta demo) ────────────────────────────────────
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -54,8 +53,6 @@ jobs:
         run: echo "VERSION=$(cat VERSION)" >> "$GITHUB_OUTPUT"
 
       # ── 4. Subir sub-stack templates modificados ─────────────────────────────
-      #   Estos templates tienen cambios nuestros (ej: tag aws-apn-id).
-      #   Los subimos a nuestro bucket y luego apuntamos el main template acá.
       - name: Upload modified sub-stack templates to S3
         run: |
           echo "📦 Subiendo lca-vpc-stack..."
@@ -63,7 +60,7 @@ jobs:
             s3://${{ env.CFN_BUCKET }}/stacks/lca-vpc-stack/template.yaml \
             --region ${{ env.REGION }}
 
-          echo "📦 Subiendo lca-chimevc-stack (template principal)..."
+          echo "📦 Subiendo lca-chimevc-stack..."
           aws s3 cp lca-chimevc-stack/template.yaml \
             s3://${{ env.CFN_BUCKET }}/stacks/lca-chimevc-stack/template.yaml \
             --region ${{ env.REGION }}
@@ -71,9 +68,6 @@ jobs:
           echo "✅ Sub-stacks subidos."
 
       # ── 5. Procesar lca-main.yaml ─────────────────────────────────────────────
-      #   a) Reemplaza los <TOKENS> con los valores reales
-      #   b) Redirige las TemplateURLs de los stacks que modificamos
-      #      para que apunten a nuestro bucket en vez del de AWS
       - name: Process lca-main.yaml
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
@@ -92,19 +86,17 @@ jobs:
 
           echo "🔀 Redirigiendo sub-stacks modificados a nuestro bucket..."
 
-          # vpc-stack → nuestro bucket
           AWS_VPC="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/lca-vpc-stack/template.yaml"
           OUR_VPC="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-vpc-stack/template.yaml"
           sed -i "s|${AWS_VPC}|${OUR_VPC}|g" /tmp/lca-main-processed.yaml
 
-          # chimevc-stack → nuestro bucket
           AWS_CHIME="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/lca-chimevc-stack/template.yaml"
           OUR_CHIME="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-chimevc-stack/template.yaml"
           sed -i "s|${AWS_CHIME}|${OUR_CHIME}|g" /tmp/lca-main-processed.yaml
 
           echo "✅ Template procesado."
 
-      # ── 6. Validar template ───────────────────────────────────────────────────
+      # ── 6. Validar y subir template ───────────────────────────────────────────
       - name: Upload and validate main template
         run: |
           TEMPLATE_S3="s3://${{ env.CFN_BUCKET }}/lca-main.yaml"
@@ -113,7 +105,7 @@ jobs:
           echo "⬆️  Subiendo lca-main.yaml procesado..."
           aws s3 cp /tmp/lca-main-processed.yaml "$TEMPLATE_S3" --region ${{ env.REGION }}
 
-          echo "✅ Validando template en CloudFormation..."
+          echo "✅ Validando template..."
           aws cloudformation validate-template \
             --template-url "$TEMPLATE_URL" \
             --region ${{ env.REGION }} > /dev/null
@@ -125,11 +117,9 @@ jobs:
         run: |
           echo "🚀 Deployando ${{ env.STACK_NAME }}..."
 
-          # Construir parameter overrides desde el JSON de parámetros
-          # Excluye valores enmascarados (****) — CloudFormation usa el valor anterior
           PARAMS=$(jq -r \
             '.[] | select(.ParameterValue != "****") | .ParameterKey + "=" + .ParameterValue' \
-            strata-deploy-to-dev/lca-stack-parameters-dev.json | tr '\n' ' ')
+            strata-deploy-to-demo/lca-stack-parameters-demo.json | tr '\n' ' ')
 
           aws cloudformation deploy \
             --region         ${{ env.REGION }} \
