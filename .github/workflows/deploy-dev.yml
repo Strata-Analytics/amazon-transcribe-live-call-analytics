@@ -146,7 +146,25 @@ jobs:
             --capabilities   CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --no-fail-on-empty-changeset
 
-      # ── 8. Resumen ────────────────────────────────────────────────────────────
+      # ── 8. Diagnóstico en caso de fallo ──────────────────────────────────────
+      - name: CloudFormation failure diagnostics
+        if: failure()
+        run: |
+          echo "════════════════════════════════════════════"
+          echo "  ❌ Stack events (últimos 30)"
+          echo "════════════════════════════════════════════"
+          aws cloudformation describe-stack-events \
+            --stack-name ${{ env.STACK_NAME }} \
+            --region     ${{ env.REGION }} \
+            --query 'StackEvents[?ResourceStatus==`CREATE_FAILED` || ResourceStatus==`UPDATE_FAILED` || ResourceStatus==`ROLLBACK_IN_PROGRESS`].[Timestamp,ResourceType,LogicalResourceId,ResourceStatusReason]' \
+            --output table \
+          || aws cloudformation describe-stack-events \
+            --stack-name ${{ env.STACK_NAME }} \
+            --region     ${{ env.REGION }} \
+            --query 'StackEvents[:30].[Timestamp,ResourceStatus,ResourceType,LogicalResourceId,ResourceStatusReason]' \
+            --output table
+
+      # ── 9. Resumen ────────────────────────────────────────────────────────────
       - name: Deploy summary
         if: success()
         run: |
