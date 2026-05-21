@@ -1,0 +1,290 @@
+[
+    {
+        "ParameterKey": "DynamoDbExpirationInDays",
+        "ParameterValue": "7"
+    },
+    {
+        "ParameterKey": "CloudFrontAllowedGeos",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "CallAudioSource",
+        "ParameterValue": "Amazon Connect Kinesis Video Streams"
+    },
+    {
+        "ParameterKey": "WhisperSageMakerEnableAutoScaling",
+        "ParameterValue": "false"
+    },
+    {
+        "ParameterKey": "CustomVocabularyName",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "PcaPlaybackAudioFilePrefix",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AgentAssistExistingLexV2BotId",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "PrivateSubnet1",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "TranscriptLambdaHookFunctionArn",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "PrivateSubnet2",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "TranscriptLambdaHookFunctionNonPartialOnly",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "PublicSubnet2",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "TranscribeLanguageOptions",
+        "ParameterValue": "en-US, es-US"
+    },
+    {
+        "ParameterKey": "StartOfCallLambdaHookFunctionArn",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "CustomVoiceConnectorId",
+        "ParameterValue": "bpma7dkadecjeiien6ohjn"
+    },
+    {
+        "ParameterKey": "SiprecLambdaHookFunctionArn",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "PublicSubnet1",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "WhisperSageMakerAutoScalingTargetGpuUtilization",
+        "ParameterValue": "50"
+    },
+    {
+        "ParameterKey": "TranscribePiiEntityTypes",
+        "ParameterValue": "BANK_ACCOUNT_NUMBER,BANK_ROUTING,CREDIT_DEBIT_NUMBER,CREDIT_DEBIT_CVV,CREDIT_DEBIT_EXPIRY,PIN,EMAIL,ADDRESS,NAME,PHONE,SSN"
+    },
+    {
+        "ParameterKey": "SummaryBedrockModelId",
+        "ParameterValue": "us.amazon.nova-lite-v1:0"
+    },
+    {
+        "ParameterKey": "PcaTranscriptsPrefix",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "WebSocketAudioInput",
+        "ParameterValue": "Enabled"
+    },
+    {
+        "ParameterKey": "IsPartialTranscriptEnabled",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "BedrockKnowledgeBaseS3DocumentUploadFolderPrefix",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "PcaS3BucketName",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "ChimeVoiceToneAnalysis",
+        "ParameterValue": "Enabled"
+    },
+    {
+        "ParameterKey": "AgentAssistWebCrawlURLs",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "EndOfCallLambdaHookFunctionArn",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AgentAssistWebCrawlSyncScope",
+        "ParameterValue": "DEFAULT"
+    },
+    {
+        "ParameterKey": "IsContentRedactionEnabled",
+        "ParameterValue": "false"
+    },
+    {
+        "ParameterKey": "WhisperSageMakerAutoScalingScaleInCooldown",
+        "ParameterValue": "300"
+    },
+    {
+        "ParameterKey": "WhisperSageMakerEndpointName",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AudioFilePrefix",
+        "ParameterValue": "lca-audio-recordings/"
+    },
+    {
+        "ParameterKey": "TranscribeApiMode",
+        "ParameterValue": "analytics"
+    },
+    {
+        "ParameterKey": "WhisperSageMakerAutoScalingScaleOutCooldown",
+        "ParameterValue": "60"
+    },
+    {
+        "ParameterKey": "PcaWebAppURL",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "TranscribeContentRedactionType",
+        "ParameterValue": "PII"
+    },
+    {
+        "ParameterKey": "AgentAssistExistingLexV2BotAliasId",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "SummarizationLLMThirdPartyApiKey",
+        "ParameterValue": "****"
+    },
+    {
+        "ParameterKey": "IsSentimentAnalysisEnabled",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "TalkdeskAccountId",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "PcaWebAppCallPathPrefix",
+        "ParameterValue": "dashboard/parsedFiles/"
+    },
+    {
+        "ParameterKey": "VPC",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "ConnectInstanceArn",
+        "ParameterValue": "arn:aws:connect:us-east-1:992382598036:instance/37d931e6-3ea0-4055-8f2c-591783bfaf05"
+    },
+    {
+        "ParameterKey": "SentimentNegativeScoreThreshold",
+        "ParameterValue": "0.9"
+    },
+    {
+        "ParameterKey": "CallAnalyticsPrefix",
+        "ParameterValue": "lca-call-analytics/"
+    },
+    {
+        "ParameterKey": "WhisperSageMakerAutoScalingMaxCapacity",
+        "ParameterValue": "3"
+    },
+    {
+        "ParameterKey": "SummarizationSageMakerInitialInstanceCount",
+        "ParameterValue": "1"
+    },
+    {
+        "ParameterKey": "AdminEmail",
+        "ParameterValue": "valentina.gomez@strata-analytics.us"
+    },
+    {
+        "ParameterKey": "CategoryAlertRegEx",
+        "ParameterValue": ".*"
+    },
+    {
+        "ParameterKey": "BedrockKnowledgeBaseId",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "CloudFrontPriceClass",
+        "ParameterValue": "PriceClass_100"
+    },
+    {
+        "ParameterKey": "CustomLanguageModelName",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "PostCallSummaryLambdaHookFunctionArn",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "BedrockKnowledgeBaseS3BucketName",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AgentAssistOption",
+        "ParameterValue": "Bring your own Lambda function"
+    },
+    {
+        "ParameterKey": "AllowedSignUpEmailDomain",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "SentimentPositiveScoreThreshold",
+        "ParameterValue": "0.4"
+    },
+    {
+        "ParameterKey": "SiprecAllowedCidrList",
+        "ParameterValue": "190.210.36.16/32"
+    },
+    {
+        "ParameterKey": "CallAudioProcessor",
+        "ParameterValue": "Amazon Chime SDK Call Analytics"
+    },
+    {
+        "ParameterKey": "UseExistingVPC",
+        "ParameterValue": "false"
+    },
+    {
+        "ParameterKey": "AgentAssistQnABotOpenSearchNodeCount",
+        "ParameterValue": "1"
+    },
+    {
+        "ParameterKey": "EndOfCallTranscriptSummary",
+        "ParameterValue": "BEDROCK"
+    },
+    {
+        "ParameterKey": "DemoAsteriskAgentAudioURL",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AgentAssistExistingLambdaFunctionArn",
+        "ParameterValue": "arn:aws:lambda:us-east-1:992382598036:function:lca-poc-agent-assist"
+    },
+    {
+        "ParameterKey": "AgentAssistLLMBedrockModelId",
+        "ParameterValue": "us.amazon.nova-lite-v1:0"
+    },
+    {
+        "ParameterKey": "TranscribeLanguageCode",
+        "ParameterValue": "es-US"
+    },
+    {
+        "ParameterKey": "TranscribePreferredLanguage",
+        "ParameterValue": "es-US"
+    },
+    {
+        "ParameterKey": "DemoSoftphoneAllowedCidr",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "S3BucketName",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "WhisperSageMakerAutoScalingMinCapacity",
+        "ParameterValue": "1"
+    },
+    {
+        "ParameterKey": "AudioRecordingExpirationInDays",
+        "ParameterValue": "7"
+    }
+]

@@ -1,0 +1,147 @@
+name: Deploy to Demo
+
+# ─── Cuándo corre ─────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - demo             # auto-deploy en cada merge a demo
+
+  workflow_dispatch:     # trigger manual desde GitHub Actions UI
+    inputs:
+      confirm:
+        description: '¿Confirmar deploy a DEMO? (escribir "deploy")'
+        required: true
+
+# ─── Variables globales ────────────────────────────────────────────────────────
+env:
+  STACK_NAME:      agent-copilot-demo
+  REGION:          us-east-1
+  CFN_BUCKET:      agent-copilot-demo-cfn-templates   # bucket en cuenta demo
+
+  # Bucket público de AWS donde están los artefactos originales de LCA
+  AWS_ARTIFACT_BUCKET: aws-ml-blog-us-east-1
+  AWS_ARTIFACT_PREFIX: artifacts/lca
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  deploy:
+    name: 🚀 Deploy ${{ github.ref_name }} → agent-copilot-demo
+    runs-on: ubuntu-latest
+    environment: demo      # GitHub Environment → role ARN de cuenta demo + gate de aprobación
+
+    # Permisos necesarios para OIDC — solicita token de identidad a GitHub
+    permissions:
+      id-token: write   # permite solicitar el JWT de OIDC
+      contents: read    # permite el checkout del repo
+
+    # Evita deploys paralelos sobre el mismo stack
+    concurrency:
+      group: deploy-demo
+      cancel-in-progress: false
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Credenciales AWS via OIDC (sin access keys de larga vida) ─────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.REGION }}
+
+      # ── 3. Leer versión ──────────────────────────────────────────────────────
+      - name: Read VERSION
+        id: version
+        run: echo "VERSION=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      # ── 4. Subir sub-stack templates modificados ─────────────────────────────
+      - name: Upload modified sub-stack templates to S3
+        run: |
+          echo "📦 Subiendo lca-vpc-stack..."
+          aws s3 cp lca-vpc-stack/template.yaml \
+            s3://${{ env.CFN_BUCKET }}/stacks/lca-vpc-stack/template.yaml \
+            --region ${{ env.REGION }}
+
+          echo "📦 Subiendo lca-chimevc-stack..."
+          aws s3 cp lca-chimevc-stack/template.yaml \
+            s3://${{ env.CFN_BUCKET }}/stacks/lca-chimevc-stack/template.yaml \
+            --region ${{ env.REGION }}
+
+          echo "✅ Sub-stacks subidos."
+
+      # ── 5. Procesar lca-main.yaml ─────────────────────────────────────────────
+      - name: Process lca-main.yaml
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          REGION="${{ env.REGION }}"
+          AWS_BUCKET="${{ env.AWS_ARTIFACT_BUCKET }}"
+          AWS_PREFIX="${{ env.AWS_ARTIFACT_PREFIX }}"
+          OUR_BUCKET="${{ env.CFN_BUCKET }}"
+
+          echo "🔄 Reemplazando tokens..."
+          sed \
+            -e "s|<REGION_TOKEN>|${REGION}|g" \
+            -e "s|<ARTIFACT_BUCKET_TOKEN>|${AWS_BUCKET}|g" \
+            -e "s|<ARTIFACT_PREFIX_TOKEN>|${AWS_PREFIX}|g" \
+            -e "s|<VERSION_TOKEN>|${VERSION}|g" \
+            lca-main.yaml > /tmp/lca-main-processed.yaml
+
+          echo "🔀 Redirigiendo sub-stacks modificados a nuestro bucket..."
+
+          AWS_VPC="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/lca-vpc-stack/template.yaml"
+          OUR_VPC="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-vpc-stack/template.yaml"
+          sed -i "s|${AWS_VPC}|${OUR_VPC}|g" /tmp/lca-main-processed.yaml
+
+          AWS_CHIME="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/lca-chimevc-stack/template.yaml"
+          OUR_CHIME="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-chimevc-stack/template.yaml"
+          sed -i "s|${AWS_CHIME}|${OUR_CHIME}|g" /tmp/lca-main-processed.yaml
+
+          echo "✅ Template procesado."
+
+      # ── 6. Validar y subir template ───────────────────────────────────────────
+      - name: Upload and validate main template
+        run: |
+          TEMPLATE_S3="s3://${{ env.CFN_BUCKET }}/lca-main.yaml"
+          TEMPLATE_URL="https://s3.${{ env.REGION }}.amazonaws.com/${{ env.CFN_BUCKET }}/lca-main.yaml"
+
+          echo "⬆️  Subiendo lca-main.yaml procesado..."
+          aws s3 cp /tmp/lca-main-processed.yaml "$TEMPLATE_S3" --region ${{ env.REGION }}
+
+          echo "✅ Validando template..."
+          aws cloudformation validate-template \
+            --template-url "$TEMPLATE_URL" \
+            --region ${{ env.REGION }} > /dev/null
+
+          echo "TEMPLATE_URL=${TEMPLATE_URL}" >> "$GITHUB_ENV"
+
+      # ── 7. Deploy ─────────────────────────────────────────────────────────────
+      - name: Deploy CloudFormation stack
+        run: |
+          echo "🚀 Deployando ${{ env.STACK_NAME }}..."
+
+          PARAMS=$(jq -r \
+            '.[] | select(.ParameterValue != "****") | .ParameterKey + "=" + .ParameterValue' \
+            strata-deploy-to-demo/lca-stack-parameters-demo.json | tr '\n' ' ')
+
+          aws cloudformation deploy \
+            --region         ${{ env.REGION }} \
+            --template-url   "${{ env.TEMPLATE_URL }}" \
+            --stack-name     ${{ env.STACK_NAME }} \
+            --parameter-overrides $PARAMS \
+            --capabilities   CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
+            --no-fail-on-empty-changeset
+
+      # ── 8. Resumen ────────────────────────────────────────────────────────────
+      - name: Deploy summary
+        if: success()
+        run: |
+          echo ""
+          echo "════════════════════════════════════════════"
+          echo "  ✅ Deploy exitoso"
+          echo "  Stack  : ${{ env.STACK_NAME }}"
+          echo "  Rama   : ${{ github.ref_name }}"
+          echo "  Commit : ${{ github.sha }}"
+          echo "  Región : ${{ env.REGION }}"
+          echo "════════════════════════════════════════════"

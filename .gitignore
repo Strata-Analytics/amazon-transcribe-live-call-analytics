@@ -1,3 +1,8 @@
+# Claude Code - archivos locales generados automáticamente
+CLAUDE.md
+docs/cell-ops/
+.claude/
+
 .DS_Store
 **/.DS_Store
 **/opensearchpy_layer/python
