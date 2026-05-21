@@ -137,7 +137,7 @@ jobs:
 
           aws cloudformation deploy \
             --region         ${{ env.REGION }} \
-            --template-url   "${{ env.TEMPLATE_URL }}" \
+            --template-file  /tmp/lca-main-processed.yaml \
             --stack-name     ${{ env.STACK_NAME }} \
             --parameter-overrides $PARAMS \
             --capabilities   CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
