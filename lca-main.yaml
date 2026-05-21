@@ -1583,7 +1583,7 @@ Resources:
       - ValidateParameters
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/aws-qnabot/templates/qnabot-main.json
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/aws-qnabot/templates/qnabot-main.json
       # yamllint enable rule:line-length
       Parameters:
         Email: !Ref AdminEmail
@@ -1613,7 +1613,7 @@ Resources:
       - IsStacknameLengthOK
       - ValidateParameters
     Properties:
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-llm-template-setup-stack/llm-template-setup.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-llm-template-setup-stack/llm-template-setup.yaml
       Tags:
         - Key: aws-apn-id
           Value: pc:4da0ebcd14f35cd0p3n9zpm5l
@@ -1686,7 +1686,7 @@ Resources:
       - IsStacknameLengthOK
       - ValidateParameters
     Properties:
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-bedrockkb-stack/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-bedrockkb-stack/template.yaml
       Parameters:
         pKnowledgeBaseBucketName: !Ref BedrockKnowledgeBaseS3BucketName
         pInputDocumentUploadFolderPrefix: !Ref BedrockKnowledgeBaseS3DocumentUploadFolderPrefix
@@ -1739,7 +1739,7 @@ Resources:
     DependsOn: AISTACK
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-agentassist-setup-stack/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-agentassist-setup-stack/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         LCAStackName: !Ref AWS::StackName
@@ -1771,7 +1771,7 @@ Resources:
             !Ref TranscribeLanguageCode,
             Value,
           ]
-        QnaAgentAssistDemoJson: <ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-agentassist-setup-stack/qna-aa-demo.jsonl
+        QnaAgentAssistDemoJson: <ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-agentassist-setup-stack/qna-aa-demo.jsonl
         QnaBotSettings: !GetAtt SettingsJSON.Output
         WebAppBucket: !GetAtt AISTACK.Outputs.WebAppBucket
         CloudFrontDistributionId: !GetAtt AISTACK.Outputs.CloudFrontDistributionId
@@ -1900,7 +1900,7 @@ Resources:
       - ValidateParameters
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-connect-kvs-stack/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-connect-kvs-stack/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         ConnectInstanceArn: !Ref ConnectInstanceArn
@@ -2124,7 +2124,7 @@ Resources:
       - ValidateParameters
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-connect-integration-stack/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-connect-integration-stack/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         ConnectInstanceArn: !Ref ConnectInstanceArn
@@ -2145,7 +2145,7 @@ Resources:
       - ValidateParameters
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-whisper-sagemaker-stack/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-whisper-sagemaker-stack/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         WhisperModelSize: large-v2
