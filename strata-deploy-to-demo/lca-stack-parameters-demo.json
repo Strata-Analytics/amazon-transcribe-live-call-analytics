@@ -57,7 +57,7 @@
     },
     {
         "ParameterKey": "CustomVoiceConnectorId",
-        "ParameterValue": ""
+        "ParameterValue": "bpma7dkadecjeiien6ohjn"
     },
     {
         "ParameterKey": "SiprecLambdaHookFunctionArn",
@@ -173,7 +173,7 @@
     },
     {
         "ParameterKey": "ConnectInstanceArn",
-        "ParameterValue": "REEMPLAZAR_CON_ARN_CUENTA_DEMO"
+        "ParameterValue": "arn:aws:connect:us-east-1:992382598036:instance/37d931e6-3ea0-4055-8f2c-591783bfaf05"
     },
     {
         "ParameterKey": "SentimentNegativeScoreThreshold",
@@ -193,7 +193,7 @@
     },
     {
         "ParameterKey": "AdminEmail",
-        "ParameterValue": "sofia.perini@strata-analytics.us"
+        "ParameterValue": "valentina.gomez@strata-analytics.us"
     },
     {
         "ParameterKey": "CategoryAlertRegEx",
@@ -233,7 +233,7 @@
     },
     {
         "ParameterKey": "SiprecAllowedCidrList",
-        "ParameterValue": "190.210.32.166/32"
+        "ParameterValue": "190.210.36.16/32"
     },
     {
         "ParameterKey": "CallAudioProcessor",
@@ -257,7 +257,7 @@
     },
     {
         "ParameterKey": "AgentAssistExistingLambdaFunctionArn",
-        "ParameterValue": "REEMPLAZAR_CON_ARN_LAMBDA_CUENTA_DEMO"
+        "ParameterValue": "arn:aws:lambda:us-east-1:992382598036:function:lca-poc-agent-assist"
     },
     {
         "ParameterKey": "AgentAssistLLMBedrockModelId",
