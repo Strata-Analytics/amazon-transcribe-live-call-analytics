@@ -1625,7 +1625,7 @@ Resources:
       - ValidateParameters
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-ai-stack/<VERSION_TOKEN>/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-ai-stack/<VERSION_TOKEN>/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         LCAStackName: !Ref AWS::StackName
@@ -1935,7 +1935,7 @@ Resources:
       - ValidateParameters
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-genesys-audiohook-stack/<VERSION_TOKEN>/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-genesys-audiohook-stack/<VERSION_TOKEN>/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         S3BucketName: !If
@@ -1990,7 +1990,7 @@ Resources:
     Condition: ShouldInstallTalkdeskStack
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-talkdesk-voicestream-stack/<VERSION_TOKEN>/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-talkdesk-voicestream-stack/<VERSION_TOKEN>/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         S3BucketName: !If
@@ -2049,7 +2049,7 @@ Resources:
       - ValidateParameters
     Properties:
       # yamllint disable rule:line-length
-      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/lca-websocket-transcriber-stack/<VERSION_TOKEN>/template.yaml
+      TemplateURL: https://s3.<REGION_TOKEN>.amazonaws.com/<ARTIFACT_BUCKET_TOKEN>/<ARTIFACT_PREFIX_TOKEN>/<VERSION_TOKEN>/lca-websocket-transcriber-stack/<VERSION_TOKEN>/template.yaml
       # yamllint enable rule:line-length
       Parameters:
         S3BucketName: !If
