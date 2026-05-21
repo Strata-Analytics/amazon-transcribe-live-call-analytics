@@ -139,6 +139,8 @@ jobs:
           aws cloudformation deploy \
             --region         ${{ env.REGION }} \
             --template-file  /tmp/lca-main-processed.yaml \
+            --s3-bucket      ${{ env.CFN_BUCKET }} \
+            --s3-prefix      cfn-deploy \
             --stack-name     ${{ env.STACK_NAME }} \
             --parameter-overrides "${PARAMS[@]}" \
             --capabilities   CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
