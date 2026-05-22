@@ -1,6 +1,5 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-// New deploy
 import React, { useState } from 'react';
 import { Amplify, Logger } from 'aws-amplify';
 import { HashRouter } from 'react-router-dom';
