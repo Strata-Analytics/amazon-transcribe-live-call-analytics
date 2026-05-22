@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - develop          # auto-deploy en cada merge a develop
+    paths-ignore:
+      - 'lca-ai-stack/source/ui/**'   # cambios solo del front no tocan infra
 
   workflow_dispatch:     # trigger manual desde GitHub Actions UI
     inputs:

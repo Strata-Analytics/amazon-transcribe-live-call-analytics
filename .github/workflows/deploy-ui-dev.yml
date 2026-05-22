@@ -9,10 +9,6 @@ on:
       - 'lca-ai-stack/source/ui/**'   # solo cuando cambia el front-end
 
   workflow_dispatch:                   # trigger manual desde GitHub Actions UI
-    inputs:
-      confirm:
-        description: '¿Confirmar deploy UI? (escribir "deploy")'
-        required: true
 
 # ─── Variables globales ────────────────────────────────────────────────────────
 env:
