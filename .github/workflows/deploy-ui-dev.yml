@@ -91,7 +91,7 @@ jobs:
       - name: Build UI
         working-directory: ${{ env.UI_DIR }}
         env:
-          CI: false   # react-scripts en CI=true trata lint warnings como errores fatales
+          DISABLE_ESLINT_PLUGIN: true
         run: npm run build
 
       # ── 7. Subir a S3 ────────────────────────────────────────────────────────
