@@ -1,0 +1,129 @@
+name: Deploy UI to Dev
+
+# ─── Cuándo corre ─────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'lca-ai-stack/source/ui/**'   # solo cuando cambia el front-end
+
+  workflow_dispatch:                   # trigger manual desde GitHub Actions UI
+    inputs:
+      confirm:
+        description: '¿Confirmar deploy UI? (escribir "deploy")'
+        required: true
+
+# ─── Variables globales ────────────────────────────────────────────────────────
+env:
+  STACK_NAME: agent-copilot-dev
+  REGION:     us-east-1
+  UI_DIR:     lca-ai-stack/source/ui
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  deploy-ui:
+    name: 🎨 Deploy UI → agent-copilot-dev
+    runs-on: ubuntu-latest
+    environment: dev
+
+    # Permisos necesarios para OIDC
+    permissions:
+      id-token: write
+      contents: read
+
+    # Evita deploys paralelos del UI
+    concurrency:
+      group: deploy-ui-dev
+      cancel-in-progress: false
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Credenciales AWS via OIDC (sin access keys de larga vida) ─────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.REGION }}
+
+      # ── 3. Leer bucket S3 y CloudFront ID desde outputs del stack ────────────
+      #   El bucket y la distro los creó CloudFormation (nested stack AISTACK).
+      #   Los leemos en runtime para no hardcodear valores que cambian por cuenta.
+      - name: Get S3 bucket and CloudFront ID from CloudFormation
+        id: cfn
+        run: |
+          AISTACK_ID=$(aws cloudformation describe-stack-resources \
+            --stack-name ${{ env.STACK_NAME }} \
+            --logical-resource-id AISTACK \
+            --query "StackResources[0].PhysicalResourceId" \
+            --output text)
+
+          S3_BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name "$AISTACK_ID" \
+            --query "Stacks[0].Outputs[?OutputKey=='WebAppBucket'].OutputValue" \
+            --output text)
+
+          CF_ID=$(aws cloudformation describe-stacks \
+            --stack-name "$AISTACK_ID" \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
+            --output text)
+
+          echo "S3_BUCKET=$S3_BUCKET" >> "$GITHUB_OUTPUT"
+          echo "CF_ID=$CF_ID"         >> "$GITHUB_OUTPUT"
+          echo "ℹ️  Bucket     : $S3_BUCKET"
+          echo "ℹ️  CloudFront : $CF_ID"
+
+      # ── 4. Setup Node.js ─────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ${{ env.UI_DIR }}/package-lock.json
+
+      # ── 5. Instalar dependencias ─────────────────────────────────────────────
+      - name: Install dependencies
+        working-directory: ${{ env.UI_DIR }}
+        run: npm ci
+
+      # ── 6. Build ─────────────────────────────────────────────────────────────
+      #   En Linux "npm run build" también ejecuta download-lexwebui.sh antes
+      #   del react-scripts build (a diferencia de build:win que lo omite).
+      - name: Build UI
+        working-directory: ${{ env.UI_DIR }}
+        run: npm run build
+
+      # ── 7. Subir a S3 ────────────────────────────────────────────────────────
+      - name: Upload to S3
+        working-directory: ${{ env.UI_DIR }}
+        run: |
+          aws s3 sync build/ s3://${{ steps.cfn.outputs.S3_BUCKET }} \
+            --delete \
+            --region ${{ env.REGION }}
+
+      # ── 8. Invalidar caché de CloudFront ─────────────────────────────────────
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.cfn.outputs.CF_ID }} \
+            --paths "/*"
+
+      # ── 9. Resumen ────────────────────────────────────────────────────────────
+      - name: Deploy summary
+        if: success()
+        run: |
+          CF_DOMAIN=$(aws cloudfront get-distribution \
+            --id ${{ steps.cfn.outputs.CF_ID }} \
+            --query "Distribution.DomainName" \
+            --output text)
+          echo ""
+          echo "════════════════════════════════════════════"
+          echo "  ✅ UI Deploy exitoso"
+          echo "  Stack  : ${{ env.STACK_NAME }}"
+          echo "  Rama   : ${{ github.ref_name }}"
+          echo "  Commit : ${{ github.sha }}"
+          echo "  URL    : https://$CF_DOMAIN"
+          echo "════════════════════════════════════════════"
