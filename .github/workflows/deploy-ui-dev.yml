@@ -45,10 +45,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region:     ${{ env.REGION }}
 
-      # ── 3. Leer bucket S3 y CloudFront ID desde outputs del stack ────────────
-      #   El bucket y la distro los creó CloudFormation (nested stack AISTACK).
-      #   Los leemos en runtime para no hardcodear valores que cambian por cuenta.
-      - name: Get S3 bucket and CloudFront ID from CloudFormation
+      # ── 3. Leer recursos y variables de entorno desde CloudFormation ──────────
+      #   El nested stack AISTACK exporta:
+      #   - WebAppBucket / CloudFrontDistributionId → para el deploy
+      #   - LocalUITestingEnv → string con todos los REACT_APP_* que necesita Amplify
+      #   - CloudFrontDomainName → para REACT_APP_CLOUDFRONT_DOMAIN
+      - name: Get config from CloudFormation
         id: cfn
         run: |
           AISTACK_ID=$(aws cloudformation describe-stack-resources \
@@ -57,20 +59,35 @@ jobs:
             --query "StackResources[0].PhysicalResourceId" \
             --output text)
 
-          S3_BUCKET=$(aws cloudformation describe-stacks \
+          OUTPUTS=$(aws cloudformation describe-stacks \
             --stack-name "$AISTACK_ID" \
-            --query "Stacks[0].Outputs[?OutputKey=='WebAppBucket'].OutputValue" \
-            --output text)
+            --query "Stacks[0].Outputs" \
+            --output json)
 
-          CF_ID=$(aws cloudformation describe-stacks \
-            --stack-name "$AISTACK_ID" \
-            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
-            --output text)
+          get_output() {
+            echo "$OUTPUTS" | jq -r --arg key "$1" '.[] | select(.OutputKey==$key) | .OutputValue'
+          }
+
+          S3_BUCKET=$(get_output "WebAppBucket")
+          CF_ID=$(get_output "CloudFrontDistributionId")
+          CF_DOMAIN=$(get_output "CloudFrontDomainName")
+          LOCAL_UI_ENV=$(get_output "LocalUITestingEnv")
 
           echo "S3_BUCKET=$S3_BUCKET" >> "$GITHUB_OUTPUT"
           echo "CF_ID=$CF_ID"         >> "$GITHUB_OUTPUT"
+          echo "CF_DOMAIN=$CF_DOMAIN" >> "$GITHUB_OUTPUT"
+
+          # Convertir el string space-separated en un .env.local
+          # LocalUITestingEnv tiene: REACT_APP_USER_POOL_ID=x REACT_APP_USER_POOL_CLIENT_ID=y ...
+          echo "$LOCAL_UI_ENV" | tr ' ' '\n' > /tmp/react-env
+          echo "REACT_APP_CLOUDFRONT_DOMAIN=https://${CF_DOMAIN}/" >> /tmp/react-env
+          echo "REACT_APP_SHOULD_HIDE_SIGN_UP=true"                >> /tmp/react-env
+
           echo "ℹ️  Bucket     : $S3_BUCKET"
           echo "ℹ️  CloudFront : $CF_ID"
+          echo "ℹ️  Domain     : $CF_DOMAIN"
+          echo "--- .env.local generado ---"
+          cat /tmp/react-env
 
       # ── 4. Setup Node.js ─────────────────────────────────────────────────────
       - name: Setup Node.js
@@ -85,14 +102,16 @@ jobs:
         working-directory: ${{ env.UI_DIR }}
         run: npm ci
 
-      # ── 6. Build ─────────────────────────────────────────────────────────────
-      #   En Linux "npm run build" también ejecuta download-lexwebui.sh antes
-      #   del react-scripts build (a diferencia de build:win que lo omite).
+      # ── 6. Copiar .env.local e inyectar variables en el build ─────────────────
+      #   react-scripts lee automáticamente .env.local en tiempo de build.
+      #   DISABLE_ESLINT_PLUGIN evita que errores de lint preexistentes rompan el build.
       - name: Build UI
         working-directory: ${{ env.UI_DIR }}
         env:
           DISABLE_ESLINT_PLUGIN: true
-        run: npm run build
+        run: |
+          cp /tmp/react-env .env.local
+          npm run build
 
       # ── 7. Subir a S3 ────────────────────────────────────────────────────────
       - name: Upload to S3
@@ -113,15 +132,11 @@ jobs:
       - name: Deploy summary
         if: success()
         run: |
-          CF_DOMAIN=$(aws cloudfront get-distribution \
-            --id ${{ steps.cfn.outputs.CF_ID }} \
-            --query "Distribution.DomainName" \
-            --output text)
           echo ""
           echo "════════════════════════════════════════════"
           echo "  ✅ UI Deploy exitoso"
           echo "  Stack  : ${{ env.STACK_NAME }}"
           echo "  Rama   : ${{ github.ref_name }}"
           echo "  Commit : ${{ github.sha }}"
-          echo "  URL    : https://$CF_DOMAIN"
+          echo "  URL    : https://${{ steps.cfn.outputs.CF_DOMAIN }}"
           echo "════════════════════════════════════════════"
