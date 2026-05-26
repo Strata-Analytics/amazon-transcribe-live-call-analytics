@@ -1,0 +1,55 @@
+[
+  {
+    "file": "0ceb9317_c436_42ab_b839_f2dfc55c6149.wav",
+    "transcript": "Hola, soy María González. Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. Me ofrecen 30 gigas por 280 MXN al mes. Yo ahora pago 320 y solo tengo 20 gigas. Sí, actualmente tengo el plan Mov Pro. de 20 gigas. Mm, pero es 20 MXN más caro que lo que me ofrecen. Ah, bueno, así sí cambia la cosa. Y ese descuento aplica desde cuándo? Sí, me parece bien. proceda con el cambio. Eso es todo. Muchas gracias.",
+    "word_count": 86,
+    "latency_seconds": 55.74,
+    "speakers_detected": [
+      "spk_0"
+    ]
+  },
+  {
+    "file": "34741b31_adc3_40f8_966e_fb02db77ed11.wav",
+    "transcript": "",
+    "word_count": 0,
+    "latency_seconds": 29.47,
+    "speakers_detected": []
+  },
+  {
+    "file": "3e347911_0049_4aab_a2e3_b0698e8aee94.wav",
+    "transcript": "Hola. Mi nombre es Carlos Pérez. Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias. Hasta luego.",
+    "word_count": 20,
+    "latency_seconds": 13.32,
+    "speakers_detected": [
+      "spk_0"
+    ]
+  },
+  {
+    "file": "700dda45_e351_4be3_987b_1b2de24adb7b.wav",
+    "transcript": "por suerte. Así que ganamos. De hecho, querido, gan, ganó, ganó. Vas a ver al trip. Sí, hola. Mira, es que estaba llamando porque. um Perdón, un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal, o sea, como que se corta especialmente en las noches. Ya reinicié el módem y nada. Desde el martes de la semana pasada. Sí, desde el martes. Es el 5532. 553241122. Ah, o sea que no es solo yo. Bueno, Está bien, entonces. Muchas gracias.",
+    "word_count": 90,
+    "latency_seconds": 52.03,
+    "speakers_detected": [
+      "spk_1",
+      "spk_0"
+    ]
+  },
+  {
+    "file": "7ff53ad3_0a51_426b_b37e_fbc0cbebb2fc.wav",
+    "transcript": "Hola. Sí, sí, eh, necesito hablar con un supervisor ya mismo. No, no, es que ya llevo 45 minutos esperando y nadie me da una solución. Me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo. Está bien. Está bien. Es que estoy muy frustrado con esto. Ya llamé como tres veces y nadie me da ninguna solución. Sí, es 987654. y cuándo se me va a aplicar el reembolso? ¿Cuántos días? Bueno, bueno, está bien. Gracias.",
+    "word_count": 82,
+    "latency_seconds": 32.59,
+    "speakers_detected": [
+      "spk_0"
+    ]
+  },
+  {
+    "file": "c5dec9e2_0c70_4b3e_a49a_494f1005dd22.wav",
+    "transcript": "Hola, buenas. Mira, contraté el plan de 5G hace una semana y no estoy viendo las velocidades que me prometieron. Mi dispositivo es compatible con 5G y en la configuración veo que está conectado a LTE avanzado y no a 5G. Yo antes tenía el plan MP Pro y ahora tengo el plan MP Unlimited. Estoy en Ciudad de México. Se supone que hay cobertura 5G aquí. Creo que es el modelo estándar, no el de milímetros. En las pruebas de velocidad me da máximo 80 megas de bajada y se supone que debería dar al menos 300. Sí, tiene el APN telcoestrata.internet. Lo cambio a Telco Strata.5G y listo, ¿no? Bueno, lo hago ahora. Muchas gracias.",
+    "word_count": 117,
+    "latency_seconds": 19.75,
+    "speakers_detected": [
+      "spk_0"
+    ]
+  }
+]
