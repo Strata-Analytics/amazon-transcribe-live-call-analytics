@@ -77,6 +77,9 @@ const POST_CALL_CONTENT_REDACTION_OUTPUT = process.env.POST_CALL_CONTENT_REDACTI
 const START_STREAM_MAX_RETRIES = parseInt(process.env.START_STREAM_RETRIES || '5', 10);
 const START_STREAM_RETRY_WAIT_MS = parseInt(process.env.START_STREAM_RETRY_WAIT || '1000', 10);
 
+const TRANSCRIBER_ENGINE = process.env.TRANSCRIBER_ENGINE || 'transcribe';
+const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || '';
+const DEEPGRAM_KEYWORDS = process.env.DEEPGRAM_KEYWORDS || '';
 
 const EVENT_TYPE = {
   STARTED: 'START',
@@ -413,6 +416,77 @@ const readTranscripts = async function readTranscripts(tsStream, callId, session
   }
 };
 
+const startDeepgram = function startDeepgram(passthroughStream, callId) {
+  // eslint-disable-next-line global-require
+  const { createClient, LiveTranscriptionEvents } = require('@deepgram/sdk');
+  return new Promise((resolve) => {
+    const client = createClient(DEEPGRAM_API_KEY);
+    const keywords = DEEPGRAM_KEYWORDS
+      ? DEEPGRAM_KEYWORDS.split(',').map((k) => k.trim()).filter(Boolean)
+      : [];
+    const options = {
+      model: 'nova-3',
+      language: 'es-419',
+      punctuate: true,
+      interim_results: true,
+      endpointing: 300,
+      encoding: 'linear16',
+      sample_rate: 8000,
+      channels: 2,
+      multichannel: true,
+    };
+    if (keywords.length > 0) options.keywords = keywords;
+
+    console.log('[Deepgram] opening connection, options:', JSON.stringify(options));
+    const connection = client.listen.live(options);
+
+    passthroughStream.on('data', (chunk) => {
+      connection.send(chunk);
+    });
+
+    passthroughStream.on('end', () => {
+      console.log('[Deepgram] audio stream ended, finishing connection');
+      connection.finish();
+    });
+
+    connection.on(LiveTranscriptionEvents.Open, () => {
+      console.log('[Deepgram] connection open');
+    });
+
+    connection.on(LiveTranscriptionEvents.Transcript, (data) => {
+      const transcript = data?.channel?.alternatives?.[0]?.transcript;
+      if (!transcript) return;
+      const channelIdx = data.channel_index?.[0] ?? 0;
+      const fakeEvent = {
+        Transcript: {
+          Results: [{
+            Alternatives: [{ Transcript: transcript }],
+            ChannelId: channelIdx === 1 ? 'ch_1' : 'ch_0',
+            StartTime: data.start ?? 0,
+            EndTime: (data.start ?? 0) + (data.duration ?? 0),
+            IsPartial: !data.is_final,
+            ResultId: `dg-${callId}-${Date.now()}-${channelIdx}`,
+          }],
+        },
+      };
+      writeTranscriptionSegmentToKds(kinesisClient, fakeEvent, callId);
+    });
+
+    connection.on(LiveTranscriptionEvents.Warning, (warn) => {
+      console.warn('[Deepgram] warning:', warn);
+    });
+
+    connection.on(LiveTranscriptionEvents.Error, (err) => {
+      console.error('[Deepgram] error:', err);
+    });
+
+    connection.on(LiveTranscriptionEvents.Close, () => {
+      console.log('[Deepgram] connection closed');
+      resolve();
+    });
+  });
+};
+
 const go = async function go(callData) {
   const {
     callId,
@@ -467,92 +541,98 @@ const go = async function go(callData) {
   const tempRecordingFilename = `${callId}-${lambdaCount}.raw`;
   const writeRecordingStream = fs.createWriteStream(TEMP_FILE_PATH + tempRecordingFilename);
 
-  let tsClientArgs = { region: REGION };
-  if (TRANSCRIBE_ENDPOINT) {
-    console.log("Using custom Transcribe endpoint:", TRANSCRIBE_ENDPOINT);
-    tsClientArgs.endpoint = TRANSCRIBE_ENDPOINT;
-  }
-  console.log("Transcribe client args:", tsClientArgs);
-  console.log('AWS SDK - @aws-sdk/client-transcribe-streaming version:', transcribeStreamingPkg.version);
+  let transcriptorPromise;
 
-  const tsClient = new TranscribeStreamingClient(tsClientArgs);
-  let tsStream;
-  const tsParams = {
-    MediaSampleRateHertz: 8000,
-    MediaEncoding: 'pcm',
-    AudioStream: audioStream(),
-  };
-
-  /* configure stream transcription parameters */
-  if (!isTCAEnabled) {
-    tsParams.NumberOfChannels = 2;
-    tsParams.EnableChannelIdentification = true;
-  }
-
-  if (TRANSCRIBE_LANGUAGE_CODE === 'identify-language') {
-    tsParams.IdentifyLanguage = true;
-    if (TRANSCRIBE_LANGUAGE_OPTIONS) {
-      tsParams.LanguageOptions = TRANSCRIBE_LANGUAGE_OPTIONS.replace(/\s/g, '');
-      if (TRANSCRIBE_PREFERRED_LANGUAGE !== 'None') {
-        tsParams.PreferredLanguage = TRANSCRIBE_PREFERRED_LANGUAGE;
-      }
-    }
-  } else if (TRANSCRIBE_LANGUAGE_CODE === 'identify-multiple-languages') {
-    tsParams.IdentifyMultipleLanguages = true;
-    if (TRANSCRIBE_LANGUAGE_OPTIONS) {
-      tsParams.LanguageOptions = TRANSCRIBE_LANGUAGE_OPTIONS.replace(/\s/g, '');
-      if (TRANSCRIBE_PREFERRED_LANGUAGE !== 'None') {
-        tsParams.PreferredLanguage = TRANSCRIBE_PREFERRED_LANGUAGE;
-      }
-    }
+  if (TRANSCRIBER_ENGINE === 'deepgram') {
+    console.log('[Deepgram] engine selected');
+    sessionId = sessionId || callId;
+    transcriptorPromise = startDeepgram(passthroughStream, callId);
   } else {
-    tsParams.LanguageCode = TRANSCRIBE_LANGUAGE_CODE;
-  }
-
-  /* common optional stream parameters */
-  if (sessionId !== undefined) {
-    tsParams.SessionId = sessionId;
-  }
-  if (IS_CONTENT_REDACTION_ENABLED && (
-    TRANSCRIBE_LANGUAGE_CODE === 'en-US' ||
-    TRANSCRIBE_LANGUAGE_CODE === 'en-AU' ||
-    TRANSCRIBE_LANGUAGE_CODE === 'en-GB' ||
-    TRANSCRIBE_LANGUAGE_CODE === 'es-US')) {
-    tsParams.ContentRedactionType = CONTENT_REDACTION_TYPE;
-    if (PII_ENTITY_TYPES) tsParams.PiiEntityTypes = PII_ENTITY_TYPES;
-  }
-  if (CUSTOM_VOCABULARY_NAME) {
-    tsParams.VocabularyName = CUSTOM_VOCABULARY_NAME;
-  }
-  if (CUSTOM_LANGUAGE_MODEL_NAME) {
-    tsParams.LanguageModelName = CUSTOM_LANGUAGE_MODEL_NAME;
-  }
-
-  /* start the stream - retry on exceptions */
-  let tsResponse;
-  let retryCount = 1;
-  while (true) {
-    try {
-      if (isTCAEnabled) {
-        console.log(`Transcribe StartCallAnalyticsStreamTranscriptionCommand args: ${JSON.stringify(tsParams)}, (CallId: ${callId})`);
-        tsResponse = await tsClient.send(new StartCallAnalyticsStreamTranscriptionCommand(tsParams));
-        tsStream = stream.Readable.from(tsResponse.CallAnalyticsTranscriptResultStream);
-      } else {
-        console.log(`Transcribe StartStreamTranscriptionCommand args: ${JSON.stringify(tsParams)}, (CallId: ${callId})`);
-        tsResponse = await tsClient.send(new StartStreamTranscriptionCommand(tsParams));
-        tsStream = stream.Readable.from(tsResponse.TranscriptResultStream);
-      }
-      break;
-    } catch (e) {
-      console.log(`StartStream threw exception on attempt ${retryCount} of ${START_STREAM_MAX_RETRIES}: `, e);
-      if (++retryCount > START_STREAM_MAX_RETRIES) throw e;
-      sleep(START_STREAM_RETRY_WAIT_MS);
+    let tsClientArgs = { region: REGION };
+    if (TRANSCRIBE_ENDPOINT) {
+      console.log("Using custom Transcribe endpoint:", TRANSCRIBE_ENDPOINT);
+      tsClientArgs.endpoint = TRANSCRIBE_ENDPOINT;
     }
+    console.log("Transcribe client args:", tsClientArgs);
+    console.log('AWS SDK - @aws-sdk/client-transcribe-streaming version:', transcribeStreamingPkg.version);
+
+    const tsClient = new TranscribeStreamingClient(tsClientArgs);
+    let tsStream;
+    const tsParams = {
+      MediaSampleRateHertz: 8000,
+      MediaEncoding: 'pcm',
+      AudioStream: audioStream(),
+    };
+
+    if (!isTCAEnabled) {
+      tsParams.NumberOfChannels = 2;
+      tsParams.EnableChannelIdentification = true;
+    }
+
+    if (TRANSCRIBE_LANGUAGE_CODE === 'identify-language') {
+      tsParams.IdentifyLanguage = true;
+      if (TRANSCRIBE_LANGUAGE_OPTIONS) {
+        tsParams.LanguageOptions = TRANSCRIBE_LANGUAGE_OPTIONS.replace(/\s/g, '');
+        if (TRANSCRIBE_PREFERRED_LANGUAGE !== 'None') {
+          tsParams.PreferredLanguage = TRANSCRIBE_PREFERRED_LANGUAGE;
+        }
+      }
+    } else if (TRANSCRIBE_LANGUAGE_CODE === 'identify-multiple-languages') {
+      tsParams.IdentifyMultipleLanguages = true;
+      if (TRANSCRIBE_LANGUAGE_OPTIONS) {
+        tsParams.LanguageOptions = TRANSCRIBE_LANGUAGE_OPTIONS.replace(/\s/g, '');
+        if (TRANSCRIBE_PREFERRED_LANGUAGE !== 'None') {
+          tsParams.PreferredLanguage = TRANSCRIBE_PREFERRED_LANGUAGE;
+        }
+      }
+    } else {
+      tsParams.LanguageCode = TRANSCRIBE_LANGUAGE_CODE;
+    }
+
+    if (sessionId !== undefined) {
+      tsParams.SessionId = sessionId;
+    }
+    if (IS_CONTENT_REDACTION_ENABLED && (
+      TRANSCRIBE_LANGUAGE_CODE === 'en-US' ||
+      TRANSCRIBE_LANGUAGE_CODE === 'en-AU' ||
+      TRANSCRIBE_LANGUAGE_CODE === 'en-GB' ||
+      TRANSCRIBE_LANGUAGE_CODE === 'es-US')) {
+      tsParams.ContentRedactionType = CONTENT_REDACTION_TYPE;
+      if (PII_ENTITY_TYPES) tsParams.PiiEntityTypes = PII_ENTITY_TYPES;
+    }
+    if (CUSTOM_VOCABULARY_NAME) {
+      tsParams.VocabularyName = CUSTOM_VOCABULARY_NAME;
+    }
+    if (CUSTOM_LANGUAGE_MODEL_NAME) {
+      tsParams.LanguageModelName = CUSTOM_LANGUAGE_MODEL_NAME;
+    }
+
+    let tsResponse;
+    let retryCount = 1;
+    while (true) {
+      try {
+        if (isTCAEnabled) {
+          console.log(`Transcribe StartCallAnalyticsStreamTranscriptionCommand args: ${JSON.stringify(tsParams)}, (CallId: ${callId})`);
+          tsResponse = await tsClient.send(new StartCallAnalyticsStreamTranscriptionCommand(tsParams));
+          tsStream = stream.Readable.from(tsResponse.CallAnalyticsTranscriptResultStream);
+        } else {
+          console.log(`Transcribe StartStreamTranscriptionCommand args: ${JSON.stringify(tsParams)}, (CallId: ${callId})`);
+          tsResponse = await tsClient.send(new StartStreamTranscriptionCommand(tsParams));
+          tsStream = stream.Readable.from(tsResponse.TranscriptResultStream);
+        }
+        break;
+      } catch (e) {
+        console.log(`StartStream threw exception on attempt ${retryCount} of ${START_STREAM_MAX_RETRIES}: `, e);
+        if (++retryCount > START_STREAM_MAX_RETRIES) throw e;
+        sleep(START_STREAM_RETRY_WAIT_MS);
+      }
+    }
+
+    sessionId = tsResponse.SessionId;
+    console.log('Transcribe SessionId: ', sessionId);
+    transcriptorPromise = readTranscripts(tsStream, callId, sessionId);
   }
 
-  sessionId = tsResponse.SessionId;
-  console.log('Transcribe SessionId: ', sessionId);
-  console.log('creating readable from transcript stream');
   console.log('creating interleave streams');
   const agentBlock = new BlockStream(2);
   const callerBlock = new BlockStream(2);
@@ -583,14 +663,11 @@ const go = async function go(callData) {
     }
   }, KEEP_ALIVE);
 
-  const transcribePromise = readTranscripts(tsStream, callId, sessionId);
-
   const returnVals = await Promise.all([callerWorker]);
 
-  // we are done with transcribe.
   passthroughStream.end();
 
-  await transcribePromise;
+  await transcriptorPromise;
 
   console.log('Done with all 3 streams');
   console.log('Last Caller Fragment: ', returnVals[0]);
