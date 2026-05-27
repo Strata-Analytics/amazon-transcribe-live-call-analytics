@@ -57,7 +57,7 @@ const Navigation = () => (
 
     <div className="space-y-0.5">
       <NavLink href={`#${CALLS_PATH}`} icon={PhoneCall}>Calls</NavLink>
-      <NavLink href={`#${STREAM_AUDIO_PATH}`} icon={Radio} external>Stream Audio</NavLink>
+      <NavLink href={`#${STREAM_AUDIO_PATH}`} icon={Radio}>Stream Audio</NavLink>
       <NavLink href={`#${CONNECT_PATH}`} icon={Headphones}>Amazon Connect</NavLink>
     </div>
   </nav>

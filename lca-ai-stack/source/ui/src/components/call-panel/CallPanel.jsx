@@ -27,6 +27,7 @@ import useAppContext from '../../contexts/app';
 import awsExports from '../../aws-exports';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
+import AgentChatPanel from './AgentChatPanel';
 
 const logger = new Logger('CallPanel');
 
@@ -131,7 +132,7 @@ const languageCodes = [
 /* ── Layout primitives ─────────────────────────────────────────────────── */
 
 /* eslint-disable react/prop-types */
-const Card = ({ header, actions, children, className, noPadding }) => (
+const Card = ({ header, actions, children, className, noPadding, contentClassName }) => (
   <div className={cn('border border-border rounded-lg bg-background overflow-hidden', className)}>
     {(header || actions) && (
       <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
@@ -141,7 +142,7 @@ const Card = ({ header, actions, children, className, noPadding }) => (
         {actions && <div className="flex items-center gap-1.5">{actions}</div>}
       </div>
     )}
-    <div className={noPadding ? '' : 'p-4'}>{children}</div>
+    <div className={cn(noPadding ? '' : 'p-4', contentClassName)}>{children}</div>
   </div>
 );
 
@@ -691,7 +692,7 @@ const CallInProgressTranscript = ({
     <div
       style={{
         overflowY: 'auto',
-        maxHeight: collapseSentiment ? '34vh' : '68vh',
+        height: '100%',
         paddingLeft: 12,
         paddingTop: 8,
         paddingRight: 12,
@@ -702,23 +703,6 @@ const CallInProgressTranscript = ({
   );
 };
 
-const getAgentAssistPanel = (item, collapseSentiment) => {
-  if (process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true') {
-    return (
-      <Card header="Agent Assist Bot">
-        <div style={{ height: collapseSentiment ? '34vh' : '68vh' }}>
-          <iframe
-            style={{ border: '0px', height: collapseSentiment ? '34vh' : '68vh', margin: 0 }}
-            title="Agent Assist"
-            src={`/index-lexwebui.html?callId=${item.callId}`}
-            width="100%"
-          />
-        </div>
-      </Card>
-    );
-  }
-  return null;
-};
 
 const getTranscriptContent = ({
   item,
@@ -776,15 +760,12 @@ const CallTranscriptContainer = ({
     setAutoScroll(item.recordingStatusLabel === IN_PROGRESS_STATUS);
   }, [item.recordingStatusLabel]);
 
-  const transcriptCols =
-    process.env.REACT_APP_ENABLE_LEX_AGENT_ASSIST === 'true'
-      ? 'grid-cols-1 sm:grid-cols-[2fr_1fr]'
-      : 'grid-cols-1';
-
   return (
-    <div className={cn('grid gap-4', transcriptCols)}>
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-[2fr_1fr] items-start">
       <Card
         noPadding
+        className="h-[calc(100vh-120px)] flex flex-col"
+        contentClassName="flex-1 min-h-0 overflow-hidden"
         header={
           "Call Transcript"
         }
@@ -842,7 +823,7 @@ const CallTranscriptContainer = ({
           collapseSentiment,
         })}
       </Card>
-      {getAgentAssistPanel(item, collapseSentiment)}
+      <AgentChatPanel callId={item.callId} />
     </div>
   );
 };

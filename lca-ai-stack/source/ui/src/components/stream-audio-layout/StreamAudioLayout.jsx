@@ -11,7 +11,7 @@ import { cn } from '../../lib/utils';
 
 import StreamAudio from '../stream-audio/StreamAudio';
 
-import Navigation from './navigation';
+import Navigation from '../call-analytics-layout/navigation';
 import Breadcrumbs from './breadcrumbs';
 import ToolsPanel from './tools-panel';
 

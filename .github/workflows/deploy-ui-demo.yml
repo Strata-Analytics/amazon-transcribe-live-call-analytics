@@ -1,55 +1,43 @@
-name: Deploy UI to Dev
+name: Deploy UI to Demo
 
-# ─── Cuándo corre ─────────────────────────────────────────────────────────────
 on:
   push:
     branches:
-      - develop
+      - demo
     paths:
-      - 'lca-ai-stack/source/ui/**'   # solo cuando cambia el front-end
+      - 'lca-ai-stack/source/ui/**'
 
-  workflow_dispatch:                   # trigger manual desde GitHub Actions UI
+  workflow_dispatch:
 
-# ─── Variables globales ────────────────────────────────────────────────────────
 env:
-  STACK_NAME: agent-copilot-dev
+  STACK_NAME: agent-copilot-demo
   REGION:     us-east-1
   UI_DIR:     lca-ai-stack/source/ui
 
-# ─────────────────────────────────────────────────────────────────────────────
 jobs:
   deploy-ui:
-    name: 🎨 Deploy UI → agent-copilot-dev
+    name: 🎨 Deploy UI → agent-copilot-demo
     runs-on: ubuntu-latest
-    environment: dev
+    environment: demo
 
-    # Permisos necesarios para OIDC
     permissions:
       id-token: write
       contents: read
 
-    # Evita deploys paralelos del UI
     concurrency:
-      group: deploy-ui-dev
+      group: deploy-ui-demo
       cancel-in-progress: false
 
     steps:
-      # ── 1. Checkout ──────────────────────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── 2. Credenciales AWS via OIDC (sin access keys de larga vida) ─────────
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region:     ${{ env.REGION }}
 
-      # ── 3. Leer recursos y variables de entorno desde CloudFormation ──────────
-      #   El nested stack AISTACK exporta:
-      #   - WebAppBucket / CloudFrontDistributionId → para el deploy
-      #   - LocalUITestingEnv → string con todos los REACT_APP_* que necesita Amplify
-      #   - CloudFrontDomainName → para REACT_APP_CLOUDFRONT_DOMAIN
       - name: Get config from CloudFormation
         id: cfn
         run: |
@@ -77,20 +65,15 @@ jobs:
           echo "CF_ID=$CF_ID"         >> "$GITHUB_OUTPUT"
           echo "CF_DOMAIN=$CF_DOMAIN" >> "$GITHUB_OUTPUT"
 
-          # Convertir el string space-separated en un .env.local
-          # LocalUITestingEnv tiene: REACT_APP_USER_POOL_ID=x REACT_APP_USER_POOL_CLIENT_ID=y ...
           echo "$LOCAL_UI_ENV" | tr ' ' '\n' > /tmp/react-env
           echo "REACT_APP_CLOUDFRONT_DOMAIN=https://${CF_DOMAIN}/" >> /tmp/react-env
           echo "REACT_APP_SHOULD_HIDE_SIGN_UP=true"                >> /tmp/react-env
-          echo "REACT_APP_AGENT_CHAT_URL=${{ vars.AGENT_CHAT_URL_DEVELOP }}" >> /tmp/react-env
+          echo "REACT_APP_AGENT_CHAT_URL=${{ vars.AGENT_CHAT_URL_DEMO }}" >> /tmp/react-env
 
           echo "ℹ️  Bucket     : $S3_BUCKET"
           echo "ℹ️  CloudFront : $CF_ID"
           echo "ℹ️  Domain     : $CF_DOMAIN"
-          echo "--- .env.local generado ---"
-          cat /tmp/react-env
 
-      # ── 4. Setup Node.js ─────────────────────────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -98,14 +81,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: ${{ env.UI_DIR }}/package-lock.json
 
-      # ── 5. Instalar dependencias ─────────────────────────────────────────────
       - name: Install dependencies
         working-directory: ${{ env.UI_DIR }}
         run: npm ci
 
-      # ── 6. Copiar .env.local e inyectar variables en el build ─────────────────
-      #   react-scripts lee automáticamente .env.local en tiempo de build.
-      #   DISABLE_ESLINT_PLUGIN evita que errores de lint preexistentes rompan el build.
       - name: Build UI
         working-directory: ${{ env.UI_DIR }}
         env:
@@ -114,7 +93,6 @@ jobs:
           cp /tmp/react-env .env.local
           npm run build
 
-      # ── 7. Subir a S3 ────────────────────────────────────────────────────────
       - name: Upload to S3
         working-directory: ${{ env.UI_DIR }}
         run: |
@@ -122,14 +100,12 @@ jobs:
             --delete \
             --region ${{ env.REGION }}
 
-      # ── 8. Invalidar caché de CloudFront ─────────────────────────────────────
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ steps.cfn.outputs.CF_ID }} \
             --paths "/*"
 
-      # ── 9. Resumen ────────────────────────────────────────────────────────────
       - name: Deploy summary
         if: success()
         run: |
