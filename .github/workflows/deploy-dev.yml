@@ -75,7 +75,12 @@ jobs:
             --region ${{ env.REGION }}
 
           echo "📦 Building + packaging lca-connect-kvs-stack..."
-          cd lca-connect-kvs-stack/lambda_functions/connect_kvs_consumer
+          cd lca-chimevc-stack/lambda_layers/node_transcriber_layer
+          npm install --omit=dev
+          mkdir -p nodejs
+          cp -r node_modules nodejs/
+          zip -r transcriber-layer.zip nodejs
+          cd ../../../lca-connect-kvs-stack/lambda_functions/connect_kvs_consumer
           npm ci --omit=dev
           cd ../../..
           aws cloudformation package \
