@@ -74,6 +74,20 @@ jobs:
             s3://${{ env.CFN_BUCKET }}/stacks/lca-chimevc-stack/template.yaml \
             --region ${{ env.REGION }}
 
+          echo "📦 Building + packaging lca-connect-kvs-stack..."
+          cd lca-connect-kvs-stack/lambda_functions/connect_kvs_consumer
+          npm ci --omit=dev
+          cd ../../..
+          aws cloudformation package \
+            --template-file lca-connect-kvs-stack/template.yaml \
+            --s3-bucket ${{ env.CFN_BUCKET }} \
+            --s3-prefix stacks/lca-connect-kvs-stack/lambda \
+            --output-template-file /tmp/lca-connect-kvs-packaged.yaml \
+            --region ${{ env.REGION }}
+          aws s3 cp /tmp/lca-connect-kvs-packaged.yaml \
+            s3://${{ env.CFN_BUCKET }}/stacks/lca-connect-kvs-stack/template.yaml \
+            --region ${{ env.REGION }}
+
           echo "✅ Sub-stacks subidos."
 
       # ── 5. Procesar lca-main.yaml ─────────────────────────────────────────────
@@ -107,6 +121,11 @@ jobs:
           AWS_CHIME="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/lca-chimevc-stack/template.yaml"
           OUR_CHIME="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-chimevc-stack/template.yaml"
           sed -i "s|${AWS_CHIME}|${OUR_CHIME}|g" /tmp/lca-main-processed.yaml
+
+          # connect-kvs-stack → nuestro bucket (URL includes VERSION)
+          AWS_CONNECT="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/${VERSION}/lca-connect-kvs-stack/template.yaml"
+          OUR_CONNECT="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-connect-kvs-stack/template.yaml"
+          sed -i "s|${AWS_CONNECT}|${OUR_CONNECT}|g" /tmp/lca-main-processed.yaml
 
           echo "✅ Template procesado."
 
