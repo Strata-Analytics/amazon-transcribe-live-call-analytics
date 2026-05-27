@@ -1,0 +1,4490 @@
+[
+  {
+    "file": "0ceb9317_c436_42ab_b839_f2dfc55c6149.wav",
+    "transcript": "Hola, soy María González. Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. Me ofrecen treinta gigas por doscientos ochenta pesos al mes. Yo ahora pago trescientos veinte y solo tengo veinte gigas. Sí, actualmente tengo el plan MOVE Pro de veinte gigas. Pero es veinte pesos más caro que lo que me ofrecen. Ah, bueno, así sí cambia la cosa. ¿Y ese descuento aplica desde cuándo? Sí, me parece bien. Proceda con el cambio. Eso es todo. Muchas gracias.",
+    "utterances": [
+      {
+        "start": 4.96,
+        "end": 6.5,
+        "confidence": 0.9622803,
+        "channel": 0,
+        "transcript": "Hola, soy María González.",
+        "words": [
+          {
+            "word": "hola",
+            "start": 4.96,
+            "end": 5.2799997,
+            "confidence": 0.9128418,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "Hola,"
+          },
+          {
+            "word": "soy",
+            "start": 5.2799997,
+            "end": 5.6,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "soy"
+          },
+          {
+            "word": "maría",
+            "start": 5.6,
+            "end": 6.0,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "María"
+          },
+          {
+            "word": "gonzález",
+            "start": 6.0,
+            "end": 6.5,
+            "confidence": 0.94311523,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "González."
+          }
+        ],
+        "speaker": 0,
+        "id": "cb6a41f8-3374-420f-919f-c87f11150d2f"
+      },
+      {
+        "start": 7.52,
+        "end": 8.02,
+        "confidence": 0.95043945,
+        "channel": 0,
+        "transcript": "Mira,",
+        "words": [
+          {
+            "word": "mira",
+            "start": 7.52,
+            "end": 8.02,
+            "confidence": 0.95043945,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "Mira,"
+          }
+        ],
+        "speaker": 0,
+        "id": "2db6c380-7335-4c33-8364-67d3980b8f95"
+      },
+      {
+        "start": 8.639999,
+        "end": 13.54,
+        "confidence": 0.9713053,
+        "channel": 0,
+        "transcript": "estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía.",
+        "words": [
+          {
+            "word": "estoy",
+            "start": 8.639999,
+            "end": 8.88,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "estoy"
+          },
+          {
+            "word": "pensando",
+            "start": 8.88,
+            "end": 9.2,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "pensando"
+          },
+          {
+            "word": "en",
+            "start": 9.2,
+            "end": 9.36,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "en"
+          },
+          {
+            "word": "cancelar",
+            "start": 9.36,
+            "end": 9.86,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "cancelar"
+          },
+          {
+            "word": "mi",
+            "start": 9.92,
+            "end": 10.16,
+            "confidence": 0.7265625,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "mi"
+          },
+          {
+            "word": "servicio",
+            "start": 10.16,
+            "end": 10.639999,
+            "confidence": 0.9921875,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "servicio"
+          },
+          {
+            "word": "porque",
+            "start": 10.639999,
+            "end": 11.139999,
+            "confidence": 0.8730469,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "porque"
+          },
+          {
+            "word": "encontré",
+            "start": 11.2,
+            "end": 11.36,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "encontré"
+          },
+          {
+            "word": "una",
+            "start": 11.36,
+            "end": 11.5199995,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "una"
+          },
+          {
+            "word": "oferta",
+            "start": 11.5199995,
+            "end": 12.0,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "oferta"
+          },
+          {
+            "word": "más",
+            "start": 12.0,
+            "end": 12.16,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "más"
+          },
+          {
+            "word": "barata",
+            "start": 12.16,
+            "end": 12.559999,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "barata"
+          },
+          {
+            "word": "con",
+            "start": 12.559999,
+            "end": 12.719999,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "con"
+          },
+          {
+            "word": "otra",
+            "start": 12.719999,
+            "end": 13.04,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "otra"
+          },
+          {
+            "word": "compañía",
+            "start": 13.04,
+            "end": 13.54,
+            "confidence": 0.9885254,
+            "speaker": 0,
+            "speaker_confidence": 0.89404356,
+            "punctuated_word": "compañía."
+          }
+        ],
+        "speaker": 0,
+        "id": "e25f0db1-7491-4201-8ba2-ac32f2bfb6c0"
+      },
+      {
+        "start": 21.384998,
+        "end": 22.125,
+        "confidence": 0.99523926,
+        "channel": 0,
+        "transcript": "Me ofrecen treinta gigas",
+        "words": [
+          {
+            "word": "me",
+            "start": 21.384998,
+            "end": 21.545,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "Me"
+          },
+          {
+            "word": "ofrecen",
+            "start": 21.545,
+            "end": 21.585,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "ofrecen"
+          },
+          {
+            "word": "treinta",
+            "start": 21.585,
+            "end": 21.625,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "treinta"
+          },
+          {
+            "word": "gigas",
+            "start": 21.625,
+            "end": 22.125,
+            "confidence": 0.98291016,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "gigas"
+          }
+        ],
+        "speaker": 0,
+        "id": "6ba159c6-1c8e-4066-9ecb-8779079c7313"
+      },
+      {
+        "start": 23.145,
+        "end": 25.564999,
+        "confidence": 0.975708,
+        "channel": 0,
+        "transcript": "por doscientos ochenta pesos al mes.",
+        "words": [
+          {
+            "word": "por",
+            "start": 23.145,
+            "end": 23.384998,
+            "confidence": 0.97802734,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "por"
+          },
+          {
+            "word": "doscientos",
+            "start": 23.384998,
+            "end": 23.865,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "doscientos"
+          },
+          {
+            "word": "ochenta",
+            "start": 23.865,
+            "end": 24.365,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "ochenta"
+          },
+          {
+            "word": "pesos",
+            "start": 24.664999,
+            "end": 24.825,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "pesos"
+          },
+          {
+            "word": "al",
+            "start": 24.825,
+            "end": 25.064999,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "al"
+          },
+          {
+            "word": "mes",
+            "start": 25.064999,
+            "end": 25.564999,
+            "confidence": 0.8820801,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "mes."
+          }
+        ],
+        "speaker": 0,
+        "id": "5aeeb776-4ed8-44d6-83ad-a67ae440fa11"
+      },
+      {
+        "start": 26.185,
+        "end": 27.164999,
+        "confidence": 0.9967448,
+        "channel": 0,
+        "transcript": "Yo ahora pago",
+        "words": [
+          {
+            "word": "yo",
+            "start": 26.185,
+            "end": 26.265,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "Yo"
+          },
+          {
+            "word": "ahora",
+            "start": 26.265,
+            "end": 26.664999,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "ahora"
+          },
+          {
+            "word": "pago",
+            "start": 26.664999,
+            "end": 27.164999,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "pago"
+          }
+        ],
+        "speaker": 0,
+        "id": "9907f2d9-58d8-46dd-9b8f-2f1fe7e1af1b"
+      },
+      {
+        "start": 27.625,
+        "end": 30.365,
+        "confidence": 0.97792274,
+        "channel": 0,
+        "transcript": "trescientos veinte y solo tengo veinte gigas.",
+        "words": [
+          {
+            "word": "trescientos",
+            "start": 27.625,
+            "end": 28.125,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "trescientos"
+          },
+          {
+            "word": "veinte",
+            "start": 28.345,
+            "end": 28.505,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "veinte"
+          },
+          {
+            "word": "y",
+            "start": 28.505,
+            "end": 28.664999,
+            "confidence": 0.96777344,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "solo",
+            "start": 28.664999,
+            "end": 28.985,
+            "confidence": 0.8925781,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "solo"
+          },
+          {
+            "word": "tengo",
+            "start": 28.985,
+            "end": 29.305,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "tengo"
+          },
+          {
+            "word": "veinte",
+            "start": 29.305,
+            "end": 29.805,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "veinte"
+          },
+          {
+            "word": "gigas",
+            "start": 29.865,
+            "end": 30.365,
+            "confidence": 0.9890137,
+            "speaker": 0,
+            "speaker_confidence": 0.9100883,
+            "punctuated_word": "gigas."
+          }
+        ],
+        "speaker": 0,
+        "id": "4e0525a3-2a6c-4e24-a908-0a60ad49a18b"
+      },
+      {
+        "start": 44.765003,
+        "end": 48.145,
+        "confidence": 0.9309431,
+        "channel": 0,
+        "transcript": "Sí, actualmente tengo el plan MOVE Pro",
+        "words": [
+          {
+            "word": "sí",
+            "start": 44.765003,
+            "end": 45.245003,
+            "confidence": 0.89990234,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "Sí,"
+          },
+          {
+            "word": "actualmente",
+            "start": 45.245003,
+            "end": 45.745003,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "actualmente"
+          },
+          {
+            "word": "tengo",
+            "start": 45.965,
+            "end": 46.285004,
+            "confidence": 0.9863281,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "tengo"
+          },
+          {
+            "word": "el",
+            "start": 46.285004,
+            "end": 46.765003,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "plan",
+            "start": 46.765003,
+            "end": 47.245003,
+            "confidence": 0.96875,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "plan"
+          },
+          {
+            "word": "move",
+            "start": 47.245003,
+            "end": 47.645,
+            "confidence": 0.76953125,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "MOVE"
+          },
+          {
+            "word": "pro",
+            "start": 47.645,
+            "end": 48.145,
+            "confidence": 0.89501953,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "Pro"
+          }
+        ],
+        "speaker": 0,
+        "id": "1102307c-5153-442a-abcd-50bed8e5a2f9"
+      },
+      {
+        "start": 49.565002,
+        "end": 50.625,
+        "confidence": 0.8564453,
+        "channel": 0,
+        "transcript": "de veinte gigas.",
+        "words": [
+          {
+            "word": "de",
+            "start": 49.565002,
+            "end": 49.725002,
+            "confidence": 0.6977539,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "veinte",
+            "start": 49.725002,
+            "end": 50.125,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "veinte"
+          },
+          {
+            "word": "gigas",
+            "start": 50.125,
+            "end": 50.625,
+            "confidence": 0.8745117,
+            "speaker": 0,
+            "speaker_confidence": 0.8676774,
+            "punctuated_word": "gigas."
+          }
+        ],
+        "speaker": 0,
+        "id": "e75390f0-7462-4b33-86e4-bd7f80fbe022"
+      },
+      {
+        "start": 59.45,
+        "end": 61.469997,
+        "confidence": 0.94278973,
+        "channel": 0,
+        "transcript": "Pero es veinte pesos más caro",
+        "words": [
+          {
+            "word": "pero",
+            "start": 59.45,
+            "end": 59.77,
+            "confidence": 0.6694336,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "Pero"
+          },
+          {
+            "word": "es",
+            "start": 59.77,
+            "end": 60.17,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "veinte",
+            "start": 60.17,
+            "end": 60.57,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "veinte"
+          },
+          {
+            "word": "pesos",
+            "start": 60.57,
+            "end": 60.809998,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "pesos"
+          },
+          {
+            "word": "más",
+            "start": 60.809998,
+            "end": 60.969997,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "más"
+          },
+          {
+            "word": "caro",
+            "start": 60.969997,
+            "end": 61.469997,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "caro"
+          }
+        ],
+        "speaker": 0,
+        "id": "05a2b58e-3dfd-471d-8d43-947a7e0be37f"
+      },
+      {
+        "start": 62.17,
+        "end": 63.23,
+        "confidence": 0.951709,
+        "channel": 0,
+        "transcript": "que lo que me ofrecen.",
+        "words": [
+          {
+            "word": "que",
+            "start": 62.17,
+            "end": 62.329998,
+            "confidence": 0.88427734,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "lo",
+            "start": 62.329998,
+            "end": 62.489998,
+            "confidence": 0.9199219,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "lo"
+          },
+          {
+            "word": "que",
+            "start": 62.489998,
+            "end": 62.57,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "me",
+            "start": 62.57,
+            "end": 62.73,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "ofrecen",
+            "start": 62.73,
+            "end": 63.23,
+            "confidence": 0.9562988,
+            "speaker": 0,
+            "speaker_confidence": 0.8813875,
+            "punctuated_word": "ofrecen."
+          }
+        ],
+        "speaker": 0,
+        "id": "cd68ffc8-105c-49ec-a3c8-c36717b08637"
+      },
+      {
+        "start": 69.13,
+        "end": 71.869995,
+        "confidence": 0.9167132,
+        "channel": 0,
+        "transcript": "Ah, bueno, así sí cambia la cosa.",
+        "words": [
+          {
+            "word": "ah",
+            "start": 69.13,
+            "end": 69.63,
+            "confidence": 0.7663574,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "Ah,"
+          },
+          {
+            "word": "bueno",
+            "start": 69.85,
+            "end": 70.09,
+            "confidence": 0.9265137,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "bueno,"
+          },
+          {
+            "word": "así",
+            "start": 70.09,
+            "end": 70.49,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "así"
+          },
+          {
+            "word": "sí",
+            "start": 70.49,
+            "end": 70.89,
+            "confidence": 0.90234375,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "sí"
+          },
+          {
+            "word": "cambia",
+            "start": 70.89,
+            "end": 71.21,
+            "confidence": 0.99121094,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "cambia"
+          },
+          {
+            "word": "la",
+            "start": 71.21,
+            "end": 71.369995,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "la"
+          },
+          {
+            "word": "cosa",
+            "start": 71.369995,
+            "end": 71.869995,
+            "confidence": 0.83251953,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "cosa."
+          }
+        ],
+        "speaker": 0,
+        "id": "d8352b88-4a7a-49da-aef7-3b2a98dd9fda"
+      },
+      {
+        "start": 72.49,
+        "end": 74.83,
+        "confidence": 0.94868976,
+        "channel": 0,
+        "transcript": "¿Y ese descuento aplica desde cuándo?",
+        "words": [
+          {
+            "word": "y",
+            "start": 72.49,
+            "end": 72.65,
+            "confidence": 0.79003906,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "¿Y"
+          },
+          {
+            "word": "ese",
+            "start": 72.65,
+            "end": 72.89,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "ese"
+          },
+          {
+            "word": "descuento",
+            "start": 72.89,
+            "end": 73.39,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "descuento"
+          },
+          {
+            "word": "aplica",
+            "start": 73.45,
+            "end": 73.95,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "aplica"
+          },
+          {
+            "word": "desde",
+            "start": 74.009995,
+            "end": 74.33,
+            "confidence": 0.9921875,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "desde"
+          },
+          {
+            "word": "cuándo",
+            "start": 74.33,
+            "end": 74.83,
+            "confidence": 0.91186523,
+            "speaker": 0,
+            "speaker_confidence": 0.706475,
+            "punctuated_word": "cuándo?"
+          }
+        ],
+        "speaker": 0,
+        "id": "a18dfdc8-587f-4a2f-ae02-852a4c5ae9e0"
+      },
+      {
+        "start": 81.065,
+        "end": 82.605,
+        "confidence": 0.9606323,
+        "channel": 0,
+        "transcript": "Sí, me parece bien.",
+        "words": [
+          {
+            "word": "sí",
+            "start": 81.065,
+            "end": 81.465004,
+            "confidence": 0.95043945,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "Sí,"
+          },
+          {
+            "word": "me",
+            "start": 81.465004,
+            "end": 81.705,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "parece",
+            "start": 81.705,
+            "end": 82.105,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "parece"
+          },
+          {
+            "word": "bien",
+            "start": 82.105,
+            "end": 82.605,
+            "confidence": 0.89208984,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "bien."
+          }
+        ],
+        "speaker": 0,
+        "id": "f58fef84-3f53-46ca-a402-aa932cbcb0cf"
+      },
+      {
+        "start": 83.545,
+        "end": 84.925,
+        "confidence": 0.96622723,
+        "channel": 0,
+        "transcript": "Proceda con el cambio.",
+        "words": [
+          {
+            "word": "proceda",
+            "start": 83.545,
+            "end": 84.045,
+            "confidence": 0.8693034,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "Proceda"
+          },
+          {
+            "word": "con",
+            "start": 84.105,
+            "end": 84.265,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "con"
+          },
+          {
+            "word": "el",
+            "start": 84.265,
+            "end": 84.425,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "cambio",
+            "start": 84.425,
+            "end": 84.925,
+            "confidence": 0.99560547,
+            "speaker": 0,
+            "speaker_confidence": 0.80885595,
+            "punctuated_word": "cambio."
+          }
+        ],
+        "speaker": 0,
+        "id": "6d049563-82d3-4fd1-865c-31081cf278ad"
+      },
+      {
+        "start": 91.442314,
+        "end": 92.342316,
+        "confidence": 0.9396159,
+        "channel": 0,
+        "transcript": "Eso es todo.",
+        "words": [
+          {
+            "word": "eso",
+            "start": 91.442314,
+            "end": 91.68231,
+            "confidence": 0.9838867,
+            "speaker": 0,
+            "speaker_confidence": 0.5625783,
+            "punctuated_word": "Eso"
+          },
+          {
+            "word": "es",
+            "start": 91.68231,
+            "end": 91.842316,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.5625783,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "todo",
+            "start": 91.842316,
+            "end": 92.342316,
+            "confidence": 0.83496094,
+            "speaker": 0,
+            "speaker_confidence": 0.5625783,
+            "punctuated_word": "todo."
+          }
+        ],
+        "speaker": 0,
+        "id": "79f0ec70-99a0-4f85-af13-859f5b702463"
+      },
+      {
+        "start": 92.64232,
+        "end": 93.54231,
+        "confidence": 0.99902344,
+        "channel": 0,
+        "transcript": "Muchas gracias.",
+        "words": [
+          {
+            "word": "muchas",
+            "start": 92.64232,
+            "end": 93.04231,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.5625783,
+            "punctuated_word": "Muchas"
+          },
+          {
+            "word": "gracias",
+            "start": 93.04231,
+            "end": 93.54231,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.5625783,
+            "punctuated_word": "gracias."
+          }
+        ],
+        "speaker": 0,
+        "id": "2a794999-4871-40f6-8f79-8c52e75a7650"
+      }
+    ],
+    "latency_seconds": 7.15,
+    "word_count": 87
+  },
+  {
+    "file": "34741b31_adc3_40f8_966e_fb02db77ed11.wav",
+    "transcript": "",
+    "utterances": [],
+    "latency_seconds": 3.09,
+    "word_count": 0
+  },
+  {
+    "file": "3e347911_0049_4aab_a2e3_b0698e8aee94.wav",
+    "transcript": "Hola, mi nombre es Carlos Pérez. Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias. Hasta luego.",
+    "utterances": [
+      {
+        "start": 0.0,
+        "end": 0.5,
+        "confidence": 0.7236328,
+        "channel": 0,
+        "transcript": "Hola,",
+        "words": [
+          {
+            "word": "hola",
+            "start": 0.0,
+            "end": 0.5,
+            "confidence": 0.7236328,
+            "speaker": 0,
+            "speaker_confidence": 0.44027567,
+            "punctuated_word": "Hola,"
+          }
+        ],
+        "speaker": 0,
+        "id": "e7a11287-00a8-4ccb-995e-e2ccc39b6a52"
+      },
+      {
+        "start": 1.5999999,
+        "end": 2.1,
+        "confidence": 0.99316406,
+        "channel": 0,
+        "transcript": "mi",
+        "words": [
+          {
+            "word": "mi",
+            "start": 1.5999999,
+            "end": 2.1,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.44027567,
+            "punctuated_word": "mi"
+          }
+        ],
+        "speaker": 0,
+        "id": "58c67694-38de-4c5f-8594-672198fd7698"
+      },
+      {
+        "start": 4.48,
+        "end": 5.8599997,
+        "confidence": 0.9885254,
+        "channel": 0,
+        "transcript": "nombre es Carlos Pérez.",
+        "words": [
+          {
+            "word": "nombre",
+            "start": 4.48,
+            "end": 4.72,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "nombre"
+          },
+          {
+            "word": "es",
+            "start": 4.72,
+            "end": 4.88,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "carlos",
+            "start": 4.88,
+            "end": 5.3599997,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "Carlos"
+          },
+          {
+            "word": "pérez",
+            "start": 5.3599997,
+            "end": 5.8599997,
+            "confidence": 0.9609375,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "Pérez."
+          }
+        ],
+        "speaker": 0,
+        "id": "2bbb5719-44fe-4e18-8b7a-82ae075c5468"
+      },
+      {
+        "start": 7.52,
+        "end": 9.54,
+        "confidence": 0.9866536,
+        "channel": 0,
+        "transcript": "Quiero saber cuándo vence mi factura.",
+        "words": [
+          {
+            "word": "quiero",
+            "start": 7.52,
+            "end": 7.9199996,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "Quiero"
+          },
+          {
+            "word": "saber",
+            "start": 7.9199996,
+            "end": 8.24,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "saber"
+          },
+          {
+            "word": "cuándo",
+            "start": 8.24,
+            "end": 8.48,
+            "confidence": 0.9277344,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "cuándo"
+          },
+          {
+            "word": "vence",
+            "start": 8.48,
+            "end": 8.88,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "vence"
+          },
+          {
+            "word": "mi",
+            "start": 8.88,
+            "end": 9.04,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "mi"
+          },
+          {
+            "word": "factura",
+            "start": 9.04,
+            "end": 9.54,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.64727694,
+            "punctuated_word": "factura."
+          }
+        ],
+        "speaker": 0,
+        "id": "65e13a11-2682-4e74-83c3-27225fd0b4fa"
+      },
+      {
+        "start": 17.38175,
+        "end": 20.20175,
+        "confidence": 0.9683533,
+        "channel": 0,
+        "transcript": "No, eso es todo. Muchas gracias. Hasta luego.",
+        "words": [
+          {
+            "word": "no",
+            "start": 17.38175,
+            "end": 17.54175,
+            "confidence": 0.93725586,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "No,"
+          },
+          {
+            "word": "eso",
+            "start": 17.54175,
+            "end": 17.78175,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "eso"
+          },
+          {
+            "word": "es",
+            "start": 17.78175,
+            "end": 17.86175,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "todo",
+            "start": 17.86175,
+            "end": 18.36175,
+            "confidence": 0.9770508,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "todo."
+          },
+          {
+            "word": "muchas",
+            "start": 18.501749,
+            "end": 18.82175,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "Muchas"
+          },
+          {
+            "word": "gracias",
+            "start": 18.82175,
+            "end": 19.30175,
+            "confidence": 0.83496094,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "gracias."
+          },
+          {
+            "word": "hasta",
+            "start": 19.30175,
+            "end": 19.70175,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "Hasta"
+          },
+          {
+            "word": "luego",
+            "start": 19.70175,
+            "end": 20.20175,
+            "confidence": 0.99853516,
+            "speaker": 0,
+            "speaker_confidence": 0.65318227,
+            "punctuated_word": "luego."
+          }
+        ],
+        "speaker": 0,
+        "id": "2fdff3ee-e978-4d16-a1a2-2ba211553f35"
+      }
+    ],
+    "latency_seconds": 3.01,
+    "word_count": 20
+  },
+  {
+    "file": "700dda45_e351_4be3_987b_1b2de24adb7b.wav",
+    "transcript": "Sí, hola. Mira, es que Estaba llamando porque Perdón, un segundo. Sí, buenas. Es que tengo un problema con Internet. Es que se me cae la señal, o sea, como que se corta especialmente en las noches. Ya reinicié el módem y nada. Desde el martes de la semana pasada. Sí, desde el martes. Es el cincuenta y cinco treinta y dos cincuenta y cinco treinta y dos cuarenta y uno veintidós. Ah, o sea que no es solo yo. Bueno, está bien, entonces. Muchas gracias.",
+    "utterances": [
+      {
+        "start": 5.3599997,
+        "end": 6.1,
+        "confidence": 0.9058838,
+        "channel": 0,
+        "transcript": "Sí, hola.",
+        "words": [
+          {
+            "word": "sí",
+            "start": 5.3599997,
+            "end": 5.6,
+            "confidence": 0.8859863,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "Sí,"
+          },
+          {
+            "word": "hola",
+            "start": 5.6,
+            "end": 6.1,
+            "confidence": 0.92578125,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "hola."
+          }
+        ],
+        "speaker": 0,
+        "id": "e9fe002d-76ee-458b-be01-fef0a8f08c07"
+      },
+      {
+        "start": 7.3599997,
+        "end": 8.82,
+        "confidence": 0.9757487,
+        "channel": 0,
+        "transcript": "Mira, es que",
+        "words": [
+          {
+            "word": "mira",
+            "start": 7.3599997,
+            "end": 7.8599997,
+            "confidence": 0.93408203,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "Mira,"
+          },
+          {
+            "word": "es",
+            "start": 8.08,
+            "end": 8.32,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "que",
+            "start": 8.32,
+            "end": 8.82,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "que"
+          }
+        ],
+        "speaker": 0,
+        "id": "a0ad2012-ab0a-404f-ac29-8f58f007e08f"
+      },
+      {
+        "start": 9.679999,
+        "end": 11.02,
+        "confidence": 0.6854248,
+        "channel": 0,
+        "transcript": "Estaba llamando porque",
+        "words": [
+          {
+            "word": "estaba",
+            "start": 9.679999,
+            "end": 10.0,
+            "confidence": 0.13586426,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "Estaba"
+          },
+          {
+            "word": "llamando",
+            "start": 10.0,
+            "end": 10.5,
+            "confidence": 0.98535156,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "llamando"
+          },
+          {
+            "word": "porque",
+            "start": 10.52,
+            "end": 11.02,
+            "confidence": 0.9350586,
+            "speaker": 0,
+            "speaker_confidence": 0.44656438,
+            "punctuated_word": "porque"
+          }
+        ],
+        "speaker": 0,
+        "id": "262b3b4c-6452-4aed-819a-3a70d4c0dcc5"
+      },
+      {
+        "start": 14.0,
+        "end": 15.059999,
+        "confidence": 0.93147784,
+        "channel": 0,
+        "transcript": "Perdón, un segundo.",
+        "words": [
+          {
+            "word": "perdón",
+            "start": 14.0,
+            "end": 14.4,
+            "confidence": 0.8034668,
+            "speaker": 0,
+            "speaker_confidence": 0.41884738,
+            "punctuated_word": "Perdón,"
+          },
+          {
+            "word": "un",
+            "start": 14.4,
+            "end": 14.559999,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.41884738,
+            "punctuated_word": "un"
+          },
+          {
+            "word": "segundo",
+            "start": 14.559999,
+            "end": 15.059999,
+            "confidence": 0.99194336,
+            "speaker": 0,
+            "speaker_confidence": 0.41884738,
+            "punctuated_word": "segundo."
+          }
+        ],
+        "speaker": 0,
+        "id": "1c01e677-2dd3-4d00-9cbd-822101f7c4ff"
+      },
+      {
+        "start": 17.895,
+        "end": 18.635,
+        "confidence": 0.89160156,
+        "channel": 0,
+        "transcript": "Sí, buenas.",
+        "words": [
+          {
+            "word": "sí",
+            "start": 17.895,
+            "end": 18.135,
+            "confidence": 0.9663086,
+            "speaker": 0,
+            "speaker_confidence": 0.3302425,
+            "punctuated_word": "Sí,"
+          },
+          {
+            "word": "buenas",
+            "start": 18.135,
+            "end": 18.635,
+            "confidence": 0.81689453,
+            "speaker": 0,
+            "speaker_confidence": 0.3302425,
+            "punctuated_word": "buenas."
+          }
+        ],
+        "speaker": 0,
+        "id": "d7a5ffa0-951b-4074-ae2b-cab66d0d0c7c"
+      },
+      {
+        "start": 19.175,
+        "end": 19.675,
+        "confidence": 0.99316406,
+        "channel": 0,
+        "transcript": "Es",
+        "words": [
+          {
+            "word": "es",
+            "start": 19.175,
+            "end": 19.675,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.3302425,
+            "punctuated_word": "Es"
+          }
+        ],
+        "speaker": 0,
+        "id": "f3c6e40b-f186-478d-8219-2a37da775adc"
+      },
+      {
+        "start": 19.975,
+        "end": 21.035,
+        "confidence": 0.99523926,
+        "channel": 0,
+        "transcript": "que tengo un problema",
+        "words": [
+          {
+            "word": "que",
+            "start": 19.975,
+            "end": 20.135,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.3302425,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "tengo",
+            "start": 20.135,
+            "end": 20.295,
+            "confidence": 0.98291016,
+            "speaker": 0,
+            "speaker_confidence": 0.3302425,
+            "punctuated_word": "tengo"
+          },
+          {
+            "word": "un",
+            "start": 20.295,
+            "end": 20.535,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.3302425,
+            "punctuated_word": "un"
+          },
+          {
+            "word": "problema",
+            "start": 20.535,
+            "end": 21.035,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.3302425,
+            "punctuated_word": "problema"
+          }
+        ],
+        "speaker": 0,
+        "id": "dba560e7-ee83-41be-b74d-81772f21d52e"
+      },
+      {
+        "start": 24.255001,
+        "end": 24.755001,
+        "confidence": 1.0,
+        "channel": 0,
+        "transcript": "con",
+        "words": [
+          {
+            "word": "con",
+            "start": 24.255001,
+            "end": 24.755001,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.0,
+            "punctuated_word": "con"
+          }
+        ],
+        "speaker": 0,
+        "id": "c0589041-4deb-4c93-9e1d-a1bedf5b844d"
+      },
+      {
+        "start": 27.975,
+        "end": 29.994999,
+        "confidence": 0.97680664,
+        "channel": 0,
+        "transcript": "Internet. Es que se me cae la señal,",
+        "words": [
+          {
+            "word": "internet",
+            "start": 27.975,
+            "end": 28.295,
+            "confidence": 0.8520508,
+            "speaker": 0,
+            "speaker_confidence": 0.4611072,
+            "punctuated_word": "Internet."
+          },
+          {
+            "word": "es",
+            "start": 28.295,
+            "end": 28.375,
+            "confidence": 0.9892578,
+            "speaker": 0,
+            "speaker_confidence": 0.4611072,
+            "punctuated_word": "Es"
+          },
+          {
+            "word": "que",
+            "start": 28.375,
+            "end": 28.695,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.4611072,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "se",
+            "start": 28.695,
+            "end": 28.855,
+            "confidence": 0.9941406,
+            "speaker": 0,
+            "speaker_confidence": 0.4611072,
+            "punctuated_word": "se"
+          },
+          {
+            "word": "me",
+            "start": 28.855,
+            "end": 29.015,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.4611072,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "cae",
+            "start": 29.015,
+            "end": 29.335,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.4611072,
+            "punctuated_word": "cae"
+          },
+          {
+            "word": "la",
+            "start": 29.335,
+            "end": 29.494999,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.6328244,
+            "punctuated_word": "la"
+          },
+          {
+            "word": "señal",
+            "start": 29.494999,
+            "end": 29.994999,
+            "confidence": 0.9790039,
+            "speaker": 0,
+            "speaker_confidence": 0.6328244,
+            "punctuated_word": "señal,"
+          }
+        ],
+        "speaker": 0,
+        "id": "ba64db1e-b04d-41ef-9512-2874ef9b9e4e"
+      },
+      {
+        "start": 30.455,
+        "end": 31.195,
+        "confidence": 0.99609375,
+        "channel": 0,
+        "transcript": "o sea,",
+        "words": [
+          {
+            "word": "o",
+            "start": 30.455,
+            "end": 30.695,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.6328244,
+            "punctuated_word": "o"
+          },
+          {
+            "word": "sea",
+            "start": 30.695,
+            "end": 31.195,
+            "confidence": 0.9921875,
+            "speaker": 0,
+            "speaker_confidence": 0.6328244,
+            "punctuated_word": "sea,"
+          }
+        ],
+        "speaker": 0,
+        "id": "d7efd875-9f47-48e6-be3c-67bdc1d1f2d9"
+      },
+      {
+        "start": 32.83,
+        "end": 33.33,
+        "confidence": 0.9980469,
+        "channel": 0,
+        "transcript": "como",
+        "words": [
+          {
+            "word": "como",
+            "start": 32.83,
+            "end": 33.33,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.6328244,
+            "punctuated_word": "como"
+          }
+        ],
+        "speaker": 0,
+        "id": "1aaf5184-8da5-42b1-91b1-0f4449ed0d27"
+      },
+      {
+        "start": 33.95,
+        "end": 36.77,
+        "confidence": 0.9886998,
+        "channel": 0,
+        "transcript": "que se corta especialmente en las noches.",
+        "words": [
+          {
+            "word": "que",
+            "start": 33.95,
+            "end": 34.11,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "se",
+            "start": 34.11,
+            "end": 34.27,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "se"
+          },
+          {
+            "word": "corta",
+            "start": 34.27,
+            "end": 34.77,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "corta"
+          },
+          {
+            "word": "especialmente",
+            "start": 35.07,
+            "end": 35.57,
+            "confidence": 0.9716797,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "especialmente"
+          },
+          {
+            "word": "en",
+            "start": 35.87,
+            "end": 36.03,
+            "confidence": 0.9902344,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "en"
+          },
+          {
+            "word": "las",
+            "start": 36.03,
+            "end": 36.27,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "las"
+          },
+          {
+            "word": "noches",
+            "start": 36.27,
+            "end": 36.77,
+            "confidence": 0.9667969,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "noches."
+          }
+        ],
+        "speaker": 0,
+        "id": "d877daee-d6a0-4a01-94cc-6cad1ff76524"
+      },
+      {
+        "start": 38.190002,
+        "end": 40.37,
+        "confidence": 0.96744794,
+        "channel": 0,
+        "transcript": "Ya reinicié el módem y nada.",
+        "words": [
+          {
+            "word": "ya",
+            "start": 38.190002,
+            "end": 38.59,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "Ya"
+          },
+          {
+            "word": "reinicié",
+            "start": 38.59,
+            "end": 39.07,
+            "confidence": 0.9946289,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "reinicié"
+          },
+          {
+            "word": "el",
+            "start": 39.07,
+            "end": 39.31,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "módem",
+            "start": 39.31,
+            "end": 39.79,
+            "confidence": 0.97802734,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "módem"
+          },
+          {
+            "word": "y",
+            "start": 39.79,
+            "end": 39.87,
+            "confidence": 0.84228516,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "nada",
+            "start": 39.87,
+            "end": 40.37,
+            "confidence": 0.9946289,
+            "speaker": 0,
+            "speaker_confidence": 0.8027961,
+            "punctuated_word": "nada."
+          }
+        ],
+        "speaker": 0,
+        "id": "90d25bc3-3f2f-4fb1-989a-e3bf754c89b0"
+      },
+      {
+        "start": 49.915,
+        "end": 52.175,
+        "confidence": 0.91413224,
+        "channel": 0,
+        "transcript": "Desde el martes de la semana pasada.",
+        "words": [
+          {
+            "word": "desde",
+            "start": 49.915,
+            "end": 50.075,
+            "confidence": 0.48950195,
+            "speaker": 0,
+            "speaker_confidence": 0.6369687,
+            "punctuated_word": "Desde"
+          },
+          {
+            "word": "el",
+            "start": 50.075,
+            "end": 50.315,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.6369687,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "martes",
+            "start": 50.315,
+            "end": 50.795,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.6369687,
+            "punctuated_word": "martes"
+          },
+          {
+            "word": "de",
+            "start": 50.795,
+            "end": 51.035,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.6369687,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "la",
+            "start": 51.035,
+            "end": 51.195,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.6369687,
+            "punctuated_word": "la"
+          },
+          {
+            "word": "semana",
+            "start": 51.195,
+            "end": 51.675,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.6369687,
+            "punctuated_word": "semana"
+          },
+          {
+            "word": "pasada",
+            "start": 51.675,
+            "end": 52.175,
+            "confidence": 0.9152832,
+            "speaker": 0,
+            "speaker_confidence": 0.6369687,
+            "punctuated_word": "pasada."
+          }
+        ],
+        "speaker": 0,
+        "id": "48f560d9-cfdc-4da6-ba67-32c3ac273dd4"
+      },
+      {
+        "start": 55.835,
+        "end": 56.975,
+        "confidence": 0.96325684,
+        "channel": 0,
+        "transcript": "Sí, desde el martes.",
+        "words": [
+          {
+            "word": "sí",
+            "start": 55.835,
+            "end": 56.075,
+            "confidence": 0.86499023,
+            "speaker": 0,
+            "speaker_confidence": 0.39937282,
+            "punctuated_word": "Sí,"
+          },
+          {
+            "word": "desde",
+            "start": 56.075,
+            "end": 56.315,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.39937282,
+            "punctuated_word": "desde"
+          },
+          {
+            "word": "el",
+            "start": 56.315,
+            "end": 56.475,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.39937282,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "martes",
+            "start": 56.475,
+            "end": 56.975,
+            "confidence": 0.9890137,
+            "speaker": 0,
+            "speaker_confidence": 0.39937282,
+            "punctuated_word": "martes."
+          }
+        ],
+        "speaker": 0,
+        "id": "599c8607-787d-4493-9b73-52b4b4564f21"
+      },
+      {
+        "start": 64.18,
+        "end": 66.2,
+        "confidence": 0.9090169,
+        "channel": 0,
+        "transcript": "Es el cincuenta y cinco treinta",
+        "words": [
+          {
+            "word": "es",
+            "start": 64.18,
+            "end": 64.42,
+            "confidence": 0.6972656,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "Es"
+          },
+          {
+            "word": "el",
+            "start": 64.42,
+            "end": 64.82,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "cincuenta",
+            "start": 64.82,
+            "end": 65.299995,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "cincuenta"
+          },
+          {
+            "word": "y",
+            "start": 65.299995,
+            "end": 65.46,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "cinco",
+            "start": 65.46,
+            "end": 65.7,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "cinco"
+          },
+          {
+            "word": "treinta",
+            "start": 65.7,
+            "end": 66.2,
+            "confidence": 0.7675781,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "treinta"
+          }
+        ],
+        "speaker": 0,
+        "id": "818f124b-0572-40be-b917-c34ca4c4558c"
+      },
+      {
+        "start": 66.9,
+        "end": 67.479996,
+        "confidence": 0.99658203,
+        "channel": 0,
+        "transcript": "y dos",
+        "words": [
+          {
+            "word": "y",
+            "start": 66.9,
+            "end": 66.979996,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "dos",
+            "start": 66.979996,
+            "end": 67.479996,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.6771115,
+            "punctuated_word": "dos"
+          }
+        ],
+        "speaker": 0,
+        "id": "dd58e0f9-8532-4fdf-9c3a-b3354dbca404"
+      },
+      {
+        "start": 69.22,
+        "end": 70.36,
+        "confidence": 0.92594403,
+        "channel": 0,
+        "transcript": "cincuenta y cinco",
+        "words": [
+          {
+            "word": "cincuenta",
+            "start": 69.22,
+            "end": 69.7,
+            "confidence": 0.77978516,
+            "speaker": 0,
+            "speaker_confidence": 0.65669966,
+            "punctuated_word": "cincuenta"
+          },
+          {
+            "word": "y",
+            "start": 69.7,
+            "end": 69.86,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.65669966,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "cinco",
+            "start": 69.86,
+            "end": 70.36,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.65669966,
+            "punctuated_word": "cinco"
+          }
+        ],
+        "speaker": 0,
+        "id": "83393187-4fd3-4e8b-9f19-f64912aa4643"
+      },
+      {
+        "start": 71.38,
+        "end": 72.2,
+        "confidence": 0.99576825,
+        "channel": 0,
+        "transcript": "treinta y dos",
+        "words": [
+          {
+            "word": "treinta",
+            "start": 71.38,
+            "end": 71.54,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.65669966,
+            "punctuated_word": "treinta"
+          },
+          {
+            "word": "y",
+            "start": 71.54,
+            "end": 71.7,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.65669966,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "dos",
+            "start": 71.7,
+            "end": 72.2,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.65669966,
+            "punctuated_word": "dos"
+          }
+        ],
+        "speaker": 0,
+        "id": "e0f7cd21-ca7d-4954-8507-0b5b55b95f9b"
+      },
+      {
+        "start": 72.979996,
+        "end": 73.96,
+        "confidence": 0.9977214,
+        "channel": 0,
+        "transcript": "cuarenta y uno",
+        "words": [
+          {
+            "word": "cuarenta",
+            "start": 72.979996,
+            "end": 73.3,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.46844256,
+            "punctuated_word": "cuarenta"
+          },
+          {
+            "word": "y",
+            "start": 73.3,
+            "end": 73.46,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.46844256,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "uno",
+            "start": 73.46,
+            "end": 73.96,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.46844256,
+            "punctuated_word": "uno"
+          }
+        ],
+        "speaker": 0,
+        "id": "0476e1e9-a0d4-4133-922e-14104132f99f"
+      },
+      {
+        "start": 74.385,
+        "end": 74.885,
+        "confidence": 0.7944336,
+        "channel": 0,
+        "transcript": "veintidós.",
+        "words": [
+          {
+            "word": "veintidós",
+            "start": 74.385,
+            "end": 74.885,
+            "confidence": 0.7944336,
+            "speaker": 0,
+            "speaker_confidence": 0.46844256,
+            "punctuated_word": "veintidós."
+          }
+        ],
+        "speaker": 0,
+        "id": "95d8b07c-0d5e-4830-b310-c1d71d8eeaf5"
+      },
+      {
+        "start": 82.865005,
+        "end": 84.645004,
+        "confidence": 0.8865051,
+        "channel": 0,
+        "transcript": "Ah, o sea que no es solo yo.",
+        "words": [
+          {
+            "word": "ah",
+            "start": 82.865005,
+            "end": 82.945,
+            "confidence": 0.7404785,
+            "speaker": 0,
+            "speaker_confidence": 0.054516792,
+            "punctuated_word": "Ah,"
+          },
+          {
+            "word": "o",
+            "start": 82.945,
+            "end": 83.025,
+            "confidence": 0.9941406,
+            "speaker": 0,
+            "speaker_confidence": 0.054516792,
+            "punctuated_word": "o"
+          },
+          {
+            "word": "sea",
+            "start": 83.025,
+            "end": 83.265,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.45366877,
+            "punctuated_word": "sea"
+          },
+          {
+            "word": "que",
+            "start": 83.265,
+            "end": 83.345,
+            "confidence": 0.62109375,
+            "speaker": 0,
+            "speaker_confidence": 0.45366877,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "no",
+            "start": 83.345,
+            "end": 83.505005,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.45366877,
+            "punctuated_word": "no"
+          },
+          {
+            "word": "es",
+            "start": 83.505005,
+            "end": 83.665,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.45366877,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "solo",
+            "start": 83.665,
+            "end": 84.145004,
+            "confidence": 0.79541016,
+            "speaker": 0,
+            "speaker_confidence": 0.45366877,
+            "punctuated_word": "solo"
+          },
+          {
+            "word": "yo",
+            "start": 84.145004,
+            "end": 84.645004,
+            "confidence": 0.9526367,
+            "speaker": 0,
+            "speaker_confidence": 0.45366877,
+            "punctuated_word": "yo."
+          }
+        ],
+        "speaker": 0,
+        "id": "1aeef57a-8cdc-4f65-b15f-e2ad07e72358"
+      },
+      {
+        "start": 89.062126,
+        "end": 90.202126,
+        "confidence": 0.95129395,
+        "channel": 0,
+        "transcript": "Bueno, está bien, entonces.",
+        "words": [
+          {
+            "word": "bueno",
+            "start": 89.062126,
+            "end": 89.14213,
+            "confidence": 0.97387695,
+            "speaker": 0,
+            "speaker_confidence": 0.4682991,
+            "punctuated_word": "Bueno,"
+          },
+          {
+            "word": "está",
+            "start": 89.14213,
+            "end": 89.382126,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.4682991,
+            "punctuated_word": "está"
+          },
+          {
+            "word": "bien",
+            "start": 89.382126,
+            "end": 89.702126,
+            "confidence": 0.89624023,
+            "speaker": 0,
+            "speaker_confidence": 0.4682991,
+            "punctuated_word": "bien,"
+          },
+          {
+            "word": "entonces",
+            "start": 89.702126,
+            "end": 90.202126,
+            "confidence": 0.93603516,
+            "speaker": 0,
+            "speaker_confidence": 0.4682991,
+            "punctuated_word": "entonces."
+          }
+        ],
+        "speaker": 0,
+        "id": "56c4b7fd-4c24-4f3b-a4dc-8e25f16c4517"
+      },
+      {
+        "start": 90.90213,
+        "end": 91.72213,
+        "confidence": 0.99975586,
+        "channel": 0,
+        "transcript": "Muchas gracias.",
+        "words": [
+          {
+            "word": "muchas",
+            "start": 90.90213,
+            "end": 91.22213,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.4682991,
+            "punctuated_word": "Muchas"
+          },
+          {
+            "word": "gracias",
+            "start": 91.22213,
+            "end": 91.72213,
+            "confidence": 0.9995117,
+            "speaker": 0,
+            "speaker_confidence": 0.4682991,
+            "punctuated_word": "gracias."
+          }
+        ],
+        "speaker": 0,
+        "id": "2970dc93-bef3-4f48-80c5-36c4ece65c74"
+      }
+    ],
+    "latency_seconds": 6.34,
+    "word_count": 86
+  },
+  {
+    "file": "7ff53ad3_0a51_426b_b37e_fbc0cbebb2fc.wav",
+    "transcript": "Hola. Sí, sí. Necesito hablar con un supervisor ya mismo. No, no, es que ya llevo cuarenta y cinco minutos esperando y nadie me da una solución. Me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo. Está bien, está bien, es que estoy muy frustrado con esto. Ya llamé como tres veces y nadie me da ninguna solución. Sí, es nueve ocho siete seis cinco cuatro. ¿Y cuándo se me va a aplicar el reembolso? ¿Cuántos días? Bueno, bueno, está bien, gracias.",
+    "utterances": [
+      {
+        "start": 3.84,
+        "end": 4.34,
+        "confidence": 0.5467529,
+        "channel": 0,
+        "transcript": "Hola.",
+        "words": [
+          {
+            "word": "hola",
+            "start": 3.84,
+            "end": 4.34,
+            "confidence": 0.5467529,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "Hola."
+          }
+        ],
+        "speaker": 0,
+        "id": "2904c75d-b7cc-440e-af8f-abc20b758606"
+      },
+      {
+        "start": 5.92,
+        "end": 6.74,
+        "confidence": 0.81921387,
+        "channel": 0,
+        "transcript": "Sí, sí.",
+        "words": [
+          {
+            "word": "sí",
+            "start": 5.92,
+            "end": 6.24,
+            "confidence": 0.8798828,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "Sí,"
+          },
+          {
+            "word": "sí",
+            "start": 6.24,
+            "end": 6.74,
+            "confidence": 0.7585449,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "sí."
+          }
+        ],
+        "speaker": 0,
+        "id": "c5c15c8b-c74e-454e-80d7-3606215ace83"
+      },
+      {
+        "start": 7.3599997,
+        "end": 9.7,
+        "confidence": 0.985805,
+        "channel": 0,
+        "transcript": "Necesito hablar con un supervisor ya mismo.",
+        "words": [
+          {
+            "word": "necesito",
+            "start": 7.3599997,
+            "end": 7.6,
+            "confidence": 0.97314453,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "Necesito"
+          },
+          {
+            "word": "hablar",
+            "start": 7.6,
+            "end": 7.9199996,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "hablar"
+          },
+          {
+            "word": "con",
+            "start": 7.9199996,
+            "end": 8.08,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "con"
+          },
+          {
+            "word": "un",
+            "start": 8.08,
+            "end": 8.58,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "un"
+          },
+          {
+            "word": "supervisor",
+            "start": 8.72,
+            "end": 8.96,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "supervisor"
+          },
+          {
+            "word": "ya",
+            "start": 8.96,
+            "end": 9.2,
+            "confidence": 0.9404297,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "ya"
+          },
+          {
+            "word": "mismo",
+            "start": 9.2,
+            "end": 9.7,
+            "confidence": 0.9890137,
+            "speaker": 0,
+            "speaker_confidence": 0.7595785,
+            "punctuated_word": "mismo."
+          }
+        ],
+        "speaker": 0,
+        "id": "cfde852d-2580-49f2-853a-5b8a45b0ba2b"
+      },
+      {
+        "start": 12.095,
+        "end": 17.715,
+        "confidence": 0.9810576,
+        "channel": 0,
+        "transcript": "No, no, es que ya llevo cuarenta y cinco minutos esperando y nadie me da una solución.",
+        "words": [
+          {
+            "word": "no",
+            "start": 12.095,
+            "end": 12.335,
+            "confidence": 0.88720703,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "No,"
+          },
+          {
+            "word": "no",
+            "start": 12.335,
+            "end": 12.695,
+            "confidence": 0.94433594,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "no,"
+          },
+          {
+            "word": "es",
+            "start": 12.695,
+            "end": 13.055,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "que",
+            "start": 13.055,
+            "end": 13.535,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "ya",
+            "start": 13.535,
+            "end": 13.775001,
+            "confidence": 0.97998047,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "ya"
+          },
+          {
+            "word": "llevo",
+            "start": 13.775001,
+            "end": 14.255,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "llevo"
+          },
+          {
+            "word": "cuarenta",
+            "start": 14.255,
+            "end": 14.495001,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "cuarenta"
+          },
+          {
+            "word": "y",
+            "start": 14.495001,
+            "end": 14.8550005,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "cinco",
+            "start": 14.8550005,
+            "end": 15.215,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "cinco"
+          },
+          {
+            "word": "minutos",
+            "start": 15.215,
+            "end": 15.715,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "minutos"
+          },
+          {
+            "word": "esperando",
+            "start": 15.8550005,
+            "end": 16.335,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "esperando"
+          },
+          {
+            "word": "y",
+            "start": 16.335,
+            "end": 16.415,
+            "confidence": 0.92822266,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "nadie",
+            "start": 16.415,
+            "end": 16.735,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7782593,
+            "punctuated_word": "nadie"
+          },
+          {
+            "word": "me",
+            "start": 16.735,
+            "end": 16.815,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "da",
+            "start": 16.815,
+            "end": 16.975,
+            "confidence": 0.9707031,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "da"
+          },
+          {
+            "word": "una",
+            "start": 16.975,
+            "end": 17.215,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "una"
+          },
+          {
+            "word": "solución",
+            "start": 17.215,
+            "end": 17.715,
+            "confidence": 0.9724121,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "solución."
+          }
+        ],
+        "speaker": 0,
+        "id": "6ccf43ad-632c-4b2c-9bcd-1c0cd86fa59e"
+      },
+      {
+        "start": 18.175,
+        "end": 22.915,
+        "confidence": 0.99397784,
+        "channel": 0,
+        "transcript": "Me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo.",
+        "words": [
+          {
+            "word": "me",
+            "start": 18.175,
+            "end": 18.415,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "Me"
+          },
+          {
+            "word": "cobraron",
+            "start": 18.415,
+            "end": 18.895,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "cobraron"
+          },
+          {
+            "word": "dos",
+            "start": 18.895,
+            "end": 19.135,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "dos"
+          },
+          {
+            "word": "veces",
+            "start": 19.135,
+            "end": 19.535,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "veces"
+          },
+          {
+            "word": "el",
+            "start": 19.535,
+            "end": 19.615,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "mes",
+            "start": 19.615,
+            "end": 19.935,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "mes"
+          },
+          {
+            "word": "pasado",
+            "start": 19.935,
+            "end": 20.335,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "pasado"
+          },
+          {
+            "word": "y",
+            "start": 20.335,
+            "end": 20.494999,
+            "confidence": 0.9316406,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "tengo",
+            "start": 20.494999,
+            "end": 20.735,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7828818,
+            "punctuated_word": "tengo"
+          },
+          {
+            "word": "el",
+            "start": 20.735,
+            "end": 20.895,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.52355117,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "estado",
+            "start": 20.895,
+            "end": 21.215,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.52355117,
+            "punctuated_word": "estado"
+          },
+          {
+            "word": "de",
+            "start": 21.215,
+            "end": 21.375,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.52355117,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "cuenta",
+            "start": 21.375,
+            "end": 21.875,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.52355117,
+            "punctuated_word": "cuenta"
+          },
+          {
+            "word": "aquí",
+            "start": 22.175,
+            "end": 22.415,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.52355117,
+            "punctuated_word": "aquí"
+          },
+          {
+            "word": "mismo",
+            "start": 22.415,
+            "end": 22.915,
+            "confidence": 0.99658203,
+            "speaker": 0,
+            "speaker_confidence": 0.52355117,
+            "punctuated_word": "mismo."
+          }
+        ],
+        "speaker": 0,
+        "id": "6def53c4-7190-42a3-9902-247d3ca6b219"
+      },
+      {
+        "start": 26.18,
+        "end": 29.32,
+        "confidence": 0.9798251,
+        "channel": 0,
+        "transcript": "Está bien, está bien, es que estoy muy frustrado con esto.",
+        "words": [
+          {
+            "word": "está",
+            "start": 26.18,
+            "end": 26.42,
+            "confidence": 0.9921875,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "Está"
+          },
+          {
+            "word": "bien",
+            "start": 26.42,
+            "end": 26.74,
+            "confidence": 0.9719238,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "bien,"
+          },
+          {
+            "word": "está",
+            "start": 26.74,
+            "end": 26.9,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "está"
+          },
+          {
+            "word": "bien",
+            "start": 26.9,
+            "end": 27.220001,
+            "confidence": 0.8835449,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "bien,"
+          },
+          {
+            "word": "es",
+            "start": 27.220001,
+            "end": 27.380001,
+            "confidence": 0.9838867,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "que",
+            "start": 27.380001,
+            "end": 27.62,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "estoy",
+            "start": 27.62,
+            "end": 27.86,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "estoy"
+          },
+          {
+            "word": "muy",
+            "start": 27.86,
+            "end": 28.18,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "muy"
+          },
+          {
+            "word": "frustrado",
+            "start": 28.18,
+            "end": 28.58,
+            "confidence": 0.9633789,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "frustrado"
+          },
+          {
+            "word": "con",
+            "start": 28.58,
+            "end": 28.82,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "con"
+          },
+          {
+            "word": "esto",
+            "start": 28.82,
+            "end": 29.32,
+            "confidence": 0.98999023,
+            "speaker": 0,
+            "speaker_confidence": 0.7212461,
+            "punctuated_word": "esto."
+          }
+        ],
+        "speaker": 0,
+        "id": "01f3e6a4-5cde-4926-91d0-88a0ee33e8f2"
+      },
+      {
+        "start": 33.46,
+        "end": 36.36,
+        "confidence": 0.96595347,
+        "channel": 0,
+        "transcript": "Ya llamé como tres veces y nadie me da ninguna solución.",
+        "words": [
+          {
+            "word": "ya",
+            "start": 33.46,
+            "end": 33.7,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.54725915,
+            "punctuated_word": "Ya"
+          },
+          {
+            "word": "llamé",
+            "start": 33.7,
+            "end": 34.02,
+            "confidence": 0.9941406,
+            "speaker": 0,
+            "speaker_confidence": 0.54725915,
+            "punctuated_word": "llamé"
+          },
+          {
+            "word": "como",
+            "start": 34.02,
+            "end": 34.260002,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.54725915,
+            "punctuated_word": "como"
+          },
+          {
+            "word": "tres",
+            "start": 34.260002,
+            "end": 34.5,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.54725915,
+            "punctuated_word": "tres"
+          },
+          {
+            "word": "veces",
+            "start": 34.5,
+            "end": 34.739998,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.54725915,
+            "punctuated_word": "veces"
+          },
+          {
+            "word": "y",
+            "start": 34.739998,
+            "end": 34.82,
+            "confidence": 0.9604492,
+            "speaker": 0,
+            "speaker_confidence": 0.55650395,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "nadie",
+            "start": 34.82,
+            "end": 35.06,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.55650395,
+            "punctuated_word": "nadie"
+          },
+          {
+            "word": "me",
+            "start": 35.06,
+            "end": 35.22,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.55650395,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "da",
+            "start": 35.22,
+            "end": 35.38,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.55650395,
+            "punctuated_word": "da"
+          },
+          {
+            "word": "ninguna",
+            "start": 35.38,
+            "end": 35.86,
+            "confidence": 0.6904297,
+            "speaker": 0,
+            "speaker_confidence": 0.55650395,
+            "punctuated_word": "ninguna"
+          },
+          {
+            "word": "solución",
+            "start": 35.86,
+            "end": 36.36,
+            "confidence": 0.9921875,
+            "speaker": 0,
+            "speaker_confidence": 0.55650395,
+            "punctuated_word": "solución."
+          }
+        ],
+        "speaker": 0,
+        "id": "92255eba-1773-48bc-8151-3761b505f110"
+      },
+      {
+        "start": 41.614998,
+        "end": 44.274998,
+        "confidence": 0.9379534,
+        "channel": 0,
+        "transcript": "Sí, es nueve ocho siete seis cinco",
+        "words": [
+          {
+            "word": "sí",
+            "start": 41.614998,
+            "end": 41.774998,
+            "confidence": 0.8552246,
+            "speaker": 0,
+            "speaker_confidence": 0.72058845,
+            "punctuated_word": "Sí,"
+          },
+          {
+            "word": "es",
+            "start": 41.774998,
+            "end": 42.175,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.72058845,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "nueve",
+            "start": 42.175,
+            "end": 42.574997,
+            "confidence": 0.95166016,
+            "speaker": 0,
+            "speaker_confidence": 0.72058845,
+            "punctuated_word": "nueve"
+          },
+          {
+            "word": "ocho",
+            "start": 42.574997,
+            "end": 42.975,
+            "confidence": 0.7705078,
+            "speaker": 0,
+            "speaker_confidence": 0.72058845,
+            "punctuated_word": "ocho"
+          },
+          {
+            "word": "siete",
+            "start": 42.975,
+            "end": 43.375,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.72058845,
+            "punctuated_word": "siete"
+          },
+          {
+            "word": "seis",
+            "start": 43.375,
+            "end": 43.774998,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.72058845,
+            "punctuated_word": "seis"
+          },
+          {
+            "word": "cinco",
+            "start": 43.774998,
+            "end": 44.274998,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.72058845,
+            "punctuated_word": "cinco"
+          }
+        ],
+        "speaker": 0,
+        "id": "a511fff7-9485-434a-9f18-7080154fded2"
+      },
+      {
+        "start": 47.454998,
+        "end": 50.675,
+        "confidence": 0.93670654,
+        "channel": 0,
+        "transcript": "cuatro. ¿Y cuándo se me va a aplicar el reembolso? ¿Cuántos días?",
+        "words": [
+          {
+            "word": "cuatro",
+            "start": 47.454998,
+            "end": 47.614998,
+            "confidence": 0.87402344,
+            "speaker": 0,
+            "speaker_confidence": 0.5148577,
+            "punctuated_word": "cuatro."
+          },
+          {
+            "word": "y",
+            "start": 47.614998,
+            "end": 48.015,
+            "confidence": 0.89868164,
+            "speaker": 0,
+            "speaker_confidence": 0.5148577,
+            "punctuated_word": "¿Y"
+          },
+          {
+            "word": "cuándo",
+            "start": 48.015,
+            "end": 48.254997,
+            "confidence": 0.8510742,
+            "speaker": 0,
+            "speaker_confidence": 0.5148577,
+            "punctuated_word": "cuándo"
+          },
+          {
+            "word": "se",
+            "start": 48.254997,
+            "end": 48.335,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.5148577,
+            "punctuated_word": "se"
+          },
+          {
+            "word": "me",
+            "start": 48.335,
+            "end": 48.495,
+            "confidence": 0.97802734,
+            "speaker": 0,
+            "speaker_confidence": 0.5148577,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "va",
+            "start": 48.495,
+            "end": 48.574997,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.5148577,
+            "punctuated_word": "va"
+          },
+          {
+            "word": "a",
+            "start": 48.574997,
+            "end": 48.655,
+            "confidence": 0.92822266,
+            "speaker": 0,
+            "speaker_confidence": 0.5148577,
+            "punctuated_word": "a"
+          },
+          {
+            "word": "aplicar",
+            "start": 48.655,
+            "end": 48.975,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.5296383,
+            "punctuated_word": "aplicar"
+          },
+          {
+            "word": "el",
+            "start": 48.975,
+            "end": 49.214996,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.5296383,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "reembolso",
+            "start": 49.214996,
+            "end": 49.695,
+            "confidence": 0.94189453,
+            "speaker": 0,
+            "speaker_confidence": 0.5296383,
+            "punctuated_word": "reembolso?"
+          },
+          {
+            "word": "cuántos",
+            "start": 49.695,
+            "end": 50.175,
+            "confidence": 0.77490234,
+            "speaker": 0,
+            "speaker_confidence": 0.5296383,
+            "punctuated_word": "¿Cuántos"
+          },
+          {
+            "word": "días",
+            "start": 50.175,
+            "end": 50.675,
+            "confidence": 0.9975586,
+            "speaker": 0,
+            "speaker_confidence": 0.5296383,
+            "punctuated_word": "días?"
+          }
+        ],
+        "speaker": 0,
+        "id": "12428ba2-7795-4dfc-8431-32795f2e802c"
+      },
+      {
+        "start": 55.63,
+        "end": 56.29,
+        "confidence": 0.87145996,
+        "channel": 0,
+        "transcript": "Bueno, bueno,",
+        "words": [
+          {
+            "word": "bueno",
+            "start": 55.63,
+            "end": 55.79,
+            "confidence": 0.93481445,
+            "speaker": 0,
+            "speaker_confidence": 0.46644795,
+            "punctuated_word": "Bueno,"
+          },
+          {
+            "word": "bueno",
+            "start": 55.79,
+            "end": 56.29,
+            "confidence": 0.80810547,
+            "speaker": 0,
+            "speaker_confidence": 0.46644795,
+            "punctuated_word": "bueno,"
+          }
+        ],
+        "speaker": 0,
+        "id": "ee7d5832-d7e9-4a6f-a488-42605eefb5ff"
+      },
+      {
+        "start": 56.83,
+        "end": 57.97,
+        "confidence": 0.92195636,
+        "channel": 0,
+        "transcript": "está bien, gracias.",
+        "words": [
+          {
+            "word": "está",
+            "start": 56.83,
+            "end": 56.989998,
+            "confidence": 0.96875,
+            "speaker": 0,
+            "speaker_confidence": 0.46644795,
+            "punctuated_word": "está"
+          },
+          {
+            "word": "bien",
+            "start": 56.989998,
+            "end": 57.47,
+            "confidence": 0.81225586,
+            "speaker": 0,
+            "speaker_confidence": 0.46644795,
+            "punctuated_word": "bien,"
+          },
+          {
+            "word": "gracias",
+            "start": 57.47,
+            "end": 57.97,
+            "confidence": 0.9848633,
+            "speaker": 0,
+            "speaker_confidence": 0.46644795,
+            "punctuated_word": "gracias."
+          }
+        ],
+        "speaker": 0,
+        "id": "aa02d482-5bf5-4443-be4c-ae6e21877bd8"
+      }
+    ],
+    "latency_seconds": 5.04,
+    "word_count": 88
+  },
+  {
+    "file": "c5dec9e2_0c70_4b3e_a49a_494f1005dd22.wav",
+    "transcript": "Hola, buenas. Mira, contraté el plan de 5G hace una semana y no estoy viendo las velocidades que me prometieron. Mi dispositivo es compatible con 5G, y en la configuración veo que está conectado a LTE avanzado y no a 5G. Yo antes tenía el plan MOP Pro y ahora tengo el plan MOP Unlimited. Estoy en Ciudad de México, se supone que hay cobertura cinco G aquí. Creo que es el modelo estándar, no el de milímetros. En las pruebas de velocidad me da máximo ochenta megas de bajada y se supone que debería dar al menos trescientos. Si tiene el APN telquestrata punto internet, lo cambio a telquestrata punto cinco g y listo, ¿no? Bueno, lo hago ahora. Muchas gracias.",
+    "utterances": [
+      {
+        "start": 5.3599997,
+        "end": 6.58,
+        "confidence": 0.9151204,
+        "channel": 0,
+        "transcript": "Hola, buenas. Mira,",
+        "words": [
+          {
+            "word": "hola",
+            "start": 5.3599997,
+            "end": 5.52,
+            "confidence": 0.87475586,
+            "speaker": 0,
+            "speaker_confidence": 0.25377178,
+            "punctuated_word": "Hola,"
+          },
+          {
+            "word": "buenas",
+            "start": 5.52,
+            "end": 6.02,
+            "confidence": 0.9597168,
+            "speaker": 0,
+            "speaker_confidence": 0.25377178,
+            "punctuated_word": "buenas."
+          },
+          {
+            "word": "mira",
+            "start": 6.08,
+            "end": 6.58,
+            "confidence": 0.9108887,
+            "speaker": 0,
+            "speaker_confidence": 0.25377178,
+            "punctuated_word": "Mira,"
+          }
+        ],
+        "speaker": 0,
+        "id": "f8a80d3d-a36d-4e7f-8e41-20741832d156"
+      },
+      {
+        "start": 7.44,
+        "end": 12.98,
+        "confidence": 0.9787502,
+        "channel": 0,
+        "transcript": "contraté el plan de 5G hace una semana y no estoy viendo las velocidades que me prometieron.",
+        "words": [
+          {
+            "word": "contraté",
+            "start": 7.44,
+            "end": 7.9199996,
+            "confidence": 0.9902344,
+            "speaker": 0,
+            "speaker_confidence": 0.25377178,
+            "punctuated_word": "contraté"
+          },
+          {
+            "word": "el",
+            "start": 7.9199996,
+            "end": 8.08,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.25377178,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "plan",
+            "start": 8.08,
+            "end": 8.32,
+            "confidence": 0.9951172,
+            "speaker": 0,
+            "speaker_confidence": 0.25377178,
+            "punctuated_word": "plan"
+          },
+          {
+            "word": "de",
+            "start": 8.32,
+            "end": 8.48,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.25377178,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "5g",
+            "start": 8.48,
+            "end": 8.98,
+            "confidence": 0.92456055,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "5G"
+          },
+          {
+            "word": "hace",
+            "start": 9.2,
+            "end": 9.44,
+            "confidence": 0.96972656,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "hace"
+          },
+          {
+            "word": "una",
+            "start": 9.44,
+            "end": 9.679999,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "una"
+          },
+          {
+            "word": "semana",
+            "start": 9.679999,
+            "end": 10.179999,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "semana"
+          },
+          {
+            "word": "y",
+            "start": 10.32,
+            "end": 10.48,
+            "confidence": 0.7714844,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "no",
+            "start": 10.48,
+            "end": 10.88,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "no"
+          },
+          {
+            "word": "estoy",
+            "start": 10.88,
+            "end": 11.2,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "estoy"
+          },
+          {
+            "word": "viendo",
+            "start": 11.2,
+            "end": 11.44,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "viendo"
+          },
+          {
+            "word": "las",
+            "start": 11.44,
+            "end": 11.679999,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "las"
+          },
+          {
+            "word": "velocidades",
+            "start": 11.679999,
+            "end": 12.179999,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "velocidades"
+          },
+          {
+            "word": "que",
+            "start": 12.24,
+            "end": 12.32,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "me",
+            "start": 12.32,
+            "end": 12.48,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "prometieron",
+            "start": 12.48,
+            "end": 12.98,
+            "confidence": 0.9983724,
+            "speaker": 0,
+            "speaker_confidence": 0.78025043,
+            "punctuated_word": "prometieron."
+          }
+        ],
+        "speaker": 0,
+        "id": "74e3cb72-5121-480f-913f-d785a7c6147f"
+      },
+      {
+        "start": 15.375,
+        "end": 17.875,
+        "confidence": 0.9682346,
+        "channel": 0,
+        "transcript": "Mi dispositivo es compatible con 5G,",
+        "words": [
+          {
+            "word": "mi",
+            "start": 15.375,
+            "end": 15.615001,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "Mi"
+          },
+          {
+            "word": "dispositivo",
+            "start": 15.615001,
+            "end": 16.115002,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "dispositivo"
+          },
+          {
+            "word": "es",
+            "start": 16.255001,
+            "end": 16.495,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "compatible",
+            "start": 16.495,
+            "end": 16.995,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "compatible"
+          },
+          {
+            "word": "con",
+            "start": 17.135,
+            "end": 17.375,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "con"
+          },
+          {
+            "word": "5g",
+            "start": 17.375,
+            "end": 17.875,
+            "confidence": 0.81429034,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "5G,"
+          }
+        ],
+        "speaker": 0,
+        "id": "9aee51e3-a57c-477d-bcee-46f6b28ee682"
+      },
+      {
+        "start": 18.575,
+        "end": 22.435001,
+        "confidence": 0.98843664,
+        "channel": 0,
+        "transcript": "y en la configuración veo que está conectado a LTE avanzado",
+        "words": [
+          {
+            "word": "y",
+            "start": 18.575,
+            "end": 18.735,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "en",
+            "start": 18.735,
+            "end": 18.815,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "en"
+          },
+          {
+            "word": "la",
+            "start": 18.815,
+            "end": 19.055,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "la"
+          },
+          {
+            "word": "configuración",
+            "start": 19.055,
+            "end": 19.555,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "configuración"
+          },
+          {
+            "word": "veo",
+            "start": 19.775,
+            "end": 20.015,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "veo"
+          },
+          {
+            "word": "que",
+            "start": 20.015,
+            "end": 20.175,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "está",
+            "start": 20.175,
+            "end": 20.415,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "está"
+          },
+          {
+            "word": "conectado",
+            "start": 20.415,
+            "end": 20.915,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "conectado"
+          },
+          {
+            "word": "a",
+            "start": 20.975,
+            "end": 21.295,
+            "confidence": 0.98828125,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "a"
+          },
+          {
+            "word": "lte",
+            "start": 21.295,
+            "end": 21.795,
+            "confidence": 0.9074707,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "LTE"
+          },
+          {
+            "word": "avanzado",
+            "start": 21.935001,
+            "end": 22.435001,
+            "confidence": 0.9838867,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "avanzado"
+          }
+        ],
+        "speaker": 0,
+        "id": "ef7011fe-b972-4366-bb95-e88b9eb09985"
+      },
+      {
+        "start": 22.815,
+        "end": 23.875,
+        "confidence": 0.9208577,
+        "channel": 0,
+        "transcript": "y no a 5G.",
+        "words": [
+          {
+            "word": "y",
+            "start": 22.815,
+            "end": 22.975,
+            "confidence": 0.69921875,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "no",
+            "start": 22.975,
+            "end": 23.215,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "no"
+          },
+          {
+            "word": "a",
+            "start": 23.215,
+            "end": 23.375,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "a"
+          },
+          {
+            "word": "5g",
+            "start": 23.375,
+            "end": 23.875,
+            "confidence": 0.98811847,
+            "speaker": 0,
+            "speaker_confidence": 0.7861688,
+            "punctuated_word": "5G."
+          }
+        ],
+        "speaker": 0,
+        "id": "b756751c-9f31-4284-b26e-783c847d3931"
+      },
+      {
+        "start": 36.010002,
+        "end": 40.59,
+        "confidence": 0.937779,
+        "channel": 0,
+        "transcript": "Yo antes tenía el plan MOP Pro y ahora tengo el plan MOP Unlimited.",
+        "words": [
+          {
+            "word": "yo",
+            "start": 36.010002,
+            "end": 36.25,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "Yo"
+          },
+          {
+            "word": "antes",
+            "start": 36.25,
+            "end": 36.65,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "antes"
+          },
+          {
+            "word": "tenía",
+            "start": 36.65,
+            "end": 36.97,
+            "confidence": 0.9941406,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "tenía"
+          },
+          {
+            "word": "el",
+            "start": 36.97,
+            "end": 37.29,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "plan",
+            "start": 37.29,
+            "end": 37.45,
+            "confidence": 0.9838867,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "plan"
+          },
+          {
+            "word": "mop",
+            "start": 37.45,
+            "end": 37.85,
+            "confidence": 0.7224121,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "MOP"
+          },
+          {
+            "word": "pro",
+            "start": 37.85,
+            "end": 38.25,
+            "confidence": 0.74316406,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "Pro"
+          },
+          {
+            "word": "y",
+            "start": 38.25,
+            "end": 38.41,
+            "confidence": 0.79541016,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "ahora",
+            "start": 38.41,
+            "end": 38.73,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "ahora"
+          },
+          {
+            "word": "tengo",
+            "start": 38.73,
+            "end": 38.97,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "tengo"
+          },
+          {
+            "word": "el",
+            "start": 38.97,
+            "end": 39.28,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "plan",
+            "start": 39.28,
+            "end": 39.53,
+            "confidence": 0.9902344,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "plan"
+          },
+          {
+            "word": "mop",
+            "start": 39.53,
+            "end": 40.03,
+            "confidence": 0.9694824,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "MOP"
+          },
+          {
+            "word": "unlimited",
+            "start": 40.09,
+            "end": 40.59,
+            "confidence": 0.9448242,
+            "speaker": 0,
+            "speaker_confidence": 0.699244,
+            "punctuated_word": "Unlimited."
+          }
+        ],
+        "speaker": 0,
+        "id": "ba0d3214-e1a7-4a0d-b4fd-98e9aec8a97a"
+      },
+      {
+        "start": 46.215,
+        "end": 47.434998,
+        "confidence": 0.9693359,
+        "channel": 0,
+        "transcript": "Estoy en Ciudad de México,",
+        "words": [
+          {
+            "word": "estoy",
+            "start": 46.215,
+            "end": 46.454998,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "Estoy"
+          },
+          {
+            "word": "en",
+            "start": 46.454998,
+            "end": 46.614998,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "en"
+          },
+          {
+            "word": "ciudad",
+            "start": 46.614998,
+            "end": 46.855,
+            "confidence": 0.92089844,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "Ciudad"
+          },
+          {
+            "word": "de",
+            "start": 46.855,
+            "end": 46.934998,
+            "confidence": 0.9970703,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "méxico",
+            "start": 46.934998,
+            "end": 47.434998,
+            "confidence": 0.92871094,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "México,"
+          }
+        ],
+        "speaker": 0,
+        "id": "51295eae-f9ac-4465-8bb9-b9d576c8d0ee"
+      },
+      {
+        "start": 47.735,
+        "end": 50.635,
+        "confidence": 0.9218445,
+        "channel": 0,
+        "transcript": "se supone que hay cobertura cinco G aquí.",
+        "words": [
+          {
+            "word": "se",
+            "start": 47.735,
+            "end": 47.894997,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "se"
+          },
+          {
+            "word": "supone",
+            "start": 47.894997,
+            "end": 48.295,
+            "confidence": 0.99609375,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "supone"
+          },
+          {
+            "word": "que",
+            "start": 48.295,
+            "end": 48.535,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "hay",
+            "start": 48.535,
+            "end": 48.774998,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "hay"
+          },
+          {
+            "word": "cobertura",
+            "start": 48.774998,
+            "end": 49.274998,
+            "confidence": 0.83935547,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "cobertura"
+          },
+          {
+            "word": "cinco",
+            "start": 49.335,
+            "end": 49.735,
+            "confidence": 0.79833984,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "cinco"
+          },
+          {
+            "word": "g",
+            "start": 49.735,
+            "end": 50.135,
+            "confidence": 0.91503906,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "G"
+          },
+          {
+            "word": "aquí",
+            "start": 50.135,
+            "end": 50.635,
+            "confidence": 0.829834,
+            "speaker": 0,
+            "speaker_confidence": 0.5859402,
+            "punctuated_word": "aquí."
+          }
+        ],
+        "speaker": 0,
+        "id": "628f514f-c947-48be-8b0f-95ab7f4f7ad1"
+      },
+      {
+        "start": 56.07,
+        "end": 57.29,
+        "confidence": 0.99189454,
+        "channel": 0,
+        "transcript": "Creo que es el modelo",
+        "words": [
+          {
+            "word": "creo",
+            "start": 56.07,
+            "end": 56.190002,
+            "confidence": 0.9604492,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "Creo"
+          },
+          {
+            "word": "que",
+            "start": 56.190002,
+            "end": 56.31,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "es",
+            "start": 56.31,
+            "end": 56.55,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "es"
+          },
+          {
+            "word": "el",
+            "start": 56.55,
+            "end": 56.79,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "modelo",
+            "start": 56.79,
+            "end": 57.29,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "modelo"
+          }
+        ],
+        "speaker": 0,
+        "id": "2ab2a72c-289b-4ff3-a8c1-e30f4acefeee"
+      },
+      {
+        "start": 57.67,
+        "end": 58.89,
+        "confidence": 0.97753906,
+        "channel": 0,
+        "transcript": "estándar, no el de milímetros.",
+        "words": [
+          {
+            "word": "estándar",
+            "start": 57.67,
+            "end": 57.83,
+            "confidence": 0.9260254,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "estándar,"
+          },
+          {
+            "word": "no",
+            "start": 57.83,
+            "end": 58.07,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "no"
+          },
+          {
+            "word": "el",
+            "start": 58.07,
+            "end": 58.23,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "de",
+            "start": 58.23,
+            "end": 58.39,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "milímetros",
+            "start": 58.39,
+            "end": 58.89,
+            "confidence": 0.9645996,
+            "speaker": 0,
+            "speaker_confidence": 0.7313174,
+            "punctuated_word": "milímetros."
+          }
+        ],
+        "speaker": 0,
+        "id": "190f64f8-84be-4f94-8c95-f92b3202e337"
+      },
+      {
+        "start": 59.99,
+        "end": 62.17,
+        "confidence": 0.9851074,
+        "channel": 0,
+        "transcript": "En las pruebas de velocidad me da máximo",
+        "words": [
+          {
+            "word": "en",
+            "start": 59.99,
+            "end": 60.07,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "En"
+          },
+          {
+            "word": "las",
+            "start": 60.07,
+            "end": 60.23,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "las"
+          },
+          {
+            "word": "pruebas",
+            "start": 60.23,
+            "end": 60.47,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "pruebas"
+          },
+          {
+            "word": "de",
+            "start": 60.47,
+            "end": 60.63,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "velocidad",
+            "start": 60.63,
+            "end": 61.13,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "velocidad"
+          },
+          {
+            "word": "me",
+            "start": 61.27,
+            "end": 61.43,
+            "confidence": 0.9135742,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "me"
+          },
+          {
+            "word": "da",
+            "start": 61.43,
+            "end": 61.67,
+            "confidence": 0.9838867,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "da"
+          },
+          {
+            "word": "máximo",
+            "start": 61.67,
+            "end": 62.17,
+            "confidence": 0.98535156,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "máximo"
+          }
+        ],
+        "speaker": 0,
+        "id": "c1f4f94f-9948-4d6b-9008-5785cccd7fa2"
+      },
+      {
+        "start": 62.71,
+        "end": 66.729996,
+        "confidence": 0.9786095,
+        "channel": 0,
+        "transcript": "ochenta megas de bajada y se supone que debería dar al menos trescientos.",
+        "words": [
+          {
+            "word": "ochenta",
+            "start": 62.71,
+            "end": 62.87,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "ochenta"
+          },
+          {
+            "word": "megas",
+            "start": 62.87,
+            "end": 63.11,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "megas"
+          },
+          {
+            "word": "de",
+            "start": 63.11,
+            "end": 63.27,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "de"
+          },
+          {
+            "word": "bajada",
+            "start": 63.27,
+            "end": 63.77,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "bajada"
+          },
+          {
+            "word": "y",
+            "start": 63.989998,
+            "end": 64.15,
+            "confidence": 0.82177734,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "se",
+            "start": 64.15,
+            "end": 64.39,
+            "confidence": 0.98291016,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "se"
+          },
+          {
+            "word": "supone",
+            "start": 64.39,
+            "end": 64.63,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "supone"
+          },
+          {
+            "word": "que",
+            "start": 64.63,
+            "end": 64.79,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "que"
+          },
+          {
+            "word": "debería",
+            "start": 64.79,
+            "end": 65.29,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "debería"
+          },
+          {
+            "word": "dar",
+            "start": 65.35,
+            "end": 65.59,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "dar"
+          },
+          {
+            "word": "al",
+            "start": 65.59,
+            "end": 65.75,
+            "confidence": 0.9375,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "al"
+          },
+          {
+            "word": "menos",
+            "start": 65.75,
+            "end": 66.229996,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "menos"
+          },
+          {
+            "word": "trescientos",
+            "start": 66.229996,
+            "end": 66.729996,
+            "confidence": 0.982666,
+            "speaker": 0,
+            "speaker_confidence": 0.7793634,
+            "punctuated_word": "trescientos."
+          }
+        ],
+        "speaker": 0,
+        "id": "bf886d76-9116-4ee6-96bc-e26e99fdf447"
+      },
+      {
+        "start": 74.375,
+        "end": 76.555,
+        "confidence": 0.8628174,
+        "channel": 0,
+        "transcript": "Si tiene el APN telquestrata",
+        "words": [
+          {
+            "word": "si",
+            "start": 74.375,
+            "end": 74.695,
+            "confidence": 0.88720703,
+            "speaker": 0,
+            "speaker_confidence": 0.5221079,
+            "punctuated_word": "Si"
+          },
+          {
+            "word": "tiene",
+            "start": 74.695,
+            "end": 75.095,
+            "confidence": 0.99316406,
+            "speaker": 0,
+            "speaker_confidence": 0.5221079,
+            "punctuated_word": "tiene"
+          },
+          {
+            "word": "el",
+            "start": 75.095,
+            "end": 75.415,
+            "confidence": 0.91748047,
+            "speaker": 0,
+            "speaker_confidence": 0.5221079,
+            "punctuated_word": "el"
+          },
+          {
+            "word": "apn",
+            "start": 75.415,
+            "end": 75.915,
+            "confidence": 0.7739258,
+            "speaker": 0,
+            "speaker_confidence": 0.5221079,
+            "punctuated_word": "APN"
+          },
+          {
+            "word": "telquestrata",
+            "start": 76.055,
+            "end": 76.555,
+            "confidence": 0.7423096,
+            "speaker": 0,
+            "speaker_confidence": 0.5221079,
+            "punctuated_word": "telquestrata"
+          }
+        ],
+        "speaker": 0,
+        "id": "4b37113d-7173-4ae5-96ec-fa860a002b42"
+      },
+      {
+        "start": 77.095,
+        "end": 77.675,
+        "confidence": 0.75109863,
+        "channel": 0,
+        "transcript": "punto internet,",
+        "words": [
+          {
+            "word": "punto",
+            "start": 77.095,
+            "end": 77.175,
+            "confidence": 0.93603516,
+            "speaker": 0,
+            "speaker_confidence": 0.5221079,
+            "punctuated_word": "punto"
+          },
+          {
+            "word": "internet",
+            "start": 77.175,
+            "end": 77.675,
+            "confidence": 0.5661621,
+            "speaker": 0,
+            "speaker_confidence": 0.5221079,
+            "punctuated_word": "internet,"
+          }
+        ],
+        "speaker": 0,
+        "id": "d294329e-7939-4c69-8150-9a2344bafc7d"
+      },
+      {
+        "start": 81.095,
+        "end": 82.395004,
+        "confidence": 0.9840088,
+        "channel": 0,
+        "transcript": "lo cambio a telquestrata",
+        "words": [
+          {
+            "word": "lo",
+            "start": 81.095,
+            "end": 81.415,
+            "confidence": 0.99121094,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "lo"
+          },
+          {
+            "word": "cambio",
+            "start": 81.415,
+            "end": 81.655,
+            "confidence": 0.95410156,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "cambio"
+          },
+          {
+            "word": "a",
+            "start": 81.655,
+            "end": 81.895004,
+            "confidence": 0.9921875,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "a"
+          },
+          {
+            "word": "telquestrata",
+            "start": 81.895004,
+            "end": 82.395004,
+            "confidence": 0.99853516,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "telquestrata"
+          }
+        ],
+        "speaker": 0,
+        "id": "65218c82-f2d6-48fb-b847-428bb32235da"
+      },
+      {
+        "start": 83.175,
+        "end": 84.795,
+        "confidence": 0.8709988,
+        "channel": 0,
+        "transcript": "punto cinco g y listo, ¿no?",
+        "words": [
+          {
+            "word": "punto",
+            "start": 83.175,
+            "end": 83.495,
+            "confidence": 0.9980469,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "punto"
+          },
+          {
+            "word": "cinco",
+            "start": 83.495,
+            "end": 83.655,
+            "confidence": 0.98535156,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "cinco"
+          },
+          {
+            "word": "g",
+            "start": 83.655,
+            "end": 83.895004,
+            "confidence": 0.57177734,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "g"
+          },
+          {
+            "word": "y",
+            "start": 83.895004,
+            "end": 84.055,
+            "confidence": 0.91015625,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "y"
+          },
+          {
+            "word": "listo",
+            "start": 84.055,
+            "end": 84.295,
+            "confidence": 0.7770996,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "listo,"
+          },
+          {
+            "word": "no",
+            "start": 84.295,
+            "end": 84.795,
+            "confidence": 0.9835612,
+            "speaker": 0,
+            "speaker_confidence": 0.53716224,
+            "punctuated_word": "¿no?"
+          }
+        ],
+        "speaker": 0,
+        "id": "593841d6-6a94-46fa-acd8-cd433e036bce"
+      },
+      {
+        "start": 94.71001,
+        "end": 96.97,
+        "confidence": 0.9715576,
+        "channel": 0,
+        "transcript": "Bueno, lo hago ahora. Muchas gracias.",
+        "words": [
+          {
+            "word": "bueno",
+            "start": 94.71001,
+            "end": 95.03,
+            "confidence": 0.91796875,
+            "speaker": 0,
+            "speaker_confidence": 0.3922131,
+            "punctuated_word": "Bueno,"
+          },
+          {
+            "word": "lo",
+            "start": 95.03,
+            "end": 95.19,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.3922131,
+            "punctuated_word": "lo"
+          },
+          {
+            "word": "hago",
+            "start": 95.19,
+            "end": 95.51,
+            "confidence": 1.0,
+            "speaker": 0,
+            "speaker_confidence": 0.3922131,
+            "punctuated_word": "hago"
+          },
+          {
+            "word": "ahora",
+            "start": 95.51,
+            "end": 96.01,
+            "confidence": 0.9375,
+            "speaker": 0,
+            "speaker_confidence": 0.3922131,
+            "punctuated_word": "ahora."
+          },
+          {
+            "word": "muchas",
+            "start": 96.15,
+            "end": 96.47,
+            "confidence": 0.99902344,
+            "speaker": 0,
+            "speaker_confidence": 0.3922131,
+            "punctuated_word": "Muchas"
+          },
+          {
+            "word": "gracias",
+            "start": 96.47,
+            "end": 96.97,
+            "confidence": 0.9748535,
+            "speaker": 0,
+            "speaker_confidence": 0.3922131,
+            "punctuated_word": "gracias."
+          }
+        ],
+        "speaker": 0,
+        "id": "7eb566bd-2d16-4ba5-a62f-de7285e64133"
+      }
+    ],
+    "latency_seconds": 7.31,
+    "word_count": 122
+  }
+]

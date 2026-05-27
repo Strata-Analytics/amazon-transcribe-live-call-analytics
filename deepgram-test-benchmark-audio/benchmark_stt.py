@@ -40,10 +40,18 @@ def transcribe_deepgram(filepath: str) -> dict:
     }
 
 def main():
-    files = sorted(glob.glob("deepgram-test-benchmark-audio/*.wav"))
-    print(f"Found {len(files)} files\n")
+    import sys
+    folder = sys.argv[1] if len(sys.argv) > 1 else "deepgram-test-benchmark-audio"
+    folder = folder.rstrip("/")
+    files = sorted(glob.glob(os.path.join(folder, "*.wav")))
+
+    # Output file named after the folder (e.g. 2026-05-26 → deepgram_results_2026-05-26.json)
+    tag = os.path.basename(folder)
+    out_file = os.path.join("deepgram-test-benchmark-audio", f"deepgram_results_{tag}.json")
+
+    print(f"Found {len(files)} files in {folder}\n")
     results = []
-    
+
     for f in files:
         print(f"Processing {os.path.basename(f)}...")
         try:
@@ -54,11 +62,11 @@ def main():
         except Exception as e:
             print(f"  ✗ Error: {e}")
             results.append({"file": os.path.basename(f), "error": str(e)})
-    
-    with open("deepgram-test-benchmark-audio/deepgram_results.json", "w", encoding="utf-8") as f:
+
+    with open(out_file, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
-    
-    print(f"\nResults saved to deepgram_results.json")
+
+    print(f"\nResults saved to {out_file}")
     successful = [r for r in results if "transcript" in r]
     if successful:
         avg_latency = sum(r["latency_seconds"] for r in successful) / len(successful)

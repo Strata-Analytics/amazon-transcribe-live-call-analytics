@@ -1,0 +1,104 @@
+[
+  {
+    "file": "0ceb9317_c436_42ab_b839_f2dfc55c6149.wav",
+    "deepgram": {
+      "first_interim_ms": 6312,
+      "first_final_ms": 8418,
+      "avg_finalization_ms": 68,
+      "transcript": "Hola, soy María González, Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. Me ofrecen treinta gigas por doscientos ochenta pesos al mes. Yo ahora pago tres Sí, actualmente tengo el plan MOP Pro, de veinte gigas. Pero es veinte pesos más caro. Que lo que me ofrecen. Ah, bueno, así sí cambia la cosa. Ese descuento aplica desde cuándo, Sí, me parece bien. Proceda con el cambio. Eso es todo, muchas gracias.",
+      "word_count": 80
+    },
+    "transcribe": {
+      "first_interim_ms": 5640,
+      "first_final_ms": 7639,
+      "avg_finalization_ms": 31,
+      "transcript": "Hola, soy María González. Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. me ofrecen 30 gigas por 280 MXN al mes. Yo ahora pago 320 y solo tengo 20 gigas. Sí, actualmente tengo el plan Mov Pro. de 20 gigas. Hm, pero es 20 MXN más caro. Qué es lo que me ofrecen. Ah, bueno, así sí cambia la cosa y ese descuento aplica desde cuándo Sí, me parece bien. Proceda con el cambio. Eso es todo. Muchas gracias.",
+      "word_count": 87
+    }
+  },
+  {
+    "file": "34741b31_adc3_40f8_966e_fb02db77ed11.wav",
+    "deepgram": {
+      "first_interim_ms": null,
+      "first_final_ms": null,
+      "avg_finalization_ms": null,
+      "transcript": "",
+      "word_count": 0
+    },
+    "transcribe": {
+      "first_interim_ms": null,
+      "first_final_ms": null,
+      "avg_finalization_ms": null,
+      "transcript": "",
+      "word_count": 0
+    }
+  },
+  {
+    "file": "3e347911_0049_4aab_a2e3_b0698e8aee94.wav",
+    "deepgram": {
+      "first_interim_ms": 4033,
+      "first_final_ms": 4033,
+      "avg_finalization_ms": 60,
+      "transcript": "Hola, mi nombre es Carlos Pérez, Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias, hasta luego.",
+      "word_count": 20
+    },
+    "transcribe": {
+      "first_interim_ms": 3737,
+      "first_final_ms": 3879,
+      "avg_finalization_ms": 32,
+      "transcript": "Hola. Mi nombre es Carlos Pérez. Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias. Hasta luego.",
+      "word_count": 20
+    }
+  },
+  {
+    "file": "700dda45_e351_4be3_987b_1b2de24adb7b.wav",
+    "deepgram": {
+      "first_interim_ms": 6247,
+      "first_final_ms": 10242,
+      "avg_finalization_ms": 77,
+      "transcript": "Sí, hola. Mira, es que perdón, un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal, o sea, como que se corta especialmente en las noches. Ya reinicié el model y nada. Desde el martes de la semana pasada. Sí, desde el martes. Es el cincuenta y cinco treinta y dos cincuenta y cinco treinta y dos cuarenta y uno veintidós O sea que no es solo yo. Bueno, está bien entonces. Muchas gracias.",
+      "word_count": 83
+    },
+    "transcribe": {
+      "first_interim_ms": 1610,
+      "first_final_ms": 17184,
+      "avg_finalization_ms": 23,
+      "transcript": "así que ganamos. De hecho, querido, vas a Sí, hola. Mira, es que estaba llamando porque eso. eh? Perdón. Un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal. o sea, como que se corta especialmente en las noches. ya reinicié el modo de ni nada. am Desde el martes de la semana pasada. Sí, desde el martes. colección de invierno con. Es el 5532 5532 41122 pusimos todo el Ah, o sea que no es solo yo. Bueno, está bien, entonces. Muchas gracias.",
+      "word_count": 93
+    }
+  },
+  {
+    "file": "7ff53ad3_0a51_426b_b37e_fbc0cbebb2fc.wav",
+    "deepgram": {
+      "first_interim_ms": 4152,
+      "first_final_ms": 5167,
+      "avg_finalization_ms": 60,
+      "transcript": "Hola, Sí, sí, necesito hablar con un supervisor ya mismo. No, no, es que ya llevo cuarenta y cinco minutos esperando y nadie me da una solución, Me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo. Está bien, está bien, es que estoy muy frustrado con esto. Ya llamé como tres veces y nadie me da ni una solución. Sí, es nueve ocho siete seis cinco cuatro. ¿Y cuándo se me va a aplicar el reembolso? ¿Cuántos días? Bueno, bueno. Está bien. Gracias.",
+      "word_count": 89
+    },
+    "transcribe": {
+      "first_interim_ms": 4644,
+      "first_final_ms": 5247,
+      "avg_finalization_ms": 43,
+      "transcript": "Hola. Sí, sí, eh? Necesito hablar con un supervisor ya mismo. No, no, es que ya llevo cuarenta y cinco minutos esperando y nadie me da una solución. me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo. Está bien. Está bien. Es que estoy muy frustrado con esto. Ya llamé como tres veces y nadie me da ninguna solución Sí, es 987654. y cuándo se me va a aplicar el reembolso? ¿Cuántos días? Bueno, bueno, Está bien. Gracias.",
+      "word_count": 84
+    }
+  },
+  {
+    "file": "c5dec9e2_0c70_4b3e_a49a_494f1005dd22.wav",
+    "deepgram": {
+      "first_interim_ms": 5784,
+      "first_final_ms": 6959,
+      "avg_finalization_ms": 52,
+      "transcript": "Hola, buenas. Mira, contraté el plan de cinco G hace una semana y no estoy viendo las velocidades que me prometieron. Mi dispositivo es compatible con 5G, y en la configuración veo que está conectado a LTE avanzado, y no a 5G. Yo antes tenía el plan MOP Pro y ahora tengo el plan MOP Unlimited, Estoy en Ciudad de México, se supone que hay cobertura cinco G aquí. Creo que es el modelo estándar, no el de milímetros. En las pruebas de velocidad me da máximo ochenta megas de bajada, y se supone que debería dar al menos trescientos. Si tiene el APN telcuestrata punto internet, lo cambio a telcoestrata punto cinco g y listo, Bueno, lo hago ahora, muchas gracias.",
+      "word_count": 122
+    },
+    "transcribe": {
+      "first_interim_ms": 6368,
+      "first_final_ms": 6968,
+      "avg_finalization_ms": 20,
+      "transcript": "Hola, buenas. Mira, contraté el plan de 5G hace una semana y no estoy viendo la velocidades que me prometieron mis dispositivo es compatible con cinco G. Y en la configuración veo que está conectado a LTE avanzado y no a 5G yo antes tenía el plan MPP y ahora tengo el plan Mov Unlimited. Estoy en Ciudad de México. Se supone que hay cobertura 5G aquí. Creo que es el modelo estándar, no el de milímetros. en las pruebas de velocidad me da máximo 80 megas de bajada y se supone que debería dar al menos 300. Sí tiene el APN telcoestrata. Lo cambio a telco extrata punto 5G y listo, ¿no? Bueno, lo hago ahora. Muchas gracias.",
+      "word_count": 119
+    }
+  }
+]

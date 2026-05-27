@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Transcriber Benchmark Report</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: #f5f6fa; margin: 0; padding: 20px; color: #2c3e50; }
+  h1   { text-align: center; color: #2c3e50; }
+  .summary { background: white; border-radius: 8px; padding: 20px; margin-bottom: 24px;
+              box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .summary table { border-collapse: collapse; width: 100%; }
+  .summary th, .summary td { padding: 8px 16px; border: 1px solid #ddd; text-align: left; }
+  .summary th { background: #ecf0f1; }
+  .card { background: white; border-radius: 8px; margin-bottom: 24px;
+           box-shadow: 0 2px 8px rgba(0,0,0,.08); overflow: hidden; }
+  .card-header { background: #2c3e50; padding: 12px 16px; display: flex;
+                  flex-wrap: wrap; gap: 6px; align-items: center; }
+  .fname { color: white; font-family: monospace; font-size: 13px; margin-right: 8px; }
+  .badge { color: white; font-size: 11px; padding: 2px 8px; border-radius: 12px;
+            font-weight: 600; }
+  .transcripts { display: grid; grid-template-columns: 1fr 1fr; }
+  .col { padding: 16px; }
+  .col:first-child { border-right: 1px solid #ecf0f1; }
+  .col-label { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 1px; margin-bottom: 8px; }
+  .deepgram   { color: #2980b9; }
+  .transcribe { color: #8e44ad; }
+  .text { font-size: 14px; line-height: 1.7; color: #34495e; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>Transcriber Benchmark — Deepgram vs AWS Transcribe</h1>
+
+    <div class="summary">
+      <h2>Summary — 6 files</h2>
+      <table>
+        <tr><th></th><th>Deepgram</th><th>AWS Transcribe</th><th>Winner</th></tr>
+        <tr><td>Avg latency</td><td>5.3s</td><td>33.8s</td>
+            <td>🟢 Deepgram</td></tr>
+        <tr><td>Avg words</td><td>67</td><td>66</td>
+            <td>more words → DG</td></tr>
+        <tr><td>Success rate</td><td>6/6</td><td>6/6</td><td>🟡 Tie</td></tr>
+      </table>
+    </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="fname">0ceb9317_c436_42ab_b839_f2dfc55c6149.wav</span>
+            <span class="badge" style="background:#2980b9">DG 7.15s</span>
+            <span class="badge" style="background:#8e44ad">TR 55.74s</span>
+            <span class="badge" style="background:#c0392b">Δlat +48.6s</span>
+            <span class="badge" style="background:#7f8c8d">DG 87w</span>
+            <span class="badge" style="background:#7f8c8d">TR 86w</span>
+            <span class="badge" style="background:#27ae60">Δwords -1</span>
+            <span class="badge" style="background:#16a085">DG spk:1</span>
+            <span class="badge" style="background:#d35400">TR spk:1</span>
+          </div>
+          <div class="transcripts">
+            <div class="col">
+              <div class="col-label deepgram">Deepgram</div>
+              <div class="text">Hola, soy María González. Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. Me ofrecen treinta gigas por doscientos ochenta pesos al mes. Yo ahora pago trescientos veinte y solo tengo veinte gigas. Sí, actualmente tengo el plan MOVE Pro de veinte gigas. Pero es veinte pesos más caro que lo que me ofrecen. Ah, bueno, así sí cambia la cosa. ¿Y ese descuento aplica desde cuándo? Sí, me parece bien. Proceda con el cambio. Eso es todo. Muchas gracias.</div>
+            </div>
+            <div class="col">
+              <div class="col-label transcribe">AWS Transcribe</div>
+              <div class="text">Hola, soy María González. Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. Me ofrecen 30 gigas por 280 MXN al mes. Yo ahora pago 320 y solo tengo 20 gigas. Sí, actualmente tengo el plan Mov Pro. de 20 gigas. Mm, pero es 20 MXN más caro que lo que me ofrecen. Ah, bueno, así sí cambia la cosa. Y ese descuento aplica desde cuándo? Sí, me parece bien. proceda con el cambio. Eso es todo. Muchas gracias.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="fname">34741b31_adc3_40f8_966e_fb02db77ed11.wav</span>
+            <span class="badge" style="background:#2980b9">DG 3.09s</span>
+            <span class="badge" style="background:#8e44ad">TR 29.47s</span>
+            <span class="badge" style="background:#c0392b">Δlat +26.4s</span>
+            <span class="badge" style="background:#7f8c8d">DG 0w</span>
+            <span class="badge" style="background:#7f8c8d">TR 0w</span>
+            <span class="badge" style="background:#27ae60">Δwords +0</span>
+            <span class="badge" style="background:#16a085">DG spk:0</span>
+            <span class="badge" style="background:#d35400">TR spk:0</span>
+          </div>
+          <div class="transcripts">
+            <div class="col">
+              <div class="col-label deepgram">Deepgram</div>
+              <div class="text"></div>
+            </div>
+            <div class="col">
+              <div class="col-label transcribe">AWS Transcribe</div>
+              <div class="text"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="fname">3e347911_0049_4aab_a2e3_b0698e8aee94.wav</span>
+            <span class="badge" style="background:#2980b9">DG 3.01s</span>
+            <span class="badge" style="background:#8e44ad">TR 13.32s</span>
+            <span class="badge" style="background:#c0392b">Δlat +10.3s</span>
+            <span class="badge" style="background:#7f8c8d">DG 20w</span>
+            <span class="badge" style="background:#7f8c8d">TR 20w</span>
+            <span class="badge" style="background:#27ae60">Δwords +0</span>
+            <span class="badge" style="background:#16a085">DG spk:1</span>
+            <span class="badge" style="background:#d35400">TR spk:1</span>
+          </div>
+          <div class="transcripts">
+            <div class="col">
+              <div class="col-label deepgram">Deepgram</div>
+              <div class="text">Hola, mi nombre es Carlos Pérez. Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias. Hasta luego.</div>
+            </div>
+            <div class="col">
+              <div class="col-label transcribe">AWS Transcribe</div>
+              <div class="text">Hola. Mi nombre es Carlos Pérez. Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias. Hasta luego.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="fname">700dda45_e351_4be3_987b_1b2de24adb7b.wav</span>
+            <span class="badge" style="background:#2980b9">DG 6.34s</span>
+            <span class="badge" style="background:#8e44ad">TR 52.03s</span>
+            <span class="badge" style="background:#c0392b">Δlat +45.7s</span>
+            <span class="badge" style="background:#7f8c8d">DG 86w</span>
+            <span class="badge" style="background:#7f8c8d">TR 90w</span>
+            <span class="badge" style="background:#27ae60">Δwords +4</span>
+            <span class="badge" style="background:#16a085">DG spk:1</span>
+            <span class="badge" style="background:#d35400">TR spk:2</span>
+          </div>
+          <div class="transcripts">
+            <div class="col">
+              <div class="col-label deepgram">Deepgram</div>
+              <div class="text">Sí, hola. Mira, es que Estaba llamando porque Perdón, un segundo. Sí, buenas. Es que tengo un problema con Internet. Es que se me cae la señal, o sea, como que se corta especialmente en las noches. Ya reinicié el módem y nada. Desde el martes de la semana pasada. Sí, desde el martes. Es el cincuenta y cinco treinta y dos cincuenta y cinco treinta y dos cuarenta y uno veintidós. Ah, o sea que no es solo yo. Bueno, está bien, entonces. Muchas gracias.</div>
+            </div>
+            <div class="col">
+              <div class="col-label transcribe">AWS Transcribe</div>
+              <div class="text">por suerte. Así que ganamos. De hecho, querido, gan, ganó, ganó. Vas a ver al trip. Sí, hola. Mira, es que estaba llamando porque. um Perdón, un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal, o sea, como que se corta especialmente en las noches. Ya reinicié el módem y nada. Desde el martes de la semana pasada. Sí, desde el martes. Es el 5532. 553241122. Ah, o sea que no es solo yo. Bueno, Está bien, entonces. Muchas gracias.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="fname">7ff53ad3_0a51_426b_b37e_fbc0cbebb2fc.wav</span>
+            <span class="badge" style="background:#2980b9">DG 5.04s</span>
+            <span class="badge" style="background:#8e44ad">TR 32.59s</span>
+            <span class="badge" style="background:#c0392b">Δlat +27.6s</span>
+            <span class="badge" style="background:#7f8c8d">DG 88w</span>
+            <span class="badge" style="background:#7f8c8d">TR 82w</span>
+            <span class="badge" style="background:#27ae60">Δwords -6</span>
+            <span class="badge" style="background:#16a085">DG spk:1</span>
+            <span class="badge" style="background:#d35400">TR spk:1</span>
+          </div>
+          <div class="transcripts">
+            <div class="col">
+              <div class="col-label deepgram">Deepgram</div>
+              <div class="text">Hola. Sí, sí. Necesito hablar con un supervisor ya mismo. No, no, es que ya llevo cuarenta y cinco minutos esperando y nadie me da una solución. Me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo. Está bien, está bien, es que estoy muy frustrado con esto. Ya llamé como tres veces y nadie me da ninguna solución. Sí, es nueve ocho siete seis cinco cuatro. ¿Y cuándo se me va a aplicar el reembolso? ¿Cuántos días? Bueno, bueno, está bien, gracias.</div>
+            </div>
+            <div class="col">
+              <div class="col-label transcribe">AWS Transcribe</div>
+              <div class="text">Hola. Sí, sí, eh, necesito hablar con un supervisor ya mismo. No, no, es que ya llevo 45 minutos esperando y nadie me da una solución. Me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo. Está bien. Está bien. Es que estoy muy frustrado con esto. Ya llamé como tres veces y nadie me da ninguna solución. Sí, es 987654. y cuándo se me va a aplicar el reembolso? ¿Cuántos días? Bueno, bueno, está bien. Gracias.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="fname">c5dec9e2_0c70_4b3e_a49a_494f1005dd22.wav</span>
+            <span class="badge" style="background:#2980b9">DG 7.31s</span>
+            <span class="badge" style="background:#8e44ad">TR 19.75s</span>
+            <span class="badge" style="background:#c0392b">Δlat +12.4s</span>
+            <span class="badge" style="background:#7f8c8d">DG 122w</span>
+            <span class="badge" style="background:#7f8c8d">TR 117w</span>
+            <span class="badge" style="background:#27ae60">Δwords -5</span>
+            <span class="badge" style="background:#16a085">DG spk:1</span>
+            <span class="badge" style="background:#d35400">TR spk:1</span>
+          </div>
+          <div class="transcripts">
+            <div class="col">
+              <div class="col-label deepgram">Deepgram</div>
+              <div class="text">Hola, buenas. Mira, contraté el plan de 5G hace una semana y no estoy viendo las velocidades que me prometieron. Mi dispositivo es compatible con 5G, y en la configuración veo que está conectado a LTE avanzado y no a 5G. Yo antes tenía el plan MOP Pro y ahora tengo el plan MOP Unlimited. Estoy en Ciudad de México, se supone que hay cobertura cinco G aquí. Creo que es el modelo estándar, no el de milímetros. En las pruebas de velocidad me da máximo ochenta megas de bajada y se supone que debería dar al menos trescientos. Si tiene el APN telquestrata punto internet, lo cambio a telquestrata punto cinco g y listo, ¿no? Bueno, lo hago ahora. Muchas gracias.</div>
+            </div>
+            <div class="col">
+              <div class="col-label transcribe">AWS Transcribe</div>
+              <div class="text">Hola, buenas. Mira, contraté el plan de 5G hace una semana y no estoy viendo las velocidades que me prometieron. Mi dispositivo es compatible con 5G y en la configuración veo que está conectado a LTE avanzado y no a 5G. Yo antes tenía el plan MP Pro y ahora tengo el plan MP Unlimited. Estoy en Ciudad de México. Se supone que hay cobertura 5G aquí. Creo que es el modelo estándar, no el de milímetros. En las pruebas de velocidad me da máximo 80 megas de bajada y se supone que debería dar al menos 300. Sí, tiene el APN telcoestrata.internet. Lo cambio a Telco Strata.5G y listo, ¿no? Bueno, lo hago ahora. Muchas gracias.</div>
+            </div>
+          </div>
+        </div>
+</body>
+</html>

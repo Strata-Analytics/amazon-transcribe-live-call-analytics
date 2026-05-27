@@ -453,6 +453,30 @@ Parameters:
       code after each language model name as '_<langcode>', e.g. 'MyCLM_en-US, MyCLM_es-US' to support using custom 
       language models for different languages set by a custom call initialization Lambda Hook.
 
+  TranscriberEngine:
+    Type: String
+    Default: transcribe
+    AllowedValues:
+      - transcribe
+      - deepgram
+    Description: >-
+      Transcription engine. 'transcribe' uses AWS Transcribe Streaming (default).
+      'deepgram' uses Deepgram nova-3 — requires DeepgramApiKey.
+
+  DeepgramApiKey:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: >-
+      Deepgram API key. Required when TranscriberEngine is 'deepgram'.
+
+  DeepgramKeywords:
+    Type: String
+    Default: ''
+    Description: >-
+      Optional keyword boost list for Deepgram (e.g. "Mov Pro:2,telcoestrata.5g:3").
+      Only used when TranscriberEngine is 'deepgram'.
+
   IsSentimentAnalysisEnabled:
     Type: String
     Default: "true"
@@ -1933,6 +1957,9 @@ Resources:
         TranscribePiiEntityTypes: !Ref TranscribePiiEntityTypes
         CustomVocabularyName: !Ref CustomVocabularyName
         CustomLanguageModelName: !Ref CustomLanguageModelName
+        TranscriberEngine: !Ref TranscriberEngine
+        DeepgramApiKey: !Ref DeepgramApiKey
+        DeepgramKeywords: !Ref DeepgramKeywords
         EventSourcingTableName: !GetAtt AISTACK.Outputs.EventSourcingTableName
         EventSourcingTableArn: !GetAtt AISTACK.Outputs.EventSourcingTableArn
       Tags:

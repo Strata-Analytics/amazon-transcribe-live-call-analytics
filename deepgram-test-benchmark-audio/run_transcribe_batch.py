@@ -73,9 +73,15 @@ def transcribe_file(filepath: str) -> dict:
     }
 
 
+import sys
 script_dir = os.path.dirname(os.path.abspath(__file__))
-files = sorted(glob.glob(os.path.join(script_dir, "*.wav")))
-print(f"Found {len(files)} files\n")
+folder = sys.argv[1] if len(sys.argv) > 1 else script_dir
+folder = os.path.abspath(folder.rstrip("/"))
+tag = os.path.basename(folder)
+out_file = os.path.join(script_dir, f"transcribe_results_{tag}.json")
+
+files = sorted(glob.glob(os.path.join(folder, "*.wav")))
+print(f"Found {len(files)} files in {folder}\n")
 results = []
 
 for f in files:
@@ -88,10 +94,10 @@ for f in files:
         print(f"  ✗ Error: {e}")
         results.append({"file": os.path.basename(f), "error": str(e)})
 
-with open("transcribe_results.json", "w", encoding="utf-8") as f:
+with open(out_file, "w", encoding="utf-8") as f:
     json.dump(results, f, ensure_ascii=False, indent=2)
 
-print("\nDone. Results in transcribe_results.json")
+print(f"\nDone. Results in {out_file}")
 successful = [r for r in results if "transcript" in r]
 if successful:
     avg = sum(r['latency_seconds'] for r in successful) / len(successful)

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Benchmark Report — Deepgram vs AWS Transcribe (2026-05-26)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: #f5f6fa; padding: 24px; color: #2c3e50; line-height: 1.5; }
+  h1   { text-align: center; margin-bottom: 8px; font-size: 22px; }
+  .subtitle { text-align: center; color: #636e72; font-size: 13px; margin-bottom: 28px; }
+  h2   { font-size: 16px; margin-bottom: 14px; color: #2c3e50; }
+  .section { background: white; border-radius: 8px; padding: 22px 24px;
+              margin-bottom: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 8px 12px; border: 1px solid #ddd; text-align: left; vertical-align: middle; }
+  th { background: #2c3e50; color: white; font-weight: 600; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  .avg-row td { background: #ecf0f1 !important; font-weight: 600; }
+  .badge { color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+            font-weight: 600; display: inline-block; }
+  .card { background: white; border-radius: 8px; margin-bottom: 18px;
+           box-shadow: 0 2px 8px rgba(0,0,0,.07); overflow: hidden; }
+  .card-header { background: #2c3e50; padding: 10px 16px; display: flex;
+                  flex-wrap: wrap; gap: 6px; align-items: center; }
+  .col-label { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 1px; margin-bottom: 6px; }
+  .deepgram   { color: #2980b9; }
+  .transcribe { color: #8e44ad; }
+  .text { font-size: 13px; line-height: 1.7; color: #34495e; }
+  .mono { font-family: monospace; }
+  .winner-dg { color: #2980b9; font-weight: 700; }
+  .winner-tr { color: #8e44ad; font-weight: 700; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .kpi { background: #f8f9fa; border-radius: 6px; padding: 14px 16px; border-left: 4px solid #ddd; }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #636e72; }
+  .kpi .dg-val { font-size: 22px; font-weight: 700; color: #2980b9; }
+  .kpi .tr-val { font-size: 22px; font-weight: 700; color: #8e44ad; }
+  .kpi .sub { font-size: 11px; color: #636e72; margin-top: 2px; }
+  @media (max-width: 700px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>Deepgram vs AWS Transcribe — Benchmark Report</h1>
+<p class="subtitle">Live streaming latency · Transcript quality · 5 calls · 2026-05-26</p>
+
+<!-- KPI cards -->
+<div class="kpi-grid">
+  <div class="kpi" style="border-color:#2980b9">
+    <div class="label">DG avg finalization</div>
+    <div class="dg-val">63ms</div>
+    <div class="sub">utterance end → final transcript</div>
+  </div>
+  <div class="kpi" style="border-color:#8e44ad">
+    <div class="label">TR avg finalization</div>
+    <div class="tr-val">30ms</div>
+    <div class="sub">utterance end → final transcript</div>
+  </div>
+  <div class="kpi" style="border-color:#27ae60">
+    <div class="label">Finalization winner</div>
+    <div style="font-size:20px;font-weight:700;color:#27ae60">AWS Transcribe</div>
+    <div class="sub">30ms vs 63ms (~2×)</div>
+  </div>
+  <div class="kpi" style="border-color:#e67e22">
+    <div class="label">Noise filtering winner</div>
+    <div style="font-size:20px;font-weight:700;color:#e67e22">Deepgram</div>
+    <div class="sub">Filters background audio; TR transcribes it</div>
+  </div>
+</div>
+
+<!-- Streaming latency -->
+<div class="section">
+  <h2>Streaming Latency</h2>
+  <p style="color:#636e72;font-size:13px;margin-bottom:16px">
+    <strong>avg_finalization_ms</strong>: time from end of last audio chunk → final transcript for that utterance.
+    This is the metric that determines how quickly the copilot can act after the customer stops speaking.<br>
+    <strong>first_interim_ms</strong>: time from audio start → first partial word. Both services show 4–7s because
+    audio must play in real-time before any speech is detected — this is expected behavior, not a service delay.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>File</th>
+        <th><span style="color:#7fc8f8">■</span> DG avg_fin</th>
+        <th><span style="color:#c39bd3">■</span> TR avg_fin</th>
+        <th><span style="color:#7fc8f8">■</span> DG first_interim</th>
+        <th><span style="color:#c39bd3">■</span> TR first_interim</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+    <tr>
+      <td class="mono">0ceb9317</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:88%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">68ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:40%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">31ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:79%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">6312ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:70%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">5640ms</span></div></td>
+    </tr>
+    <tr>
+      <td class="mono">3e347911</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:78%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">60ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:42%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">32ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:50%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">4033ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:47%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">3737ms</span></div></td>
+    </tr>
+    <tr>
+      <td class="mono">700dda45</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:100%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">77ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:30%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">23ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:78%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">6247ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:20%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">1610ms</span></div></td>
+    </tr>
+    <tr>
+      <td class="mono">7ff53ad3</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:78%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">60ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:56%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">43ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:52%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">4152ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:58%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">4644ms</span></div></td>
+    </tr>
+    <tr>
+      <td class="mono">c5dec9e2</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:68%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">52ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:26%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">20ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:72%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">5784ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:80%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">6368ms</span></div></td>
+    </tr>
+    <tr class="avg-row">
+      <td><strong>AVG</strong></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:82%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">63ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:39%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">30ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#2980b9;height:18px;width:66%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">5306ms</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="background:#8e44ad;height:18px;width:55%;border-radius:3px;min-width:2px"></div><span style="font-size:13px;white-space:nowrap">4400ms</span></div></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+
+    <div class="section">
+      <h2>Background Noise Detail — file 700dda45</h2>
+      <p style="color:#636e72;font-size:14px">
+        This call had TV/radio audio playing in the background.
+        Deepgram ignored it; Transcribe transcribed it verbatim
+        (highlighted fragments: <em>"así que ganamos. De hecho, querido, vas a"</em>,
+        <em>"colección de invierno con"</em>, <em>"pusimos todo el"</em>).
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+        <div style="background:#d6eaf8;border-radius:6px;padding:14px">
+          <div class="col-label deepgram" style="margin-bottom:8px">Deepgram — clean</div>
+          <div class="text">Sí, hola. Mira, es que perdón, un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal, o sea, como que se corta especialmente en las noches. Ya reinicié el model y nada. Desde el martes de la semana pasada. Sí, desde el martes. Es el cincuenta y cinco treinta y dos cincuenta y cinco treinta y dos cuarenta y uno veintidós O sea que no es solo yo. Bueno, está bien entonces. Muchas gracias.</div>
+        </div>
+        <div style="background:#fde8e8;border-radius:6px;padding:14px">
+          <div class="col-label transcribe" style="margin-bottom:8px">AWS Transcribe — includes noise</div>
+          <div class="text">así que ganamos. De hecho, querido, vas a Sí, hola. Mira, es que estaba llamando porque eso. eh? Perdón. Un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal. o sea, como que se corta especialmente en las noches. ya reinicié el modo de ni nada. am Desde el martes de la semana pasada. Sí, desde el martes. colección de invierno con. Es el 5532 5532 41122 pusimos todo el Ah, o sea que no es solo yo. Bueno, está bien, entonces. Muchas gracias.</div>
+        </div>
+      </div>
+    </div>
+
+<!-- Transcript quality -->
+<div class="section">
+  <h2>Transcript Quality — Side by Side (first 220 chars)</h2>
+  <p style="color:#636e72;font-size:13px;margin-bottom:16px">
+    Both services use Spanish models (DG: <code>es-419</code> nova-2 · TR: <code>es-US</code>).
+    Word count differences under ±15 words are considered acceptable.
+  </p>
+  
+    <div class="card">
+      <div class="card-header">
+        <span class="mono" style="color:white">0ceb9317</span>
+        <span class="badge" style="background:#7f8c8d">DG 80w</span>
+        <span class="badge" style="background:#7f8c8d">TR 87w</span>
+        <span class="badge" style="background:#27ae60">Δ+7w</span>
+        
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:14px;border-right:1px solid #ecf0f1">
+          <div class="col-label deepgram">Deepgram</div>
+          <div class="text">Hola, soy María González, Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. Me ofrecen treinta gigas por doscientos ochenta pesos al mes. Yo ahora pago tres Sí, actualm<span style="color:#aaa">…</span></div>
+        </div>
+        <div style="padding:14px">
+          <div class="col-label transcribe">AWS Transcribe</div>
+          <div class="text">Hola, soy María González. Mira, estoy pensando en cancelar mi servicio porque encontré una oferta más barata con otra compañía. me ofrecen 30 gigas por 280 MXN al mes. Yo ahora pago 320 y solo tengo 20 gigas. Sí, actualm<span style="color:#aaa">…</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="mono" style="color:white">3e347911</span>
+        <span class="badge" style="background:#7f8c8d">DG 20w</span>
+        <span class="badge" style="background:#7f8c8d">TR 20w</span>
+        <span class="badge" style="background:#27ae60">Δ+0w</span>
+        
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:14px;border-right:1px solid #ecf0f1">
+          <div class="col-label deepgram">Deepgram</div>
+          <div class="text">Hola, mi nombre es Carlos Pérez, Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias, hasta luego.</div>
+        </div>
+        <div style="padding:14px">
+          <div class="col-label transcribe">AWS Transcribe</div>
+          <div class="text">Hola. Mi nombre es Carlos Pérez. Quiero saber cuándo vence mi factura. No, eso es todo. Muchas gracias. Hasta luego.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="mono" style="color:white">700dda45</span>
+        <span class="badge" style="background:#7f8c8d">DG 83w</span>
+        <span class="badge" style="background:#7f8c8d">TR 93w</span>
+        <span class="badge" style="background:#27ae60">Δ+10w</span>
+         <span class="badge" style="background:#e67e22;font-size:10px">⚠ background noise detected in TR</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:14px;border-right:1px solid #ecf0f1">
+          <div class="col-label deepgram">Deepgram</div>
+          <div class="text">Sí, hola. Mira, es que perdón, un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal, o sea, como que se corta especialmente en las noches. Ya reinicié el model y nada. Desde el mart<span style="color:#aaa">…</span></div>
+        </div>
+        <div style="padding:14px">
+          <div class="col-label transcribe">AWS Transcribe</div>
+          <div class="text">así que ganamos. De hecho, querido, vas a Sí, hola. Mira, es que estaba llamando porque eso. eh? Perdón. Un segundo. Sí, buenas. Es que tengo un problema con mi internet. Es que se me cae la señal. o sea, como que se cor<span style="color:#aaa">…</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="mono" style="color:white">7ff53ad3</span>
+        <span class="badge" style="background:#7f8c8d">DG 89w</span>
+        <span class="badge" style="background:#7f8c8d">TR 84w</span>
+        <span class="badge" style="background:#27ae60">Δ-5w</span>
+        
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:14px;border-right:1px solid #ecf0f1">
+          <div class="col-label deepgram">Deepgram</div>
+          <div class="text">Hola, Sí, sí, necesito hablar con un supervisor ya mismo. No, no, es que ya llevo cuarenta y cinco minutos esperando y nadie me da una solución, Me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mismo.<span style="color:#aaa">…</span></div>
+        </div>
+        <div style="padding:14px">
+          <div class="col-label transcribe">AWS Transcribe</div>
+          <div class="text">Hola. Sí, sí, eh? Necesito hablar con un supervisor ya mismo. No, no, es que ya llevo cuarenta y cinco minutos esperando y nadie me da una solución. me cobraron dos veces el mes pasado y tengo el estado de cuenta aquí mi<span style="color:#aaa">…</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="mono" style="color:white">c5dec9e2</span>
+        <span class="badge" style="background:#7f8c8d">DG 122w</span>
+        <span class="badge" style="background:#7f8c8d">TR 119w</span>
+        <span class="badge" style="background:#27ae60">Δ-3w</span>
+        
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:14px;border-right:1px solid #ecf0f1">
+          <div class="col-label deepgram">Deepgram</div>
+          <div class="text">Hola, buenas. Mira, contraté el plan de cinco G hace una semana y no estoy viendo las velocidades que me prometieron. Mi dispositivo es compatible con 5G, y en la configuración veo que está conectado a LTE avanzado, y no<span style="color:#aaa">…</span></div>
+        </div>
+        <div style="padding:14px">
+          <div class="col-label transcribe">AWS Transcribe</div>
+          <div class="text">Hola, buenas. Mira, contraté el plan de 5G hace una semana y no estoy viendo la velocidades que me prometieron mis dispositivo es compatible con cinco G. Y en la configuración veo que está conectado a LTE avanzado y no a<span style="color:#aaa">…</span></div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- Decision framework -->
+<div class="section">
+  <h2>Decision Framework</h2>
+  <table>
+    <thead>
+      <tr><th>Criteria</th><th>Weight</th><th>Deepgram</th><th>AWS Transcribe</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Utterance finalization speed</td><td><span class="badge" style="background:#c0392b">High</span></td><td>~63 ms avg</td><td>~30 ms avg ✅</td><td style="color:#636e72;font-size:12px">Transcribe 2× faster</td></tr><tr><td>First word latency</td><td><span class="badge" style="background:#c0392b">High</span></td><td>~5.3 s avg</td><td>~4.6 s avg ✅</td><td style="color:#636e72;font-size:12px">Both require audio to play first</td></tr><tr><td>Background noise filtering</td><td><span class="badge" style="background:#c0392b">High</span></td><td>Filters it out ✅</td><td>Transcribes noise ⚠</td><td style="color:#636e72;font-size:12px">DG ignores non-speech (TV, hold music)</td></tr><tr><td>Spanish accuracy</td><td><span class="badge" style="background:#c0392b">High</span></td><td>nova-2 (call-center model)</td><td>es-US general model</td><td style="color:#636e72;font-size:12px">DG nova-2 trained on call center audio</td></tr><tr><td>Telco keyword recognition</td><td><span class="badge" style="background:#e67e22">Medium</span></td><td>Keywords boost param</td><td>Custom Vocabulary ✅</td><td style="color:#636e72;font-size:12px">TR has structured vocab list; DG uses inline hints</td></tr><tr><td>AWS ecosystem integration</td><td><span class="badge" style="background:#e67e22">Medium</span></td><td>REST/WebSocket only</td><td>Native AWS ✅</td><td style="color:#636e72;font-size:12px">TR integrates with CCP, Contact Lens, IAM</td></tr><tr><td>SDK stability (Python)</td><td><span class="badge" style="background:#e67e22">Medium</span></td><td>v7 API still evolving ⚠</td><td>Stable, aws-maintained ✅</td><td style="color:#636e72;font-size:12px">DG SDK had breaking API changes recently</td></tr><tr><td>Cost</td><td><span class="badge" style="background:#27ae60">Low</span></td><td>~$0.0043/min</td><td>~$0.024/min ✅</td><td style="color:#636e72;font-size:12px">DG ~5× cheaper; verify current pricing</td></tr><tr><td>Interim results off latency</td><td><span class="badge" style="background:#7f8c8d">Note</span></td><td>8–15 s to first final</td><td>8–15 s to first final</td><td style="color:#636e72;font-size:12px">Both unusable for live copilot without interim on</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Qualitative -->
+<div class="section">
+  <h2>Key Qualitative Findings</h2>
+  <ul style="font-size:13px;line-height:2;padding-left:20px;color:#34495e">
+    <li><strong>Interim results are required</strong> for both services in a live copilot context.
+        Disabling them pushes first_final_ms to 8–15 s per utterance — unusable.</li>
+    <li><strong>Deepgram nova-2</strong> was purpose-built for call center audio.
+        It handles Spanish colloquialisms, telco terms, and speaker interruptions well.</li>
+    <li><strong>Background noise</strong>: In the call with background TV audio, Deepgram ignored it entirely.
+        Transcribe transcribed the noise verbatim, contaminating the copilot context.
+        For open-mic call center environments this is a significant quality difference.</li>
+    <li><strong>AWS integration</strong>: Transcribe is already embedded in the LCA stack (Kinesis, Lambda, CCP).
+        Replacing it requires re-engineering the ingestion pipeline.</li>
+    <li><strong>SDK stability</strong>: The Deepgram Python SDK (v7) introduced breaking API changes
+        that required significant rework during this benchmark. The aws-sdk is stable and well-maintained.</li>
+  </ul>
+</div>
+
+</body>
+</html>
