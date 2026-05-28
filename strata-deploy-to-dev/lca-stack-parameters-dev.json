@@ -211,6 +211,10 @@
         "ParameterValue": ".*"
     },
     {
+        "ParameterKey": "TranscriptCategoryPatterns",
+        "ParameterValue": "[{\"name\":\"Retention Risk\",\"pattern\":\"(?i)\\\\b(cancelar|cancel(aci[oó]n)?|darme de baja|baja|terminar (el )?(contrato|servicio)|no quiero (seguir|continuar)|dejar de ser cliente)\\\\b\"},{\"name\":\"Complaint\",\"pattern\":\"(?i)\\\\b(queja|reclamo|inconformidad|molest|mal servicio|p[eé]simo|terrible|incre[íi]ble que|no puede ser|muy lento|no funciona|est[oó]y harto)\\\\b\"},{\"name\":\"Plan Inquiry\",\"pattern\":\"(?i)\\\\b(plan(es)?|precio|costo|tarifa|cu[aá]nto (cuesta|vale|cobran)|oferta|promoci[oó]n|descuento)\\\\b\"},{\"name\":\"Technical Issue\",\"pattern\":\"(?i)\\\\b(no funciona|falla|sin se[nñ]al|sin internet|corte|ca[íi]da|muy lento|velocidad (baja|lenta)|no (tengo|hay) (internet|se[nñ]al|cobertura))\\\\b\"}]"
+    },
+    {
         "ParameterKey": "BedrockKnowledgeBaseId",
         "ParameterValue": ""
     },

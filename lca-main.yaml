@@ -349,8 +349,17 @@ Parameters:
     Default: .*
     Description: >
       If using the 'analytics' Transcribe API Mode, this regular expression will be used to show
-      an alert in red in the web user interface if it matches a call category. This defaults to 
+      an alert in red in the web user interface if it matches a call category. This defaults to
       matching all categories.
+
+  TranscriptCategoryPatterns:
+    Type: String
+    Default: '[]'
+    Description: >
+      JSON array of {name, pattern} objects for regex-based real-time category detection.
+      Applied to each finalized (non-partial) transcript segment. Used when TranscribeApiMode
+      is 'deepgram' (or any mode that does not produce TCA CategoryEvents).
+      Example: [{"name":"Retention Risk","pattern":"(?i)\\b(cancelar|baja|darme de baja)\\b"}]
 
   TranscribeContentRedactionType:
     Type: String
@@ -1528,6 +1537,7 @@ Resources:
       LCASettingsName: !Ref LCASettingsParameter
       LCASettingsKeyValuePairs:
         CategoryAlertRegex: !Ref CategoryAlertRegEx
+        TranscriptCategoryPatterns: !Ref TranscriptCategoryPatterns
         EnableVoiceToneAnalysis: !If
           - ShouldEnableVoiceToneAnalysis
           - "true"

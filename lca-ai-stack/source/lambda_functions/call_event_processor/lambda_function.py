@@ -87,6 +87,19 @@ setting_response = SSM_CLIENT.get_parameter(
 SETTINGS = json.loads(setting_response["Parameter"]["Value"])
 if "CategoryAlertRegex" in SETTINGS:
     SETTINGS['AlertRegEx'] = re.compile(SETTINGS["CategoryAlertRegex"])
+if "TranscriptCategoryPatterns" in SETTINGS:
+    try:
+        raw_patterns = json.loads(SETTINGS["TranscriptCategoryPatterns"])
+        SETTINGS['CompiledCategoryPatterns'] = [
+            (p["name"], re.compile(p["pattern"]))
+            for p in raw_patterns
+            if "name" in p and "pattern" in p
+        ]
+    except (json.JSONDecodeError, re.error) as exc:
+        LOGGER.warning("Failed to compile TranscriptCategoryPatterns: %s", str(exc))
+        SETTINGS['CompiledCategoryPatterns'] = []
+else:
+    SETTINGS['CompiledCategoryPatterns'] = []
 
 
 async def process_event(event) -> Dict[str, List]:

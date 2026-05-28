@@ -1432,6 +1432,7 @@ async def execute_process_event_api_mutation(
 
         add_transcript_tasks = []
         add_transcript_sentiment_tasks = []
+        add_call_category_tasks = []
 
         for normalized_message in normalized_messages:
             if (TRANSCRIPT_LAMBDA_HOOK_FUNCTION_ARN):
@@ -1472,13 +1473,46 @@ async def execute_process_event_api_mutation(
                     Payload=json.dumps(normalized_message)
                 )
 
-        add_call_category_tasks = []
+            # Regex-based category detection — replaces TCA CategoryEvents when using Deepgram
+            if (
+                not normalized_message["IsPartial"]
+                and normalized_message.get("Transcript")
+                and SETTINGS.get("CompiledCategoryPatterns")
+            ):
+                transcript_text = normalized_message["Transcript"]
+                for category_name, pattern in SETTINGS["CompiledCategoryPatterns"]:
+                    if pattern.search(transcript_text):
+                        LOGGER.debug("Transcript category matched: %s", category_name)
+                        category_message = {
+                            "CallId": normalized_message["CallId"],
+                            "CreatedAt": normalized_message["CreatedAt"],
+                            "CategoryEvent": {
+                                "MatchedCategories": [category_name],
+                                "MatchedDetails": {
+                                    category_name: {
+                                        "TimestampRanges": [{
+                                            "BeginOffsetMillis": int(normalized_message.get("StartTime", 0) * 1000),
+                                            "EndOffsetMillis": int(normalized_message.get("EndTime", 0) * 1000),
+                                        }]
+                                    }
+                                }
+                            }
+                        }
+                        add_call_category_tasks.extend(
+                            add_call_category(
+                                message=category_message,
+                                appsync_session=appsync_session,
+                                sns_client=sns_client,
+                            )
+                        )
 
         if 'ContactId' in message.keys():
-            add_call_category_tasks = add_contact_lens_call_category(
-                message=message,
-                appsync_session=appsync_session,
-                sns_client=sns_client,
+            add_call_category_tasks.extend(
+                add_contact_lens_call_category(
+                    message=message,
+                    appsync_session=appsync_session,
+                    sns_client=sns_client,
+                )
             )
 
         update_call_aggregation_tasks = []
