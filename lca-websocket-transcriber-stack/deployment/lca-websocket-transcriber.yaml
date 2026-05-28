@@ -94,7 +94,21 @@ Parameters:
         - standard
         - analytics
         - whisper-on-sagemaker
+        - deepgram
     Description: Set the default operational mode for Transcribe
+
+  DeepgramApiKey:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: Deepgram API key. Used when TranscribeApiMode is set to "deepgram".
+
+  DeepgramKeywords:
+    Type: String
+    Default: ''
+    Description: >-
+      Comma-separated list of Deepgram keywords with optional boost weights
+      (e.g. "TelcoStrata:2,Mov Pro:2"). Used when TranscribeApiMode is "deepgram".
 
   WhisperSageMakerEndpointName:
     Type: String
@@ -1082,6 +1096,10 @@ Resources:
               Value: !Ref TranscribeLanguageOptions
             - Name: TRANSCRIBE_PREFERRED_LANGUAGE
               Value: !Ref TranscribePreferredLanguage
+            - Name: DEEPGRAM_API_KEY
+              Value: !Ref DeepgramApiKey
+            - Name: DEEPGRAM_KEYWORDS
+              Value: !Ref DeepgramKeywords
             - Name: WHISPER_SAGEMAKER_ENDPOINT
               Value: !Ref WhisperSageMakerEndpointName
             - Name: CUSTOM_VOCABULARY_NAME

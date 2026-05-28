@@ -93,6 +93,11 @@ jobs:
             s3://${{ env.CFN_BUCKET }}/stacks/lca-connect-kvs-stack/template.yaml \
             --region ${{ env.REGION }}
 
+          echo "📦 Subiendo lca-websocket-transcriber-stack..."
+          aws s3 cp lca-websocket-transcriber-stack/deployment/lca-websocket-transcriber.yaml \
+            s3://${{ env.CFN_BUCKET }}/stacks/lca-websocket-transcriber-stack/template.yaml \
+            --region ${{ env.REGION }}
+
           echo "✅ Sub-stacks subidos."
 
       # ── 5. Procesar lca-main.yaml ─────────────────────────────────────────────
@@ -131,6 +136,11 @@ jobs:
           AWS_CONNECT="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/${VERSION}/lca-connect-kvs-stack/template.yaml"
           OUR_CONNECT="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-connect-kvs-stack/template.yaml"
           sed -i "s|${AWS_CONNECT}|${OUR_CONNECT}|g" /tmp/lca-main-processed.yaml
+
+          # websocket-transcriber-stack → nuestro bucket (VERSION appears twice in path)
+          AWS_WS="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/${VERSION}/lca-websocket-transcriber-stack/${VERSION}/template.yaml"
+          OUR_WS="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-websocket-transcriber-stack/template.yaml"
+          sed -i "s|${AWS_WS}|${OUR_WS}|g" /tmp/lca-main-processed.yaml
 
           echo "✅ Template procesado."
 

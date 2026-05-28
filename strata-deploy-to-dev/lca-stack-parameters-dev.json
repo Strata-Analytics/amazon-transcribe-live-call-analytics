@@ -133,7 +133,19 @@
     },
     {
         "ParameterKey": "TranscribeApiMode",
-        "ParameterValue": "analytics"
+        "ParameterValue": "deepgram"
+    },
+    {
+        "ParameterKey": "TranscriberEngine",
+        "ParameterValue": "deepgram"
+    },
+    {
+        "ParameterKey": "DeepgramApiKey",
+        "ParameterValue": "****"
+    },
+    {
+        "ParameterKey": "DeepgramKeywords",
+        "ParameterValue": "Mov Pro:2,Mov Unlimited:2,TelcoStrata:2,telcoestrata.5g:3"
     },
     {
         "ParameterKey": "WhisperSageMakerAutoScalingScaleOutCooldown",

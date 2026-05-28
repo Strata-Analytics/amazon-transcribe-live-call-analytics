@@ -15,9 +15,11 @@ import fs from 'fs';
 import { randomUUID } from 'crypto';
 import BlockStream from 'block-stream2';
 
-import {  
-    startTranscribe, 
-    CallMetaData, 
+import {
+    startTranscribe,
+    startDeepgram,
+    useDeepgram,
+    CallMetaData,
     writeCallStartEvent,
     writeCallEndEvent,
     writeCallRecordingEvent,
@@ -221,7 +223,11 @@ const onTextMessage = async (ws: WebSocket, data: string): Promise<void> => {
             ended: false
         };
         socketMap.set(ws, socketCallMap);
-        startTranscribe(callMetaData, audioInputStream, socketCallMap, server);
+        if (useDeepgram) {
+            startDeepgram(callMetaData, audioInputStream, socketCallMap, server);
+        } else {
+            startTranscribe(callMetaData, audioInputStream, socketCallMap, server);
+        }
 
     } else if (callMetaData.callEvent === 'END') {
         const socketData = socketMap.get(ws);

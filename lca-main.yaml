@@ -277,10 +277,11 @@ Parameters:
       - standard
       - analytics
       - whisper-on-sagemaker
+      - deepgram
     Description: >-
       Set the default API mode for ASR (Automatic Speech Recognition).
       Set to 'standard' to use the Amazon Transcribe Standard StreamingAPI.
-      Set to 'analytics' to use the Amazon Transcribe Real-time Call Analytics service, used to support 
+      Set to 'analytics' to use the Amazon Transcribe Real-time Call Analytics service, used to support
       call categories and alerts, call summarization, and PCA integration.
       Set to 'whisper-on-sagemaker' to use the Whisper ASR model deployed on SageMaker.
       Whisper only works when the Call Audio Source is set to 'Demo Asterisk PBX Server' or 
@@ -2122,6 +2123,8 @@ Resources:
         PcaPlaybackAudioFilePrefix: !Ref PcaPlaybackAudioFilePrefix
         PcaWebAppURL: !Ref PcaWebAppURL
         PcaWebAppCallPathPrefix: !Ref PcaWebAppCallPathPrefix
+        DeepgramApiKey: !Ref DeepgramApiKey
+        DeepgramKeywords: !Ref DeepgramKeywords
         LCASettingsParameterName: !Ref LCASettingsParameter
         UpdateLCASettingsFunctionArn: !GetAtt UpdateLCASettingsFunction.Arn
         # Pass CategoryAlertRegex and CategoryAlertRegEx to force LCASettingsParam to be updated with WSEndpoint

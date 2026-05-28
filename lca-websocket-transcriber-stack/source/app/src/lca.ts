@@ -64,6 +64,9 @@ const AWS_REGION = process.env['AWS_REGION'] || 'us-east-1';
 const TRANSCRIBE_API_MODE = process.env['TRANSCRIBE_API_MODE'] || 'standard';
 const isTCAEnabled = TRANSCRIBE_API_MODE === 'analytics';
 const useWhisper = TRANSCRIBE_API_MODE === 'whisper-on-sagemaker';
+export const useDeepgram = TRANSCRIBE_API_MODE === 'deepgram';
+const DEEPGRAM_API_KEY = process.env['DEEPGRAM_API_KEY'] || '';
+const DEEPGRAM_KEYWORDS = process.env['DEEPGRAM_KEYWORDS'] || '';
 const TRANSCRIBE_LANGUAGE_CODE = process.env['TRANSCRIBE_LANGUAGE_CODE'] || 'en-US';
 const TRANSCRIBE_LANGUAGE_OPTIONS = process.env['TRANSCRIBE_LANGUAGE_OPTIONS'] || undefined;
 const TRANSCRIBE_PREFERRED_LANGUAGE = process.env['TRANSCRIBE_PREFERRED_LANGUAGE'] || 'None';
@@ -306,6 +309,74 @@ function getNameByLanguageCode(names: string, languageCode: string) {
     }
     return null;
 }
+
+export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream: stream.PassThrough, socketCallMap: SocketCallData, server: FastifyInstance): Promise<void> => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createClient, LiveTranscriptionEvents } = require('@deepgram/sdk');
+    server.log.info(`[Deepgram]: [${callMetaData.callId}] - Starting Deepgram transcription`);
+
+    return new Promise<void>((resolve) => {
+        const client = createClient(DEEPGRAM_API_KEY);
+
+        const keywords = DEEPGRAM_KEYWORDS
+            ? DEEPGRAM_KEYWORDS.split(',').map((k: string) => k.trim()).filter(Boolean)
+            : [];
+
+        const options: Record<string, unknown> = {
+            model: 'nova-3',
+            language: 'es-419',
+            punctuate: true,
+            interim_results: true,
+            endpointing: 300,
+            encoding: 'linear16',
+            sample_rate: callMetaData.samplingRate,
+            channels: 2,
+            multichannel: true,
+        };
+        if (keywords.length > 0) options.keywords = keywords;
+
+        const connection = client.listen.live(options);
+        socketCallMap.startStreamTime = new Date();
+
+        audioInputStream.on('data', (chunk: Buffer) => { connection.send(chunk); });
+        audioInputStream.on('end', () => { connection.finish(); });
+
+        connection.on(LiveTranscriptionEvents.Transcript, async (data: Record<string, unknown>) => {
+            const alternatives = (data?.channel as Record<string, unknown>)?.alternatives;
+            const transcript = (Array.isArray(alternatives) && alternatives[0]?.transcript) ? String(alternatives[0].transcript) : '';
+            if (!transcript) return;
+
+            const channelIndex = Array.isArray(data.channel_index) ? Number(data.channel_index[0]) : 0;
+            const channelId = channelIndex === 1 ? 'ch_1' : 'ch_0';
+            const startTime = Number(data.start ?? 0);
+            const duration = Number(data.duration ?? 0);
+            const isFinal = Boolean(data.is_final ?? false);
+
+            const fakeTranscriptEvent: TranscriptEvent = {
+                Transcript: {
+                    Results: [{
+                        Alternatives: [{ Transcript: transcript }],
+                        ChannelId: channelId,
+                        StartTime: startTime,
+                        EndTime: startTime + duration,
+                        IsPartial: !isFinal,
+                        ResultId: `dg-${callMetaData.callId}-${Date.now()}-${channelIndex}`,
+                    }],
+                },
+            };
+            await writeTranscriptionSegment(fakeTranscriptEvent, callMetaData.callId, server, callMetaData.channel);
+        });
+
+        connection.on(LiveTranscriptionEvents.Error, (error: unknown) => {
+            server.log.error(`[Deepgram]: [${callMetaData.callId}] - Error: ${normalizeErrorForLogging(error)}`);
+        });
+
+        connection.on(LiveTranscriptionEvents.Close, () => {
+            server.log.info(`[Deepgram]: [${callMetaData.callId}] - Connection closed`);
+            resolve();
+        });
+    });
+};
 
 export const startTranscribe = async (callMetaData: CallMetaData, audioInputStream: stream.PassThrough, socketCallMap: SocketCallData, server: FastifyInstance) => {
     // Initialize the appropriate transcribe client based on API mode
