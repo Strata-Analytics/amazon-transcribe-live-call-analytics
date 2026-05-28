@@ -2126,8 +2126,8 @@ Resources:
         DeepgramApiKey: !Ref DeepgramApiKey
         DeepgramKeywords: !Ref DeepgramKeywords
         BootstrapBucketBaseName: aws-ml-blog
-        BootstrapS3Prefix: artifacts/lca/lca-websocket
-        BootstrapVersion: '0.2.1'
+        BootstrapS3Prefix: artifacts/lca/0.9.7/lca-websocket-transcriber-stack
+        BootstrapVersion: '0.9.7'
         LCASettingsParameterName: !Ref LCASettingsParameter
         UpdateLCASettingsFunctionArn: !GetAtt UpdateLCASettingsFunction.Arn
         # Pass CategoryAlertRegex and CategoryAlertRegEx to force LCASettingsParam to be updated with WSEndpoint
