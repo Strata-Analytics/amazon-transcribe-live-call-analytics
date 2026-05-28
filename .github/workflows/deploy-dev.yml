@@ -186,6 +186,9 @@ jobs:
             '.[] | select(.ParameterValue != "****") | .ParameterKey + "=" + .ParameterValue' \
             strata-deploy-to-dev/lca-stack-parameters-dev.json)
 
+          # Inject secrets that are masked (****) in the parameters file
+          PARAMS+=("DeepgramApiKey=${{ secrets.DEEPGRAM_API_KEY }}")
+
           aws cloudformation deploy \
             --region         ${{ env.REGION }} \
             --template-file  /tmp/lca-main-processed.yaml \
