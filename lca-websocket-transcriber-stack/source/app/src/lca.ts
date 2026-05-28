@@ -333,7 +333,7 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
             channels: 2,
             multichannel: true,
         };
-        if (keywords.length > 0) options.keywords = keywords;
+        if (keywords.length > 0) options['keywords'] = keywords;
 
         const connection = client.listen.live(options);
         socketCallMap.startStreamTime = new Date();
@@ -342,15 +342,17 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
         audioInputStream.on('end', () => { connection.finish(); });
 
         connection.on(LiveTranscriptionEvents.Transcript, async (data: Record<string, unknown>) => {
-            const alternatives = (data?.channel as Record<string, unknown>)?.alternatives;
-            const transcript = (Array.isArray(alternatives) && alternatives[0]?.transcript) ? String(alternatives[0].transcript) : '';
+            const channel = data['channel'] as Record<string, unknown> | undefined;
+            const alternatives = channel?.['alternatives'];
+            const alt0 = Array.isArray(alternatives) ? alternatives[0] as Record<string, unknown> : null;
+            const transcript = alt0?.['transcript'] ? String(alt0['transcript']) : '';
             if (!transcript) return;
 
-            const channelIndex = Array.isArray(data.channel_index) ? Number(data.channel_index[0]) : 0;
+            const channelIndex = Array.isArray(data['channel_index']) ? Number(data['channel_index'][0]) : 0;
             const channelId = channelIndex === 1 ? 'ch_1' : 'ch_0';
-            const startTime = Number(data.start ?? 0);
-            const duration = Number(data.duration ?? 0);
-            const isFinal = Boolean(data.is_final ?? false);
+            const startTime = Number(data['start'] ?? 0);
+            const duration = Number(data['duration'] ?? 0);
+            const isFinal = Boolean(data['is_final'] ?? false);
 
             const fakeTranscriptEvent: TranscriptEvent = {
                 Transcript: {
