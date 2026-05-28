@@ -333,20 +333,28 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
             channels: 2,
             multichannel: true,
         };
-        if (keywords.length > 0) options['keywords'] = keywords;
+        if (keywords.length > 0) {
+            options['keywords'] = keywords;
+        }
 
         const connection = client.listen.live(options);
         socketCallMap.startStreamTime = new Date();
 
-        audioInputStream.on('data', (chunk: Buffer) => { connection.send(chunk); });
-        audioInputStream.on('end', () => { connection.finish(); });
+        audioInputStream.on('data', (chunk: Buffer) => {
+            connection.send(chunk);
+        });
+        audioInputStream.on('end', () => {
+            connection.finish();
+        });
 
         connection.on(LiveTranscriptionEvents.Transcript, async (data: Record<string, unknown>) => {
             const channel = data['channel'] as Record<string, unknown> | undefined;
             const alternatives = channel?.['alternatives'];
             const alt0 = Array.isArray(alternatives) ? alternatives[0] as Record<string, unknown> : null;
             const transcript = alt0?.['transcript'] ? String(alt0['transcript']) : '';
-            if (!transcript) return;
+            if (!transcript) {
+                return;
+            }
 
             const channelIndex = Array.isArray(data['channel_index']) ? Number(data['channel_index'][0]) : 0;
             const channelId = channelIndex === 1 ? 'ch_1' : 'ch_0';
