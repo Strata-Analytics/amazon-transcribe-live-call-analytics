@@ -93,8 +93,22 @@ jobs:
             s3://${{ env.CFN_BUCKET }}/stacks/lca-connect-kvs-stack/template.yaml \
             --region ${{ env.REGION }}
 
-          echo "📦 Subiendo lca-websocket-transcriber-stack..."
-          aws s3 cp lca-websocket-transcriber-stack/deployment/lca-websocket-transcriber.yaml \
+          echo "📦 Building + packaging lca-websocket-transcriber-stack..."
+          pip install \
+            -r lca-websocket-transcriber-stack/source/lambda_functions/start_codebuild/requirements.txt \
+            -t lca-websocket-transcriber-stack/source/lambda_functions/start_codebuild/
+          cd lca-websocket-transcriber-stack/source/lambda_functions/pca_integration
+          npm ci --omit=dev
+          cd ../../../..
+          cd lca-websocket-transcriber-stack/deployment
+          aws cloudformation package \
+            --template-file lca-websocket-transcriber.yaml \
+            --s3-bucket ${{ env.CFN_BUCKET }} \
+            --s3-prefix stacks/lca-websocket-transcriber-stack/lambda \
+            --output-template-file /tmp/lca-websocket-transcriber-packaged.yaml \
+            --region ${{ env.REGION }}
+          cd ../..
+          aws s3 cp /tmp/lca-websocket-transcriber-packaged.yaml \
             s3://${{ env.CFN_BUCKET }}/stacks/lca-websocket-transcriber-stack/template.yaml \
             --region ${{ env.REGION }}
 
