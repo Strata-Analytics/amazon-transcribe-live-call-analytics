@@ -196,7 +196,37 @@ jobs:
             --capabilities   CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --no-fail-on-empty-changeset
 
-      # ── 8. Diagnóstico en caso de fallo ──────────────────────────────────────
+      # ── 8. Build y push imagen Docker del WebSocket transcriber ─────────────
+      # CodeBuild descarga el ZIP original de AWS → no incluye nuestro código.
+      # Construimos la imagen aquí y la empujamos a ECR con el mismo tag 0.2.1.
+      - name: Build and push WebSocket transcriber Docker image
+        run: |
+          ECR_REPO="637423400532.dkr.ecr.${{ env.REGION }}.amazonaws.com/agent-copilot-dev-websockettranscriberstack-s8jaumn51c6k-transcriberecrrepository-wq0jboagdpf2"
+          IMAGE_TAG="0.2.1"
+          CLUSTER="agent-copilot-dev-WEBSOCKETTRANSCRIBERSTACK-S8JAUMN51C6K-TranscribingCluster-9mFxfNrAsgO1"
+          SERVICE="agent-copilot-dev-WEBSOCKETTRANSCRIBERSTACK-S8JAUMN51C6K-TranscriberWebsocketFargateService-HfLvEET8Sbx8"
+
+          echo "🔑 Autenticando en ECR..."
+          aws ecr get-login-password --region ${{ env.REGION }} | \
+            docker login --username AWS --password-stdin 637423400532.dkr.ecr.${{ env.REGION }}.amazonaws.com
+
+          echo "🐳 Building Docker image..."
+          docker build -t "${ECR_REPO}:${IMAGE_TAG}" \
+            lca-websocket-transcriber-stack/source/app/
+
+          echo "⬆️  Pushing to ECR..."
+          docker push "${ECR_REPO}:${IMAGE_TAG}"
+
+          echo "🔄 Forcing ECS service redeployment..."
+          aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$SERVICE" \
+            --force-new-deployment \
+            --region ${{ env.REGION }} > /dev/null
+
+          echo "✅ Imagen pushed y servicio ECS actualizado."
+
+      # ── 9. Diagnóstico en caso de fallo ──────────────────────────────────────
       - name: CloudFormation failure diagnostics
         if: failure()
         run: |
@@ -214,7 +244,7 @@ jobs:
             --query 'StackEvents[:30].[Timestamp,ResourceStatus,ResourceType,LogicalResourceId,ResourceStatusReason]' \
             --output table
 
-      # ── 9. Resumen ────────────────────────────────────────────────────────────
+      # ── 10. Resumen ───────────────────────────────────────────────────────────
       - name: Deploy summary
         if: success()
         run: |
