@@ -8,6 +8,7 @@ from os import environ, getenv
 from typing import TYPE_CHECKING, Dict, List
 import json
 import re
+import time
 
 # third-party imports from Lambda layer
 from aws_lambda_powertools import Logger
@@ -101,9 +102,37 @@ if "TranscriptCategoryPatterns" in SETTINGS:
 else:
     SETTINGS['CompiledCategoryPatterns'] = []
 
+# Timestamp of last SSM refresh for category patterns (cold-start counts as t=0)
+_CATEGORY_PATTERNS_LOADED_AT: float = time.time()
+_CATEGORY_PATTERNS_TTL = 60  # seconds — update SSM and patterns apply within 1 minute
+
+
+def _refresh_category_patterns() -> None:
+    """Re-read TranscriptCategoryPatterns from SSM if the TTL has expired.
+
+    Mutates SETTINGS in-place so all callers see the update without a redeploy.
+    """
+    global _CATEGORY_PATTERNS_LOADED_AT  # pylint: disable=global-statement
+    if time.time() - _CATEGORY_PATTERNS_LOADED_AT < _CATEGORY_PATTERNS_TTL:
+        return
+    try:
+        response = SSM_CLIENT.get_parameter(Name=getenv("PARAMETER_STORE_NAME"))
+        fresh = json.loads(response["Parameter"]["Value"])
+        raw = json.loads(fresh.get("TranscriptCategoryPatterns", "[]"))
+        SETTINGS["CompiledCategoryPatterns"] = [
+            (p["name"], re.compile(p["pattern"]))
+            for p in raw
+            if "name" in p and "pattern" in p
+        ]
+        _CATEGORY_PATTERNS_LOADED_AT = time.time()
+        LOGGER.info("TranscriptCategoryPatterns refreshed (%d patterns)", len(SETTINGS["CompiledCategoryPatterns"]))
+    except Exception as exc:  # pylint: disable=broad-except
+        LOGGER.warning("Failed to refresh TranscriptCategoryPatterns: %s", str(exc))
+
 
 async def process_event(event) -> Dict[str, List]:
     """Processes a Batch of Transcript Records"""
+    _refresh_category_patterns()
     async with TranscriptBatchProcessor(
         appsync_client=APPSYNC_CLIENT,
         agent_assist_args=dict(
