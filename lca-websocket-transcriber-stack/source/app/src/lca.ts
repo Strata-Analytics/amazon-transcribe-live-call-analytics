@@ -328,7 +328,7 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
             language: 'es-419',
             punctuate: true,
             interim_results: true,
-            endpointing: 300,
+            endpointing: 150,
             encoding: 'linear16',
             sample_rate: callMetaData.samplingRate,
             channels: 2,
@@ -340,6 +340,12 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
 
         const connection = client.listen.live(options);
         socketCallMap.startStreamTime = new Date();
+
+        // Track the first start time seen per channel so all interims for the same
+        // utterance share the same SegmentId (SegmentId = channelId-startTime).
+        // Deepgram can re-segment mid-utterance with a new start time; without this
+        // tracker, each new start time creates a duplicate segment in DynamoDB.
+        const activeStartTime: Record<string, number | null> = {};
 
         audioInputStream.on('data', (chunk: Buffer) => {
             connection.send(chunk);
@@ -363,15 +369,23 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
             const duration = Number(data['duration'] ?? 0);
             const isFinal = Boolean(data['is_final'] ?? false);
 
+            if (activeStartTime[channelId] == null) {
+                activeStartTime[channelId] = startTime;
+            }
+            const segmentStartTime = activeStartTime[channelId] as number;
+            if (isFinal) {
+                activeStartTime[channelId] = null;
+            }
+
             const fakeTranscriptEvent: TranscriptEvent = {
                 Transcript: {
                     Results: [{
                         Alternatives: [{ Transcript: transcript }],
                         ChannelId: channelId,
-                        StartTime: startTime,
+                        StartTime: segmentStartTime,
                         EndTime: startTime + duration,
                         IsPartial: !isFinal,
-                        ResultId: `dg-${callMetaData.callId}-${Date.now()}-${channelIndex}`,
+                        ResultId: `dg-${callMetaData.callId}-${segmentStartTime}-${channelIndex}`,
                     }],
                 },
             };
