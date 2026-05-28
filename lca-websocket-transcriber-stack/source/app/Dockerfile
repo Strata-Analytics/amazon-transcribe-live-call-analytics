@@ -1,7 +1,7 @@
-ARG NODE_VERSION=16
+ARG NODE_VERSION=18
 
 # First, build the project
-FROM public.ecr.aws/docker/library/node:16-bullseye AS builder
+FROM public.ecr.aws/docker/library/node:18-bullseye AS builder
 
 # Install Python 3.9 (available in Bullseye) for build process
 RUN apt-get update && \
@@ -31,7 +31,7 @@ RUN npm run build
 RUN npm prune --production
 
 # Now create the runtime image and copy the build artifacts into it
-FROM public.ecr.aws/docker/library/node:16-slim AS runtime
+FROM public.ecr.aws/docker/library/node:18-slim AS runtime
 
 WORKDIR /app
 ENV NODE_ENV=production
