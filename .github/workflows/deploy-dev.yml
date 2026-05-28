@@ -198,11 +198,12 @@ jobs:
 
       # ── 8. Build y push imagen Docker del WebSocket transcriber ─────────────
       # CodeBuild descarga el ZIP original de AWS → no incluye nuestro código.
-      # Construimos la imagen aquí y la empujamos a ECR con el mismo tag 0.2.1.
+      # Construimos la imagen aquí y la empujamos a ECR con el mismo tag 0.9.7
+      # que usa la task definition (creada por CodeBuild en el deploy original).
       - name: Build and push WebSocket transcriber Docker image
         run: |
           ECR_REPO="637423400532.dkr.ecr.${{ env.REGION }}.amazonaws.com/agent-copilot-dev-websockettranscriberstack-s8jaumn51c6k-transcriberecrrepository-wq0jboagdpf2"
-          IMAGE_TAG="0.2.1"
+          IMAGE_TAG="0.9.7"
           CLUSTER="agent-copilot-dev-WEBSOCKETTRANSCRIBERSTACK-S8JAUMN51C6K-TranscribingCluster-9mFxfNrAsgO1"
           SERVICE="agent-copilot-dev-WEBSOCKETTRANSCRIBERSTACK-S8JAUMN51C6K-TranscriberWebsocketFargateService-HfLvEET8Sbx8"
 
