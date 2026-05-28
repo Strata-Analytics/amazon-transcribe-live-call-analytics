@@ -50,6 +50,7 @@ Parameters:
     AllowedValues:
       - standard
       - analytics
+      - deepgram
     Description: Set the default operational mode for Transcribe
 
   IsPartialTranscriptEnabled:
