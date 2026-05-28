@@ -313,7 +313,8 @@ function getNameByLanguageCode(names: string, languageCode: string) {
 export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream: stream.PassThrough, socketCallMap: SocketCallData, server: FastifyInstance): Promise<void> => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createClient, LiveTranscriptionEvents } = require('@deepgram/sdk');
-    server.log.info(`[Deepgram]: [${callMetaData.callId}] - Starting Deepgram transcription`);
+    server.log.info(`[Deepgram]: [${callMetaData.callId}] - Starting Deepgram transcription (key prefix: ${DEEPGRAM_API_KEY ? DEEPGRAM_API_KEY.substring(0, 8) + '...' : 'EMPTY'})`);
+
 
     return new Promise<void>((resolve) => {
         const client = createClient(DEEPGRAM_API_KEY);
@@ -334,7 +335,7 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
             multichannel: true,
         };
         if (keywords.length > 0) {
-            options['keywords'] = keywords;
+            options['keyterm'] = keywords;
         }
 
         const connection = client.listen.live(options);
@@ -378,7 +379,7 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
         });
 
         connection.on(LiveTranscriptionEvents.Error, (error: unknown) => {
-            server.log.error(`[Deepgram]: [${callMetaData.callId}] - Error: ${normalizeErrorForLogging(error)}`);
+            server.log.error(`[Deepgram]: [${callMetaData.callId}] - Error: ${normalizeErrorForLogging(error)} | raw: ${JSON.stringify(error)}`);
         });
 
         connection.on(LiveTranscriptionEvents.Close, () => {
