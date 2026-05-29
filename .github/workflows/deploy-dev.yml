@@ -112,23 +112,6 @@ jobs:
             s3://${{ env.CFN_BUCKET }}/stacks/lca-websocket-transcriber-stack/template.yaml \
             --region ${{ env.REGION }}
 
-          echo "📦 Building + packaging lca-ai-stack..."
-          pip install aws-sam-cli --quiet
-          cd lca-ai-stack/deployment
-          sam build \
-            --template lca-ai-stack.yaml \
-            --build-dir /tmp/ai-stack-build
-          sam package \
-            --template-file /tmp/ai-stack-build/template.yaml \
-            --s3-bucket ${{ env.CFN_BUCKET }} \
-            --s3-prefix stacks/lca-ai-stack/lambda \
-            --output-template-file /tmp/lca-ai-stack-packaged.yaml \
-            --region ${{ env.REGION }}
-          cd ../..
-          aws s3 cp /tmp/lca-ai-stack-packaged.yaml \
-            s3://${{ env.CFN_BUCKET }}/stacks/lca-ai-stack/template.yaml \
-            --region ${{ env.REGION }}
-
           echo "✅ Sub-stacks subidos."
 
       # ── 5. Procesar lca-main.yaml ─────────────────────────────────────────────
@@ -172,11 +155,6 @@ jobs:
           AWS_WS="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/${VERSION}/lca-websocket-transcriber-stack/${VERSION}/template.yaml"
           OUR_WS="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-websocket-transcriber-stack/template.yaml"
           sed -i "s|${AWS_WS}|${OUR_WS}|g" /tmp/lca-main-processed.yaml
-
-          # ai-stack → nuestro bucket (VERSION appears twice in path)
-          AWS_AI="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/${VERSION}/lca-ai-stack/${VERSION}/template.yaml"
-          OUR_AI="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-ai-stack/template.yaml"
-          sed -i "s|${AWS_AI}|${OUR_AI}|g" /tmp/lca-main-processed.yaml
 
           echo "✅ Template procesado."
 
@@ -252,7 +230,45 @@ jobs:
 
           echo "✅ Imagen pushed y servicio ECS actualizado."
 
-      # ── 9. Diagnóstico en caso de fallo ──────────────────────────────────────
+      # ── 9. Actualizar call_event_processor Lambda directamente ──────────────
+      # La AI stack se despliega desde el bucket público de AWS (lca-ai-stack no
+      # se re-empaqueta en CI para evitar actualizar AppSync/IAM/etc. inadvertidamente).
+      # En cambio, actualizamos directamente solo la función que modificamos.
+      - name: Deploy call_event_processor Lambda code
+        run: |
+          echo "🔍 Buscando nombre del Lambda call_event_processor..."
+
+          AI_STACK=$(aws cloudformation describe-stack-resource \
+            --stack-name ${{ env.STACK_NAME }} \
+            --logical-resource-id AISTACK \
+            --query 'StackResourceDetail.PhysicalResourceId' \
+            --output text \
+            --region ${{ env.REGION }})
+
+          LAMBDA_FN=$(aws cloudformation describe-stack-resource \
+            --stack-name "$AI_STACK" \
+            --logical-resource-id CallEventProcessor \
+            --query 'StackResourceDetail.PhysicalResourceId' \
+            --output text \
+            --region ${{ env.REGION }})
+
+          echo "Lambda function: $LAMBDA_FN"
+
+          echo "📦 Empaquetando call_event_processor..."
+          cd lca-ai-stack/source/lambda_functions/call_event_processor
+          zip -r /tmp/call-event-processor.zip . -x "*.pyc" -x "__pycache__/*"
+          cd ../../../..
+
+          echo "⬆️  Actualizando código Lambda..."
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FN" \
+            --zip-file fileb:///tmp/call-event-processor.zip \
+            --region ${{ env.REGION }} \
+            --output text
+
+          echo "✅ call_event_processor actualizado."
+
+      # ── 11. Diagnóstico en caso de fallo ─────────────────────────────────────
       - name: CloudFormation failure diagnostics
         if: failure()
         run: |
@@ -270,7 +286,7 @@ jobs:
             --query 'StackEvents[:30].[Timestamp,ResourceStatus,ResourceType,LogicalResourceId,ResourceStatusReason]' \
             --output table
 
-      # ── 10. Resumen ───────────────────────────────────────────────────────────
+      # ── 12. Resumen ───────────────────────────────────────────────────────────
       - name: Deploy summary
         if: success()
         run: |
