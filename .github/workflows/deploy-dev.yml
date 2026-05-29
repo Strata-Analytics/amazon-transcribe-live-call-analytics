@@ -247,7 +247,7 @@ jobs:
 
           LAMBDA_FN=$(aws cloudformation describe-stack-resource \
             --stack-name "$AI_STACK" \
-            --logical-resource-id CallEventProcessor \
+            --logical-resource-id CallEventProcessorFunction \
             --query 'StackResourceDetail.PhysicalResourceId' \
             --output text \
             --region ${{ env.REGION }})
