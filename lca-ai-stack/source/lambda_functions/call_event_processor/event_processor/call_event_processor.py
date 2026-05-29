@@ -1433,6 +1433,7 @@ async def execute_process_event_api_mutation(
         add_transcript_tasks = []
         add_transcript_sentiment_tasks = []
         add_call_category_tasks = []
+        add_call_category_mutation_tasks = []
 
         for normalized_message in normalized_messages:
             if (TRANSCRIPT_LAMBDA_HOOK_FUNCTION_ARN):
@@ -1498,6 +1499,14 @@ async def execute_process_event_api_mutation(
                                 }
                             }
                         }
+                        # Update Call.CallCategories — the field the UI badge panel reads
+                        add_call_category_mutation_tasks.append(
+                            execute_add_call_category_mutation(
+                                message=category_message,
+                                appsync_session=appsync_session,
+                            )
+                        )
+                        # Add CATEGORY_MATCH transcript segment (timeline marker)
                         add_call_category_tasks.extend(
                             add_call_category(
                                 message=category_message,
@@ -1526,6 +1535,7 @@ async def execute_process_event_api_mutation(
         task_responses = await asyncio.gather(
             *add_transcript_tasks,
             *add_transcript_sentiment_tasks,
+            *add_call_category_mutation_tasks,
             *add_call_category_tasks,
             *update_call_aggregation_tasks,
             # *add_tca_agent_assist_tasks,

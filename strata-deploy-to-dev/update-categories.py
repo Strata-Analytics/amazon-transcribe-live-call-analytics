@@ -5,11 +5,11 @@ Update TranscriptCategoryPatterns in SSM Parameter Store without redeploying.
 Changes take effect within ~60 seconds (Lambda TTL cache).
 
 Usage:
-  python update-categories.py --profile dev          # show current patterns
-  python update-categories.py --profile dev --set    # open editor to set patterns
-  python update-categories.py --profile dev --add "Retention Risk" "(?i)\\b(cancelar|baja)\\b"
-  python update-categories.py --profile dev --remove "Retention Risk"
-  python update-categories.py --profile dev --clear  # remove all patterns
+  python strata-deploy-to-dev/update-categories.py --profile dev          # show current patterns
+  python strata-deploy-to-dev/update-categories.py --profile dev --set    # open editor to set patterns
+  python strata-deploy-to-dev/update-categories.py --profile dev --add "Retention Risk" "(?i)\\b(cancelar|baja)\\b"
+  python strata-deploy-to-dev/update-categories.py --profile dev --remove "Retention Risk"
+  python strata-deploy-to-dev/update-categories.py --profile dev --clear  # remove all patterns
 
 The SSM parameter name is read from the deployed CloudFormation stack.
 """

@@ -329,6 +329,7 @@ export const startDeepgram = async (callMetaData: CallMetaData, audioInputStream
             punctuate: true,
             interim_results: true,
             endpointing: 150,
+            no_delay: true,
             encoding: 'linear16',
             sample_rate: callMetaData.samplingRate,
             channels: 2,
