@@ -160,14 +160,13 @@ def extract_name_from_context(transcript: str, context_text: str) -> str:
 def resolve_cliente(event: dict, transcript: str, context_text: str,
                     call_id: str, table_name: str, dynamodb_pk: str) -> tuple:
     """
-    Returns (cliente_dict, confirmed: bool).
+    Returns (cliente_dict, identidad_estado: str).
 
-    confirmed=True  — name in call matches phone profile, or found via name scan.
-    confirmed=False — phone profile found but client hasn't said their name yet.
-                      Profile is injected with a warning so the model treats it as a hint.
-
-    If phone profile name doesn't match spoken name, try name scan.
-    If name scan also fails, return empty — better no profile than wrong profile.
+    identidad_estado values:
+      'CONFIRMADO'          — name matches phone profile, or found via name scan.
+      'NO_CONFIRMADO'       — phone profile found but client hasn't said name yet (unconfirmed hint).
+      'MISMATCH_RESUELTO'   — spoken name != phone name, but spoken name found in DB.
+      'CLIENTE_DESCONOCIDO' — spoken name not found in DB; phone profile discarded.
     """
     phone = get_customer_phone_from_event(event)
     if not phone:
@@ -181,26 +180,28 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
     if not cliente_by_phone:
         if nombre_mencionado:
             c = get_cliente_by_nombre(nombre_mencionado)
-            return (c, True) if c else ({}, False)
-        return {}, False
+            return (c, 'CONFIRMADO') if c else ({}, 'CLIENTE_DESCONOCIDO')
+        return {}, 'CLIENTE_DESCONOCIDO'
 
     if not nombre_mencionado:
-        # Phone matched, client hasn't said name yet — unconfirmed hint
-        return cliente_by_phone, False
+        # Phone matched but client hasn't said name yet — treat as unconfirmed hint
+        return cliente_by_phone, 'NO_CONFIRMADO'
 
     # Cross-validate name vs phone profile
     nombre_perfil = cliente_by_phone.get('nombre', '').lower()
     if any(p in nombre_perfil for p in nombre_mencionado.lower().split()):
-        return cliente_by_phone, True
+        return cliente_by_phone, 'CONFIRMADO'
 
-    # Mismatch — try name scan before giving up
+    # Mismatch — try name scan
     print(f"nombre '{nombre_mencionado}' != perfil '{nombre_perfil}', buscando por nombre")
     c = get_cliente_by_nombre(nombre_mencionado)
     if c:
-        return c, True
+        nombre_bd = cliente_by_phone.get('nombre', '?')
+        print(f"MISMATCH_RESUELTO: teléfono→{nombre_bd}, encontrado→{c.get('nombre','?')}")
+        return c, 'MISMATCH_RESUELTO'
 
-    print("no se encontró perfil por nombre, operando sin perfil")
-    return {}, False
+    print(f"CLIENTE_DESCONOCIDO: nombre '{nombre_mencionado}' no encontrado, descartando perfil del teléfono")
+    return {}, 'CLIENTE_DESCONOCIDO'
 
 
 # ---------------------------------------------------------------------------
@@ -328,6 +329,16 @@ def compute_retencion_oferta(cliente: dict, plan_data: dict) -> str:
                 f"${round(upgrade_precio * (1 - desc/100))}/mes por {dur} meses"
             )
 
+    ret_d = get_oferta('RET-D')
+    if ret_d:
+        dur_d = ret_d.get('duracion_meses', 3)
+        lines.append(
+            f"RET-D (SOLO dificultad económica o viaje prolongado — ÚLTIMO recurso): "
+            f"pausa de servicio hasta {dur_d} meses. Número se mantiene. "
+            f"Servicio se reactiva automáticamente al finalizar o si el cliente lo solicita. "
+            f"NO ofrecer antes de explorar el motivo real."
+        )
+
     return '\n'.join(lines)
 
 
@@ -336,7 +347,7 @@ def compute_retencion_oferta(cliente: dict, plan_data: dict) -> str:
 # ---------------------------------------------------------------------------
 
 def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
-                           confirmado: bool = True) -> str:
+                           identidad_estado: str = 'CONFIRMADO') -> str:
     if not cliente:
         return ''
 
@@ -397,11 +408,16 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
             f"Upgrade a {gap['upgrade_id']} (${gap['upgrade_precio']}) = {net_str}."
         )
 
-    if not confirmado:
+    if identidad_estado == 'NO_CONFIRMADO':
         lines.append(
-            "⚠ PERFIL NO CONFIRMADO: el cliente aún no dijo su nombre o no coincidió con el "
-            "teléfono registrado. Usar estos datos como referencia orientativa. Si el cliente "
-            "menciona algo distinto (otro plan, otra situación), priorizar lo que dice el cliente."
+            "IDENTIDAD_ESTADO: NO_CONFIRMADO — el cliente aún no dijo su nombre. "
+            "Pedir nombre antes de proceder con cambios de cuenta o ventas. "
+            "Usar datos del perfil como referencia pero NO confirmar nada sin nombre verificado."
+        )
+    elif identidad_estado == 'MISMATCH_RESUELTO':
+        lines.append(
+            f"IDENTIDAD_ESTADO: MISMATCH_RESUELTO — nombre encontrado en base de datos: "
+            f"{cliente.get('nombre', '?')}. Confirmar con el cliente antes de proceder."
         )
 
     return "DATOS DEL CLIENTE:\n" + '\n'.join(f"• {l}" for l in lines)
@@ -786,9 +802,40 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
     - Excepción: si ya tenés toda la información necesaria del cliente (cuántas líneas, qué plan prefiere), 
   ir directo a confirmar y cerrar. No hacer pregunta de descubrimiento cuando ya está todo claro.
 
-17. PROHIBIDO INVENTAR CONDICIONES: 
-    •nunca ofrecer "primer mes gratis", "período de prueba", "sin costo el primer mes" ni ninguna condición que no esté en el catálogo. 
+17. PROHIBIDO INVENTAR CONDICIONES:
+    •nunca ofrecer "primer mes gratis", "período de prueba", "sin costo el primer mes" ni ninguna condición que no esté en el catálogo.
     •Si el cliente pregunta si puede probar, decir que el plan se puede cambiar en cualquier momento pero no hay período de prueba gratuito.
+
+18. VELOCIDADES DE RED — sin ambigüedad:
+    • MOV-BASIC    = 4G · SIN redes sociales incluidas
+    • MOV-PLUS     = 4G · CON redes sociales incluidas (WhatsApp, Facebook, Instagram, TikTok)
+    • MOV-PRO      = 5G · con roaming USA+Canadá · SIN redes sociales separadas
+    • MOV-UNLIMITED = 5G · con roaming global
+    PROHIBIDO: decir que MOV-PRO es 4G. PROHIBIDO: decir que MOV-BASIC incluye redes sociales.
+    Si el cliente pregunta la velocidad de cualquier plan → responder categóricamente desde esta tabla, sin ambigüedad.
+
+19. OFERTAS CERRADAS — inventar oferta = error crítico:
+    Las ÚNICAS ofertas de retención válidas son: RET-A, RET-B, RET-C, RET-D — exactamente como figuran en OFERTAS RETENCIÓN DISPONIBLES.
+    NUNCA inventar: "upgrade gratis por X meses" sin nombre de oferta, porcentajes distintos a los listados, condiciones no incluidas.
+    Si no hay oferta aplicable → INFORMACION_ADICIONAL o ESCALACIÓN.
+
+20. IDENTIDAD DEL CLIENTE — protocolo obligatorio según IDENTIDAD_ESTADO:
+    • IDENTIDAD_ESTADO: NO_CONFIRMADO — el cliente aún no dijo su nombre.
+      Primera acción obligatoria: INFORMACION_ADICIONAL — "¿Me podría decir su nombre completo para verificar su cuenta?"
+      Usar perfil del teléfono como referencia orientativa pero NO proceder con cambios de cuenta sin nombre confirmado.
+
+    • IDENTIDAD_ESTADO: MISMATCH_RESUELTO — el teléfono pertenece a otro nombre pero el nombre dicho fue encontrado en la base de datos.
+      Primera acción obligatoria: INFORMACION_ADICIONAL — confirmar: "¿Es usted [nombre]?"
+      Solo proceder con el perfil después de que el cliente confirme.
+
+    • IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO — nombre dicho NO existe en la base de datos.
+      IGNORAR completamente todos los datos del perfil del teléfono registrado — pertenecen a otro cliente.
+      Primera acción obligatoria: INFORMACION_ADICIONAL — preguntar si tiene plan activo con TelcoStrata.
+      Hacer preguntas de calificación de a una por turno:
+        "¿Tiene actualmente un plan con nosotros?"
+        "¿Cuál es su plan o número de cuenta?"
+        "¿Hace cuánto tiempo es cliente?"
+      Si no confirma tener plan activo → tratar como cliente potencial o derivar a activaciones.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMATO DE RESPUESTA
@@ -852,6 +899,17 @@ RETENCIÓN
   → Paso 3 — con motivo claro: ofrecer RET-A → RET-B → RET-C según jerarquía y antigüedad.
   "Está caro" sin amenaza de cancelar → MANEJO_OBJECION.
 
+  FLUJO SUSPENSIÓN DE SERVICIO (subtipo de RETENCIÓN):
+  Si el cliente pide suspender, pausar o desactivar su línea temporalmente:
+  1. Explorar el motivo: ¿dificultad económica, viaje prolongado, u otro?
+  2. Ofrecer alternativa relevante (plan más económico, paquete reducido, etc.) según el motivo.
+  3. Si rechaza todas las alternativas → ofrecer RET-D (pausa de servicio hasta 3 meses).
+     Presentar como: "Podemos pausar tu servicio hasta 3 meses — tu número se mantiene y se reactiva automáticamente."
+  4. Si rechaza RET-D también → ESCALACIÓN con resumen del caso para que el supervisor gestione.
+  NUNCA: quedarse en silencio si el cliente rechaza la alternativa propuesta.
+  NUNCA: ofrecer una línea adicional si el cliente quiere suspender (no tiene sentido).
+  NUNCA: ir directo a RET-D sin explorar el motivo primero.
+
 MANEJO_OBJECION
   Cliente rechaza oferta o dice que es caro, sin amenazar cancelar.
   Con GAP, cliente dice "está caro" / "no me convence" / "es mucho":
@@ -883,7 +941,11 @@ SOPORTE
 
 CIERRE
   Cliente acepta o da señal clara de compra.
-  → Confirmar con calidez, resumir lo acordado, dar el próximo paso concreto.
+  → OBLIGATORIO cuando el cliente acepta: confirmar SIEMPRE con todos los detalles:
+    - Nombre exacto del plan activado
+    - Precio exacto (con descuento si se ofreció, y precio regular después del período)
+    - Fecha de efectividad: "a partir del próximo ciclo de facturación" o "de inmediato" según contexto
+    NUNCA dejar una aceptación del cliente sin CIERRE explícito con estos tres datos.
   → No volver a vender ni agregar más información. Solo confirmar y activar.
   → Tono cálido, no mecánico.
   → Si el cliente mencionó urgencia o necesidad inmediata durante la llamada, confirmar que la activación es inmediata — no "próximo ciclo".
@@ -1090,6 +1152,52 @@ CONTEXTO: Copilot ofreció MOV-PRO con 20% dto ($314/mes) + paquete 3GB de emerg
    "accion": "CIERRE",
    "recomendacion": "Perfecto, Lucía. Te activo el paquete de 3GB ahora mismo y MOV-PRO a $314/mes los primeros 3 meses — luego $449/mes. Tus datos se reactivan en menos de 2 minutos. Muchas gracias por comunicarte con TelcoStrata, que tengas un excelente día.",
    "urgencia": "alta"}
+
+# EJEMPLO ID-1 — IDENTIDAD: nombre no detectado aún → pedir nombre
+IDENTIDAD_ESTADO: NO_CONFIRMADO
+ÚLTIMO MENSAJE: "Buenos días, quería consultar sobre mi plan."
+→ {"razonamiento": "IDENTIDAD_ESTADO NO_CONFIRMADO — cliente no dijo su nombre. Pedir nombre antes de proceder con cualquier dato de cuenta.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Buenos días. ¿Me podría decir su nombre completo para verificar su cuenta?", "urgencia": "alta"}
+
+# EJEMPLO ID-2 — IDENTIDAD: mismatch resuelto → confirmar antes de usar perfil
+IDENTIDAD_ESTADO: MISMATCH_RESUELTO (nombre encontrado en base: Ana Martínez)
+ÚLTIMO MENSAJE: "Soy Ana Martínez, llamo para saber mis opciones de plan."
+→ {"razonamiento": "MISMATCH_RESUELTO: nombre Ana Martínez encontrado en base pero teléfono registrado a otro nombre. Confirmar identidad antes de proceder.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Para confirmar, ¿es usted Ana Martínez? Quiero asegurarme de ver la cuenta correcta antes de continuar.", "urgencia": "alta"}
+
+# EJEMPLO ID-3 — IDENTIDAD: cliente desconocido → ignorar perfil del teléfono, calificar
+IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO
+ÚLTIMO MENSAJE: "Me llamo Pedro López, llamo para consultar mi plan."
+→ {"razonamiento": "CLIENTE_DESCONOCIDO: Pedro López no existe en la base de datos. Ignorar perfil del teléfono. Calificar al cliente.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Gracias, Pedro. ¿Tiene actualmente un plan activo con TelcoStrata, o está interesado en contratar uno?", "urgencia": "media"}
+
+# EJEMPLO SUSP-1 — SUSPENSIÓN: primera solicitud, explorar motivo
+DATOS DEL CLIENTE: nombre: Valeria · plan_actual: MOV-BASIC ($199).
+ÚLTIMO MENSAJE: "Necesito suspender mi línea por un tiempo."
+→ {"razonamiento": "Primera solicitud de suspensión. Explorar motivo antes de ofrecer opciones.", "accion": "RETENCIÓN", "recomendacion": "Claro, Valeria. ¿Me podés comentar qué está pasando? ¿Es por un viaje, por costos, o algo más? Así te digo cuál es la mejor opción.", "urgencia": "media"}
+
+# EJEMPLO SUSP-2 — SUSPENSIÓN: rechazó alternativas → ofrecer RET-D
+DATOS DEL CLIENTE: nombre: Valeria · plan_actual: MOV-BASIC ($199) · antigüedad: 18 meses.
+OFERTAS RETENCIÓN DISPONIBLES: RET-A $159/mes · RET-D: pausa hasta 3 meses.
+CONTEXTO: Copilot ofreció RET-A ($159/mes). Cliente rechazó porque "no puedo pagar nada ahora".
+ÚLTIMO MENSAJE: "No, es que realmente no puedo pagar nada ahora mismo, estoy sin trabajo."
+→ {"razonamiento": "RET-A rechazado. Cliente menciona dificultad económica real. Corresponde RET-D: pausa de servicio sin costo.", "accion": "OFERTA_ESPECIAL", "recomendacion": "Entiendo completamente, Valeria. Tenemos una opción para tu situación: podemos pausar tu servicio hasta 3 meses — tu número se mantiene y todo se reactiva automáticamente cuando estés lista. Sin costo durante la pausa. ¿Te ayudaría eso?", "urgencia": "alta"}
+
+# EJEMPLO CIERRE-CONF — CIERRE con todos los detalles del plan activado
+DATOS DEL CLIENTE: nombre: Roberto · plan_actual: MOV-PRO ($449) · antigüedad: 36 meses.
+OFERTAS RETENCIÓN DISPONIBLES: RET-B upgrade gratuito a MOV-UNLIMITED por 6 meses.
+CONTEXTO: Copilot ofreció RET-B (upgrade gratuito a MOV-UNLIMITED por 6 meses).
+ÚLTIMO MENSAJE: "Sí, me parece bien. Lo quiero."
+→ {"razonamiento": "Señal de compra clara. Aceptó RET-B. Confirmar con nombre del plan, precio y vigencia exactos.", "accion": "CIERRE", "recomendacion": "Perfecto, Roberto. Quedás en MOV-UNLIMITED sin costo adicional por 6 meses — datos ilimitados, 5G y roaming global incluido. A partir del séptimo mes el plan es $599/mes. ¿Activamos ahora?", "urgencia": "alta"}
+
+# EJEMPLO DOWN-1 — DOWNGRADE: ofrecer retención antes de procesar baja de plan
+DATOS DEL CLIENTE: nombre: Ana · plan_actual: MOV-PLUS ($299) · antigüedad: 14 meses.
+OFERTAS RETENCIÓN DISPONIBLES: RET-A 20% dto → $239/mes por 3 meses.
+ÚLTIMO MENSAJE: "Quiero bajar al plan básico, está caro el Plus."
+→ {"razonamiento": "Solicitud de downgrade por precio. Con 14 meses de antigüedad aplica RET-A. Ofrecer antes de procesar el cambio.", "accion": "RETENCIÓN", "recomendacion": "Entiendo, Ana. Antes de hacer el cambio, con tu antigüedad te puedo dejar el MOV-PLUS con 20% de descuento por 3 meses — quedarías en $239/mes en lugar de $299, sin perder las redes sociales ni el servicio actual. ¿Probamos eso primero?", "urgencia": "alta"}
+
+# EJEMPLO DOWN-2 — DOWNGRADE: cliente insiste → confirmar el cambio con detalles
+DATOS DEL CLIENTE: nombre: Ana · plan_actual: MOV-PLUS ($299).
+CONTEXTO: Copilot ofreció RET-A ($239). Cliente rechazó diciendo "igual quiero bajar".
+ÚLTIMO MENSAJE: "No, igual quiero bajar al básico. Prefiero ahorrar."
+→ {"razonamiento": "RET-A rechazado. Cliente insiste en downgrade. Procesar el cambio con CIERRE, aclarando qué pierde.", "accion": "CIERRE", "recomendacion": "Perfecto, Ana. Te proceso el cambio a MOV-BASIC ($199/mes, 5GB, llamadas y SMS ilimitados) — aplica a partir del próximo ciclo de facturación. Tené en cuenta que el plan básico no incluye redes sociales. ¿Confirmamos?", "urgencia": "media"}
 """
 
 
@@ -1118,12 +1226,12 @@ def lambda_handler(event, context):
     context_text = get_call_context(dynamodb_pk, segment_id, table_name)
 
     # --- 2. Resolve client with phone + name cross-validation ---
-    cliente, confirmado = resolve_cliente(
+    cliente, identidad_estado = resolve_cliente(
         event, transcript, context_text, call_id, table_name, dynamodb_pk
     )
     plan_id   = cliente.get('plan_movil_actual', '')
     plan_data = get_plan(plan_id) if plan_id else {}
-    print(f"cliente: {cliente.get('nombre','?')} plan={plan_id} confirmado={confirmado}")
+    print(f"cliente: {cliente.get('nombre','?')} plan={plan_id} identidad={identidad_estado}")
 
     # --- 3. Compute gap analysis ---
     insights = compute_insights(cliente, plan_data)
@@ -1132,25 +1240,41 @@ def lambda_handler(event, context):
     tl = transcript.lower()
 
     catalog_section  = build_catalog_section()
-    profile_section  = build_profile_section(cliente, plan_data, insights, confirmado)
+    profile_section  = build_profile_section(cliente, plan_data, insights, identidad_estado)
     pricing_context  = build_pricing_context(cliente, plan_data, insights, tl)
     kb_scripts       = get_relevant_scripts(transcript, cliente, context_text)
     familiar_context = build_familiar_context(cliente, plan_data, tl, context_text)
 
+    # Identity block for CLIENTE_DESCONOCIDO (no profile available)
+    identity_block = ''
+    if identidad_estado == 'CLIENTE_DESCONOCIDO':
+        identity_block = (
+            "IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO\n"
+            "• El nombre mencionado no existe en la base de datos.\n"
+            "• El perfil del número de teléfono NO corresponde a este cliente — IGNORAR.\n"
+            "• Acción requerida: preguntar si tiene plan activo con TelcoStrata. "
+            "Calificar antes de proceder con cualquier venta."
+        )
+
     # Retention block — check current segment AND accumulated context (FIX)
     retencion_signals = any(w in tl for w in [
-        "cancelar", "baja", "portarme", "me voy", "otra empresa"
+        "cancelar", "baja", "portarme", "me voy", "otra empresa",
+        "suspender", "pausar", "suspensión", "no puedo pagar", "dificultad",
+        "desactivar", "sin servicio temporalmente"
     ])
     if not retencion_signals and context_text:
         ctx_lower = context_text.lower()
         retencion_signals = any(w in ctx_lower for w in [
-            "cancelar", "darme de baja", "portarme", "me voy"
+            "cancelar", "darme de baja", "portarme", "me voy",
+            "suspender", "pausar", "no puedo pagar"
         ])
     retencion_block = compute_retencion_oferta(cliente, plan_data) if retencion_signals else ''
 
     parts = []
     if catalog_section:
         parts.append(catalog_section)
+    if identity_block:
+        parts.append(identity_block)
     if profile_section:
         parts.append(profile_section)
     if familiar_context:
