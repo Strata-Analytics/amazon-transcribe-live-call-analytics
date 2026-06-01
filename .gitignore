@@ -15,3 +15,4 @@ samconfig.toml
 .commit-hash
 .venv
 __pycache__
+out.json

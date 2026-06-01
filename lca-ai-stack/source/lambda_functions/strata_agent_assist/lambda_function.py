@@ -416,8 +416,11 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
         )
     elif identidad_estado == 'MISMATCH_RESUELTO':
         lines.append(
-            f"IDENTIDAD_ESTADO: MISMATCH_RESUELTO — nombre encontrado en base de datos: "
-            f"{cliente.get('nombre', '?')}. Confirmar con el cliente antes de proceder."
+            f"IDENTIDAD_ESTADO: MISMATCH_RESUELTO — el teléfono está registrado a otro nombre "
+            f"pero se encontró en la base de datos: {cliente.get('nombre', '?')}. "
+            f"ACCIÓN OBLIGATORIA INMEDIATA: preguntar '¿Es usted {cliente.get('nombre', '?')}?' "
+            f"ANTES de cualquier mención de planes, precios, consumo o datos de cuenta. "
+            f"PROHIBIDO: proceder con datos de cuenta sin confirmación explícita del cliente."
         )
 
     return "DATOS DEL CLIENTE:\n" + '\n'.join(f"• {l}" for l in lines)
@@ -755,11 +758,15 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
    • Si internet_hogar dice "con Izzi/Telmex/otro" Y el cliente pregunta por hogar en este turno → OPORTUNIDAD_VENTA bundle.
    • Si el cliente está hablando de plan familiar → NO mezclar con oferta de hogar aunque tenga proveedor externo.
 
-8. ESPERAR obligatorio — sin excepciones:
+8. ESPERAR obligatorio:
    • Menos de 4 palabras: "sí", "no", "ok", "ajá", "um", letras sueltas
-   • Saludos: "Hola", "Buenos días", "Buenas tardes"
-   • Solo el nombre: "Mi nombre es Carlos Mendoza"
+   • Saludo puro sin intención: solo "Hola", solo "Buenos días", solo "Buenas tardes" sin nada más
+   • Solo el nombre sin solicitud: "Mi nombre es Carlos Mendoza" → ESPERAR (pero ver excepción abajo)
    • Frase incompleta — termina con: "porque", "y", "pero", "que", "um", "eh", "este", "entonces"
+   EXCEPCIÓN IDENTIDAD — anula ESPERAR: si el contexto contiene IDENTIDAD_ESTADO (NO_CONFIRMADO, MISMATCH_RESUELTO, CLIENTE_DESCONOCIDO), los casos anteriores NO son ESPERAR:
+   • "Buenas tardes, quería consultar" con IDENTIDAD_ESTADO: NO_CONFIRMADO → INFORMACION_ADICIONAL (pedir nombre)
+   • "Me llamo Pedro López, llamo para consultar" con IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO → INFORMACION_ADICIONAL (calificar)
+   • "Soy Ana Martínez, llamo para saber mis opciones" con IDENTIDAD_ESTADO: MISMATCH_RESUELTO → INFORMACION_ADICIONAL (confirmar)
 
 9. PAGOS ATRASADOS: si figura en DATOS DEL CLIENTE → SOPORTE siempre. No vender.
 
@@ -899,16 +906,17 @@ RETENCIÓN
   → Paso 3 — con motivo claro: ofrecer RET-A → RET-B → RET-C según jerarquía y antigüedad.
   "Está caro" sin amenaza de cancelar → MANEJO_OBJECION.
 
-  FLUJO SUSPENSIÓN DE SERVICIO (subtipo de RETENCIÓN):
-  Si el cliente pide suspender, pausar o desactivar su línea temporalmente:
-  1. Explorar el motivo: ¿dificultad económica, viaje prolongado, u otro?
-  2. Ofrecer alternativa relevante (plan más económico, paquete reducido, etc.) según el motivo.
-  3. Si rechaza todas las alternativas → ofrecer RET-D (pausa de servicio hasta 3 meses).
-     Presentar como: "Podemos pausar tu servicio hasta 3 meses — tu número se mantiene y se reactiva automáticamente."
-  4. Si rechaza RET-D también → ESCALACIÓN con resumen del caso para que el supervisor gestione.
-  NUNCA: quedarse en silencio si el cliente rechaza la alternativa propuesta.
-  NUNCA: ofrecer una línea adicional si el cliente quiere suspender (no tiene sentido).
-  NUNCA: ir directo a RET-D sin explorar el motivo primero.
+  FLUJO SUSPENSIÓN DE SERVICIO (subtipo de RETENCIÓN — NO es SOPORTE):
+  Señales de activación: "suspender", "pausar", "desactivar temporalmente", "no puedo pagar", "sin trabajo", "dificultad económica", "viaje largo".
+  Acción siempre RETENCIÓN en step 1, OFERTA_ESPECIAL en step 3.
+  1. Explorar el motivo: ¿dificultad económica, viaje prolongado, u otro? → RETENCIÓN
+  2. Ofrecer alternativa según el motivo (plan más económico, paquete reducido, etc.)
+  3. Si el cliente menciona dificultad económica O rechaza las alternativas → OFERTA_ESPECIAL con RET-D:
+     Texto: "Tenemos una opción: RET-D — pausamos tu servicio hasta 3 meses, tu número se mantiene y se reactiva automáticamente sin costo adicional durante la pausa."
+  4. Si rechaza RET-D → ESCALACIÓN.
+  NUNCA: clasificar suspensión-por-decisión-del-cliente como SOPORTE.
+  NUNCA: quedarse en silencio si el cliente rechaza la alternativa.
+  NUNCA: ir directo a RET-D sin al menos preguntar el motivo.
 
 MANEJO_OBJECION
   Cliente rechaza oferta o dice que es caro, sin amenazar cancelar.
@@ -930,6 +938,7 @@ ESCALACIÓN
 
 SOPORTE
   Problema técnico activo: sin señal, error de red, falla de servicio inesperada, facturación incorrecta.
+  NO ES SOPORTE: "quiero suspender mi línea", "quiero pausar el servicio", "no puedo pagar" — estos son RETENCIÓN, no problemas técnicos. Ver FLUJO SUSPENSIÓN en RETENCIÓN.
   "sin datos" — depende del perfil:
   • Si hay GAP en DATOS DEL CLIENTE (consumo_promedio > límite_plan): el cliente regularmente excede su plan → UPSELL, no SOPORTE. Explicar que se agotaron porque su uso supera el plan.
   • Si NO hay GAP y el cliente dice que agotó datos inesperadamente: investigar (posible error, consumo por app en segundo plano) → SOPORTE.
