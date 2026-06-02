@@ -3,8 +3,18 @@ import json
 import os
 import re
 import time
+import unicodedata
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key
+
+
+def _strip_accents(s: str) -> str:
+    """Lowercase + accent-strip for tilde-insensitive name comparison.
+    'Verónica' → 'veronica', 'Martínez' → 'martinez'."""
+    if not s:
+        return ''
+    nfkd = unicodedata.normalize('NFD', s)
+    return ''.join(c for c in nfkd if unicodedata.category(c) != 'Mn').lower()
 
 bedrock        = boto3.client('bedrock-runtime',       region_name='us-east-1')
 bedrock_agent  = boto3.client('bedrock-agent-runtime', region_name='us-east-1')
@@ -82,21 +92,22 @@ def get_cliente(telefono: str) -> dict:
 
 
 def get_cliente_by_nombre(nombre: str) -> dict:
-    """Scan by first name — demo only. In production use a GSI on 'nombre'."""
-    first = nombre.strip().split()[0].title() if nombre.strip() else ''
-    if not first:
+    """Scan + Python-side accent-normalized match.
+    DDB `contains` is byte-sensitive — 'Verónica' (extracted) ≠ 'Veronica' (DB).
+    Small table (~6 rows), full scan is cheap and reliable."""
+    parts = nombre.strip().split() if nombre.strip() else []
+    if not parts:
         return {}
+    first_norm = _strip_accents(parts[0])
     try:
         table = dynamodb.Table(TABLA_CLIENTES)
-        resp  = table.scan(
-            FilterExpression='contains(#n, :v)',
-            ExpressionAttributeNames={'#n': 'nombre'},
-            ExpressionAttributeValues={':v': first}
-        )
-        items = [_ddb_to_native(i) for i in resp.get('Items', [])]
-        if items:
-            print(f"cliente scan '{first}' → {items[0].get('nombre','?')}")
-            return items[0]
+        resp  = table.scan()
+        for raw in resp.get('Items', []):
+            item = _ddb_to_native(raw)
+            stored_norm = _strip_accents(item.get('nombre', ''))
+            if first_norm and first_norm in stored_norm:
+                print(f"cliente scan '{first_norm}' → {item.get('nombre','?')}")
+                return item
     except Exception as e:
         print(f"DDB scan by nombre error: {e}")
     return {}
@@ -284,13 +295,15 @@ def save_identity_state(dynamodb_pk: str, table_name: str, estado: str, cliente:
     }
     # Always update in-process cache (guaranteed, no permissions needed)
     _identity_cache[dynamodb_pk] = (state, time.time())
-    # Best-effort DDB write for cross-instance durability
+    # Best-effort DDB write for cross-instance durability. TTL = 30 min so stale
+    # identity records from test re-runs / abandoned calls auto-clean.
     try:
         tbl = dynamodb.Table(table_name or DYNAMODB_TABLE_NAME)
         tbl.put_item(Item={
             'PK': dynamodb_pk,
             'SK': _IDENTITY_SK,
             'Channel': 'IDENTITY_STATE',
+            'ExpiresAfter': int(time.time()) + 1800,
             **state,
         })
         print(f"save_identity_state (cache+DDB): {estado} → {cliente.get('nombre','?')}")
@@ -361,11 +374,12 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
             return cliente_by_phone, 'NO_CONFIRMADO'
         return {}, 'CLIENTE_DESCONOCIDO'
 
-    # Check if spoken name matches phone profile → CONFIRMADO directly, no document needed
+    # Check if spoken name matches phone profile → CONFIRMADO directly, no document needed.
+    # Accent-strip both sides — Deepgram outputs 'Verónica' but DB stores 'Veronica'.
     if cliente_by_phone:
-        nombre_perfil = cliente_by_phone.get('nombre', '').lower()
-        if any(p in nombre_perfil for p in nombre_mencionado.lower().split()):
-            print(f"CONFIRMADO: nombre '{nombre_mencionado}' matches perfil '{nombre_perfil}'")
+        nombre_perfil_norm = _strip_accents(cliente_by_phone.get('nombre', ''))
+        if any(_strip_accents(p) in nombre_perfil_norm for p in nombre_mencionado.split()):
+            print(f"CONFIRMADO: nombre '{nombre_mencionado}' matches perfil '{nombre_perfil_norm}'")
             return cliente_by_phone, 'CONFIRMADO'
 
     # Name doesn't match phone profile (or no phone) → scan DB by name

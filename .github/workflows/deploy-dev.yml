@@ -230,6 +230,44 @@ jobs:
 
           echo "✅ Imagen pushed y servicio ECS actualizado."
 
+      # ── 8c. Actualizar strata_agent_assist Lambda directamente ────────────────
+      # BYO Lambda: referenciada por parámetro AgentAssistExistingLambdaFunctionArn.
+      # CloudFormation no puede actualizar su código — deploy directo obligatorio.
+      - name: Deploy strata_agent_assist Lambda
+        run: |
+          echo "📦 Empaquetando strata_agent_assist..."
+          cd lca-ai-stack/source/lambda_functions/strata_agent_assist
+          zip -r /tmp/agent-assist.zip . -x "*.pyc" -x "__pycache__/*"
+          cd ../../../..
+
+          echo "⬆️  Actualizando código Lambda..."
+          aws lambda update-function-code \
+            --function-name agent-copilot-dev-agent-assist \
+            --zip-file fileb:///tmp/agent-assist.zip \
+            --region ${{ env.REGION }} \
+            --output text
+
+          echo "✅ strata_agent_assist desplegado en agent-copilot-dev-agent-assist."
+
+      # ── 8d. Grant agent_assist Lambda write access to EventSourcingTable ──────
+      # Required for identity-state persistence across Lambda containers
+      # (in-process cache is unreliable; same call's turns land on different containers).
+      - name: Grant agent_assist Lambda DDB write on EventSourcingTable
+        run: |
+          ROLE_ARN=$(aws lambda get-function \
+            --function-name agent-copilot-dev-agent-assist \
+            --region ${{ env.REGION }} \
+            --query 'Configuration.Role' --output text)
+          ROLE_NAME="${ROLE_ARN##*/}"
+          echo "🔐 Granting DDB write to role: $ROLE_NAME"
+
+          aws iam put-role-policy \
+            --role-name "$ROLE_NAME" \
+            --policy-name AgentAssistIdentityStateDDB \
+            --policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:PutItem\",\"dynamodb:GetItem\",\"dynamodb:DeleteItem\",\"dynamodb:UpdateItem\"],\"Resource\":\"arn:aws:dynamodb:${{ env.REGION }}:*:table/agent-copilot-dev-*-EventSourcingTable-*\"}]}"
+
+          echo "✅ Inline policy AgentAssistIdentityStateDDB attached."
+
       # ── 9. Actualizar call_event_processor Lambda directamente ──────────────
       # La AI stack se despliega desde el bucket público de AWS (lca-ai-stack no
       # se re-empaqueta en CI para evitar actualizar AppSync/IAM/etc. inadvertidamente).

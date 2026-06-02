@@ -202,6 +202,25 @@ jobs:
 
           echo "✅ strata_agent_assist desplegado en lca-poc-agent-assist."
 
+      # ── 8b. Grant agent_assist Lambda write access to EventSourcingTable ──────
+      # Required for identity-state persistence across Lambda containers
+      # (in-process cache is unreliable; same call's turns land on different containers).
+      - name: Grant agent_assist Lambda DDB write on EventSourcingTable
+        run: |
+          ROLE_ARN=$(aws lambda get-function \
+            --function-name lca-poc-agent-assist \
+            --region ${{ env.REGION }} \
+            --query 'Configuration.Role' --output text)
+          ROLE_NAME="${ROLE_ARN##*/}"
+          echo "🔐 Granting DDB write to role: $ROLE_NAME"
+
+          aws iam put-role-policy \
+            --role-name "$ROLE_NAME" \
+            --policy-name AgentAssistIdentityStateDDB \
+            --policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:PutItem\",\"dynamodb:GetItem\",\"dynamodb:DeleteItem\",\"dynamodb:UpdateItem\"],\"Resource\":\"arn:aws:dynamodb:${{ env.REGION }}:*:table/lca-*-EventSourcingTable-*\"}]}"
+
+          echo "✅ Inline policy AgentAssistIdentityStateDDB attached."
+
       # ── 9. Actualizar call_event_processor Lambda directamente ────────────────
       - name: Deploy call_event_processor Lambda
         run: |
