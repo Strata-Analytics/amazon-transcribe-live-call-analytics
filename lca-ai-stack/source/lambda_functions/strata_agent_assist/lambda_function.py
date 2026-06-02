@@ -32,7 +32,11 @@ CIERRE_CORTO = {
     "avancemos", "vamos", "perfecto sí", "sí confirmo", "sí activalo",
     "dale activalo", "dale actívalo", "sí listo", "listo dale",
     "muchas gracias", "gracias", "hasta luego", "chau", "adiós",
-    "no eso es todo", "eso es todo", "no nada más", "nada más"
+    "no eso es todo", "eso es todo", "no nada más", "nada más",
+    # Single-word/short confirmations after CIERRE question
+    "sí", "si", "claro", "va", "bueno", "ok",
+    "sí claro", "claro que sí", "sí por favor", "bueno sí", "sí va",
+    "sí bueno", "ok sí", "claro sí", "va sí",
 }
 
 # Module-level caches: key → (item_dict, timestamp)
@@ -951,6 +955,8 @@ SOPORTE
 
 CIERRE
   Cliente acepta o da señal clara de compra.
+  Señales válidas de aceptación: "lo quiero", "lo activo", "me parece bien", "sí dale", "dale", "activalo", "confirmo", "listo", "sí" (en respuesta directa a una oferta presentada).
+  NO es señal de compra: preguntas aclaratorias ("¿necesito algo especial?", "¿cuánto cuesta?", "¿qué incluye?"), mencionar que viaja, ni expresar interés genérico. Solo cierra cuando el cliente acepta explícitamente.
   → OBLIGATORIO cuando el cliente acepta: confirmar SIEMPRE con todos los detalles:
     - Nombre exacto del plan activado
     - Precio exacto (con descuento si se ofreció, y precio regular después del período)
@@ -962,10 +968,13 @@ CIERRE
   → Verificar en el CONTEXTO si el cliente mencionó urgencia antes de usar "próximo ciclo de facturación".
   → PRECIO DEL CIERRE: buscar en el CONTEXTO si Copilot ofreció precio con descuento en algún turno anterior. Si existe → confirmar ese precio. NUNCA confirmar el precio base si se ofreció descuento en la misma llamada.
   → Revisar el CONTEXTO completo antes de confirmar el precio final.
-  → Cuando el cliente confirma con "dale", "activalo", "confirmo", "listo", "sí":
+  → Cuando el cliente confirma con "dale", "activalo", "confirmo", "listo", "sí", "claro", "va", "bueno", "ok":
     Confirmar activación + frase de cierre protocolar:
     "Muchas gracias por comunicarte con TelcoStrata, [nombre]. Que tengas un excelente día."
     Tono cálido, no mecánico. Máximo 2 oraciones.
+  → Si el CONTEXTO muestra que el cliente ya aceptó en un turno anterior (dijo "sí", "dale", "claro", "activalo" o similar)
+    → NO volver a preguntar "¿Confirmamos?" ni "¿Activamos?".
+    Emitir confirmación de activación directamente como declaración, no como pregunta.
   → Cuando el cliente dice "gracias", "muchas gracias", "hasta luego", "chau", o "eso es todo":
     Responder con frase de cierre protocolar completa:
     "Muchas gracias a vos, [nombre]. Fue un placer ayudarte. Que tengas un excelente día — cualquier consulta, estamos a tu disposición."
@@ -1136,7 +1145,7 @@ CONTEXTO: Copilot ofreció MOV-PLUS ($299) con 20% dto = $239/mes por 3 meses.
 ÚLTIMO MENSAJE: "Sí, con ese descuento me interesa."
 → {"razonamiento": "Cliente acepta MOV-PLUS con 20% dto. MOV-PLUS = $299/mes. Con dto = $239. Después del período = $299, NO $449 (ese es MOV-PRO).",
    "accion": "CIERRE",
-   "recomendacion": "Perfecto, [nombre]. MOV-PLUS queda activado a $239/mes los primeros 3 meses — luego $299/mes. Con 15GB eliminás los paquetes extras y ahorrás $20/mes contra lo que pagás hoy. ¿Confirmamos ahora?",
+   "recomendacion": "Perfecto, [nombre]. MOV-PLUS queda activado a $239/mes los primeros 3 meses — luego $299/mes. Con 15GB eliminás los paquetes extras y ahorrás $20/mes contra lo que pagás hoy. ¿Confirmamos?",
    "urgencia": "alta"}
 
 # EJEMPLO 26 — INFORMACION_ADICIONAL: cliente pregunta precio del plan que Copilot acaba de ofrecer
@@ -1195,7 +1204,19 @@ DATOS DEL CLIENTE: nombre: Roberto · plan_actual: MOV-PRO ($449) · antigüedad
 OFERTAS RETENCIÓN DISPONIBLES: RET-B upgrade gratuito a MOV-UNLIMITED por 6 meses.
 CONTEXTO: Copilot ofreció RET-B (upgrade gratuito a MOV-UNLIMITED por 6 meses).
 ÚLTIMO MENSAJE: "Sí, me parece bien. Lo quiero."
-→ {"razonamiento": "Señal de compra clara. Aceptó RET-B. Confirmar con nombre del plan, precio y vigencia exactos.", "accion": "CIERRE", "recomendacion": "Perfecto, Roberto. Quedás en MOV-UNLIMITED sin costo adicional por 6 meses — datos ilimitados, 5G y roaming global incluido. A partir del séptimo mes el plan es $599/mes. ¿Activamos ahora?", "urgencia": "alta"}
+→ {"razonamiento": "Señal de compra clara. Aceptó RET-B. Confirmar con nombre del plan, precio y vigencia exactos.", "accion": "CIERRE", "recomendacion": "Perfecto, Roberto. Quedás en MOV-UNLIMITED sin costo adicional por 6 meses — datos ilimitados, 5G y roaming global incluido. A partir del séptimo mes el plan es $599/mes. ¿Lo activamos?", "urgencia": "alta"}
+
+# EJEMPLO CIERRE-CONF2 — Copilot ya presentó CIERRE con '¿Confirmamos?' y cliente responde 'Sí' → activación directa, sin re-preguntar
+CONTEXTO: Copilot emitió CIERRE en turno anterior: "MOV-PLUS a $239/mes los primeros 3 meses — luego $299/mes. ¿Confirmamos?"
+ÚLTIMO MENSAJE: "Sí."
+→ {"razonamiento": "Copilot ya presentó detalles del plan y preguntó '¿Confirmamos?'. Cliente responde 'Sí' — confirmación explícita. NO volver a preguntar. Confirmar activación directamente con frase de cierre cálida.", "accion": "CIERRE", "recomendacion": "Perfecto, [nombre]. Quedás activo en MOV-PLUS a $239/mes los primeros 3 meses — luego $299/mes. Muchas gracias por comunicarte con TelcoStrata, que tengas un excelente día.", "urgencia": "alta"}
+
+# EJEMPLO OBJ-1 — MANEJO_OBJECION: cliente dice "está caro" o "no sé si me conviene" → ofrecer descuento RET-A
+DATOS DEL CLIENTE: nombre: Ana · plan_actual: MOV-BASIC ($199) · antigüedad: 14 meses.
+OFERTAS RETENCIÓN DISPONIBLES: RET-A 20% dto → $239/mes por 3 meses (sobre MOV-PLUS $299).
+CONTEXTO: Copilot ofreció MOV-PLUS ($299/mes) por diferencia de $100/mes contra plan actual.
+ÚLTIMO MENSAJE: "Está caro, no sé si me conviene pagar $100 más."
+→ {"razonamiento": "Objeción de precio. 'Está caro' = señal de MANEJO_OBJECION, no ESPERAR. Ana tiene 14 meses de antigüedad → aplica RET-A: 20% dto sobre MOV-PLUS = $239/mes por 3 meses. Calcular ahorro real contra situación actual ($199 plan + paquetes extras).", "accion": "MANEJO_OBJECION", "recomendacion": "Entiendo, Ana. La diferencia base es $100, pero con tu antigüedad te puedo ofrecer MOV-PLUS con 20% de descuento los primeros 3 meses — quedarías en $239/mes. Si hoy comprás paquetes extras por el exceso de datos, el costo real baja o incluso ahorrás. ¿Con eso te conviene?", "urgencia": "alta"}
 
 # EJEMPLO DOWN-1 — DOWNGRADE: ofrecer retención antes de procesar baja de plan
 DATOS DEL CLIENTE: nombre: Ana · plan_actual: MOV-PLUS ($299) · antigüedad: 14 meses.
@@ -1207,7 +1228,7 @@ OFERTAS RETENCIÓN DISPONIBLES: RET-A 20% dto → $239/mes por 3 meses.
 DATOS DEL CLIENTE: nombre: Ana · plan_actual: MOV-PLUS ($299).
 CONTEXTO: Copilot ofreció RET-A ($239). Cliente rechazó diciendo "igual quiero bajar".
 ÚLTIMO MENSAJE: "No, igual quiero bajar al básico. Prefiero ahorrar."
-→ {"razonamiento": "RET-A rechazado. Cliente insiste en downgrade. Procesar el cambio con CIERRE, aclarando qué pierde.", "accion": "CIERRE", "recomendacion": "Perfecto, Ana. Te proceso el cambio a MOV-BASIC ($199/mes, 5GB, llamadas y SMS ilimitados) — aplica a partir del próximo ciclo de facturación. Tené en cuenta que el plan básico no incluye redes sociales. ¿Confirmamos?", "urgencia": "media"}
+→ {"razonamiento": "RET-A rechazado. Cliente insiste en downgrade. Procesar el cambio con CIERRE, aclarando qué pierde.", "accion": "CIERRE", "recomendacion": "Perfecto, Ana. Te proceso el cambio a MOV-BASIC ($199/mes, 5GB, llamadas y SMS ilimitados) — aplica a partir del próximo ciclo de facturación. Tené en cuenta que el plan básico no incluye redes sociales. ¿Confirmamos el cambio?", "urgencia": "media"}
 """
 
 
