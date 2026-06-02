@@ -1179,7 +1179,8 @@ CIERRE
 ESPERAR
   Todo lo demás. Fragmentos cortos, datos personales, monosílabos, saludos, silencios.
   PROHIBIDO ESPERAR si el cliente dice: "está caro", "caro", "no sé si me conviene", "es mucho", "no vale la pena", "no me convence", "la diferencia es mucha" — estas son SIEMPRE MANEJO_OBJECION, incluso si el mensaje es corto.
-  ANTE LA DUDA → ESPERAR. Pero "está caro" NUNCA es duda: es MANEJO_OBJECION.
+  PROHIBIDO ESPERAR si el ÚLTIMO turno de Copilot en CONTEXTO terminó con "¿Confirmamos?", "¿Activamos?", "¿Lo activamos?", "¿Te lo activo?" o cualquier pregunta de activación, Y el cliente responde con CUALQUIER confirmación ("sí", "dale", "claro", "ok", "bueno", "va", "perfecto", "actívalo", "lo quiero", "lo activo", "dale actívalo", "sí dale", etc., con o sin puntuación) — esto SIEMPRE es CIERRE (frase de cierre protocolar con "gracias por comunicarte con TelcoStrata"), nunca ESPERAR.
+  ANTE LA DUDA → ESPERAR. Pero "está caro" NUNCA es duda: es MANEJO_OBJECION. Y "sí/dale" tras pregunta de activación NUNCA es ESPERAR: es CIERRE.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EJEMPLOS
@@ -1422,6 +1423,16 @@ CONTEXTO: Copilot emitió CIERRE en turno anterior: "MOV-PLUS a $239/mes los pri
 ÚLTIMO MENSAJE: "Sí."
 → {"razonamiento": "Copilot ya presentó detalles del plan y preguntó '¿Confirmamos?'. Cliente responde 'Sí' — confirmación explícita. NO volver a preguntar. Confirmar activación directamente con frase de cierre cálida.", "accion": "CIERRE", "recomendacion": "Perfecto, [nombre]. Quedás activo en MOV-PLUS a $239/mes los primeros 3 meses — luego $299/mes. Muchas gracias por comunicarte con TelcoStrata, que tengas un excelente día.", "urgencia": "alta"}
 
+# EJEMPLO CIERRE-CONF3 — variantes de confirmación multi-palabra tras pregunta de activación
+CONTEXTO: Copilot emitió CIERRE en turno anterior: "MOV-PRO a $449/mes con 30GB, 5G y roaming en EEUU y Canadá incluido. ¿Confirmamos la activación?"
+ÚLTIMO MENSAJE: "Dale, actívalo."
+→ {"razonamiento": "Pregunta de activación pendiente + confirmación explícita ('dale, actívalo'). PROHIBIDO ESPERAR. Ejecutar cierre protocolar inmediato.", "accion": "CIERRE", "recomendacion": "Listo, [nombre]. Tu MOV-PRO queda activo a $449/mes con 30GB, 5G y roaming en EEUU y Canadá incluido — a partir del próximo ciclo de facturación. Muchas gracias por comunicarte con TelcoStrata, que tengas un excelente día.", "urgencia": "alta"}
+
+# EJEMPLO CIERRE-CONF4 — monosílabo aislado SIN pregunta previa → ESPERAR (regla anti-falso-positivo)
+CONTEXTO: Copilot último turno fue UPSELL: "MOV-PRO te daría 30GB, ¿te interesa conocer más detalles?"
+ÚLTIMO MENSAJE: "Sí."
+→ {"razonamiento": "Cliente dice 'sí' pero NO es respuesta a pregunta de activación — es interés en saber más. No cerrar todavía. Esperar a que diga más.", "accion": "ESPERAR", "recomendacion": "Escuchando al cliente.", "urgencia": "ninguna"}
+
 # EJEMPLO OBJ-1 — MANEJO_OBJECION: cliente dice "está caro" o "no sé si me conviene" → ofrecer descuento RET-A
 DATOS DEL CLIENTE: nombre: Ana · plan_actual: MOV-BASIC ($199) · antigüedad: 14 meses.
 OFERTAS RETENCIÓN DISPONIBLES: RET-A 20% dto → $239/mes por 3 meses (sobre MOV-PLUS $299).
@@ -1458,7 +1469,14 @@ def lambda_handler(event, context):
     sentiment  = event.get('sentiment', event.get('Sentiment', 'NEUTRAL'))
 
     tl_stripped = transcript.lower().strip().rstrip('.').rstrip(',')
-    if is_partial or (len(transcript.split()) < 4 and tl_stripped not in CIERRE_CORTO):
+    # Pass through multi-word confirmations like "Dale, actívalo." where each
+    # individual token is a CIERRE_CORTO confirmation (the literal phrase isn't
+    # in the set but the intent is clearly a confirmation).
+    tokens_clean = [re.sub(r'[^\wáéíóúüñ]', '', t.lower()) for t in transcript.split()]
+    all_confirmation = bool(tokens_clean) and all(t in CIERRE_CORTO for t in tokens_clean if t)
+    if is_partial or (len(transcript.split()) < 4
+                      and tl_stripped not in CIERRE_CORTO
+                      and not all_confirmation):
         return build_response('')
 
     table_name  = event.get('dynamodb_table_name', DYNAMODB_TABLE_NAME)
