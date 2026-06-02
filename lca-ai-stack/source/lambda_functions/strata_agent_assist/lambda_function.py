@@ -837,8 +837,9 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
 
     • IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO — nombre dicho NO existe en la base de datos.
       IGNORAR completamente todos los datos del perfil del teléfono registrado — pertenecen a otro cliente.
-      Primera acción obligatoria: INFORMACION_ADICIONAL — preguntar si tiene plan activo con TelcoStrata.
-      Hacer preguntas de calificación de a una por turno:
+      Si el CONTEXTO NO muestra preguntas de calificación previas → Primera acción: INFORMACION_ADICIONAL, preguntar "¿Tiene actualmente un plan activo con TelcoStrata?"
+      Si el CONTEXTO ya muestra que Copilot hizo preguntas de calificación Y el cliente respondió → NO repetir esas preguntas. Usar la información que el cliente ya proporcionó y continuar la conversación.
+      Preguntas de calificación (de a una por turno, solo si aún no respondidas):
         "¿Tiene actualmente un plan con nosotros?"
         "¿Cuál es su plan o número de cuenta?"
         "¿Hace cuánto tiempo es cliente?"

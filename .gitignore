@@ -16,3 +16,4 @@ samconfig.toml
 .venv
 __pycache__
 out.json
+strata-deploy-to-dev/test_multiturn.py
