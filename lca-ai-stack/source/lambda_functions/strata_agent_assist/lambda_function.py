@@ -161,26 +161,117 @@ def extract_name_from_context(transcript: str, context_text: str) -> str:
     return ''
 
 
+_DIGIT_WORDS = {
+    'cero': '0', 'uno': '1', 'una': '1', 'dos': '2', 'tres': '3',
+    'cuatro': '4', 'cinco': '5', 'seis': '6', 'siete': '7',
+    'ocho': '8', 'nueve': '9',
+}
+
+
+def _words_to_digits(text: str) -> str:
+    """Convert runs of ≥4 consecutive Spanish digit words to a digit string.
+    E.g. 'cinco cinco seis seis siete siete ocho ocho' → '55667788'
+    Runs shorter than 4 are left as-is (avoid false positives on normal speech).
+    """
+    tokens = text.lower().split()
+    result_parts: list[str] = []
+    run: list[str] = []
+    for tok in tokens:
+        clean = tok.rstrip('.,;:')
+        if clean in _DIGIT_WORDS:
+            run.append(_DIGIT_WORDS[clean])
+        else:
+            if len(run) >= 4:
+                result_parts.append(''.join(run))
+            elif run:
+                result_parts.extend(run)
+            run = []
+            result_parts.append(tok)
+    if len(run) >= 4:
+        result_parts.append(''.join(run))
+    elif run:
+        result_parts.extend(run)
+    return ' '.join(result_parts)
+
+
 def extract_documento_from_context(transcript: str, context_text: str) -> str | None:
     """
-    Extract an 7-10 digit document number spoken by the caller.
-    Searches current transcript first, then prior 'Cliente:' lines in context.
-    Returns the digit string or None.
+    Extract a 7-10 digit document number spoken by the caller.
+    Handles both digit strings and Spanish spoken digit words (Deepgram numerals fallback).
+    Joins recent CALLER segments to detect numbers split across utterances.
     """
     doc_pat = re.compile(r'\b(\d{7,10})\b')
 
-    # Search current transcript (raw customer utterance)
+    # 1. Raw digits in current transcript
     m = doc_pat.search(transcript)
     if m:
         return m.group(1)
 
-    # Search caller lines in REVERSE order so most-recent document wins
-    caller_lines = [l for l in context_text.splitlines() if l.startswith('Cliente:')]
-    for line in reversed(caller_lines):
+    # 2. Word-to-digit on current transcript
+    m = doc_pat.search(_words_to_digits(transcript))
+    if m:
+        return m.group(1)
+
+    # Collect recent CALLER lines stripped of the 'Cliente:' prefix
+    caller_lines = [l[len('Cliente:'):].strip()
+                    for l in context_text.splitlines() if l.startswith('Cliente:')]
+    recent = caller_lines[-6:]
+
+    # 3. Raw digits in individual caller lines (most recent first)
+    for line in reversed(recent):
         m = doc_pat.search(line)
         if m:
             return m.group(1)
+
+    # 4. Word-to-digit on individual caller lines
+    for line in reversed(recent):
+        m = doc_pat.search(_words_to_digits(line))
+        if m:
+            return m.group(1)
+
+    # 5. Join recent caller lines + current transcript (digits split across Deepgram segments)
+    joined = ' '.join(recent + [transcript])
+    m = doc_pat.search(_words_to_digits(joined))
+    if m:
+        return m.group(1)
+
     return None
+
+
+# ---------------------------------------------------------------------------
+# Identity state persistence — bypasses AppSync write-latency race condition.
+# The orchestrator fires before asyncio.gather() commits the CALLER segment,
+# so the next turn's context query may miss the previous CALLER line.
+# Writing __IDENTITY__ directly via boto3 (not AppSync) gives immediate reads.
+# ---------------------------------------------------------------------------
+
+_IDENTITY_SK = '__IDENTITY__'
+
+
+def read_identity_state(dynamodb_pk: str, table_name: str) -> dict:
+    try:
+        tbl = dynamodb.Table(table_name or DYNAMODB_TABLE_NAME)
+        resp = tbl.get_item(Key={'PK': dynamodb_pk, 'SK': _IDENTITY_SK})
+        return resp.get('Item', {})
+    except Exception as e:
+        print(f"read_identity_state error: {e}")
+        return {}
+
+
+def save_identity_state(dynamodb_pk: str, table_name: str, estado: str, cliente: dict):
+    try:
+        tbl = dynamodb.Table(table_name or DYNAMODB_TABLE_NAME)
+        tbl.put_item(Item={
+            'PK': dynamodb_pk,
+            'SK': _IDENTITY_SK,
+            'Channel': 'IDENTITY_STATE',
+            'estado': estado,
+            'cliente_telefono': cliente.get('telefono', ''),
+            'cliente_nombre': cliente.get('nombre', ''),
+        })
+        print(f"save_identity_state: {estado} → {cliente.get('nombre','?')}")
+    except Exception as e:
+        print(f"save_identity_state error: {e}")
 
 
 def resolve_cliente(event: dict, transcript: str, context_text: str,
@@ -200,6 +291,43 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
         phone = get_phone_from_lca_dynamodb(call_id, table_name, dynamodb_pk)
     print(f"phone resolved: '{phone}'")
 
+    # --- Check persisted identity state first (bypasses AppSync latency) ---
+    saved = read_identity_state(dynamodb_pk, table_name)
+    saved_estado = saved.get('estado', '')
+    print(f"saved identity state: '{saved_estado}'")
+
+    if saved_estado == 'CONFIRMADO':
+        saved_phone = saved.get('cliente_telefono', '')
+        c = get_cliente(saved_phone) if saved_phone else {}
+        if c:
+            print(f"CONFIRMADO (persisted): {c.get('nombre','?')}")
+            return c, 'CONFIRMADO'
+        # Stale record — fall through to full resolution
+
+    if saved_estado == 'CLIENTE_DESCONOCIDO':
+        # Re-check only if client mentions a new name
+        nombre_mencionado = extract_name_from_context(transcript, context_text)
+        if not nombre_mencionado:
+            print("CLIENTE_DESCONOCIDO (persisted)")
+            return {}, 'CLIENTE_DESCONOCIDO'
+        saved_estado = ''  # new name → fall through to full resolution
+
+    if saved_estado in ('MISMATCH_PENDIENTE_DOCUMENTO', 'DOCUMENTO_NO_COINCIDE'):
+        saved_nombre = saved.get('cliente_nombre', '')
+        c = get_cliente_by_nombre(saved_nombre) if saved_nombre else {}
+        if c:
+            doc_dado = extract_documento_from_context(transcript, context_text)
+            doc_registro = str(c.get('numero_documento', ''))
+            if doc_dado:
+                if doc_dado == doc_registro:
+                    print(f"CONFIRMADO via doc (persisted mismatch path)")
+                    return c, 'CONFIRMADO'
+                print(f"DOCUMENTO_NO_COINCIDE (persisted): dado='{doc_dado}' registro='{doc_registro}'")
+                return c, 'DOCUMENTO_NO_COINCIDE'
+            print(f"MISMATCH_PENDIENTE_DOCUMENTO (persisted, still awaiting doc)")
+            return c, 'MISMATCH_PENDIENTE_DOCUMENTO'
+
+    # --- Full context-based resolution (first turn or stale persisted state) ---
     cliente_by_phone  = get_cliente(phone) if phone else {}
     nombre_mencionado = extract_name_from_context(transcript, context_text)
     print(f"nombre mencionado: '{nombre_mencionado}'")
@@ -224,7 +352,7 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
         return {}, 'CLIENTE_DESCONOCIDO'
 
     # Found client by name — document required to confirm identity on mismatch path
-    doc_dado    = extract_documento_from_context(transcript, context_text)
+    doc_dado     = extract_documento_from_context(transcript, context_text)
     doc_registro = str(c.get('numero_documento', ''))
     print(f"MISMATCH path: doc_dado='{doc_dado}' doc_registro='{doc_registro}'")
 
@@ -1318,6 +1446,8 @@ def lambda_handler(event, context):
     cliente, identidad_estado = resolve_cliente(
         event, transcript, context_text, call_id, table_name, dynamodb_pk
     )
+    if identidad_estado != 'NO_CONFIRMADO':
+        save_identity_state(dynamodb_pk, table_name, identidad_estado, cliente)
     plan_id   = cliente.get('plan_movil_actual', '')
     plan_data = get_plan(plan_id) if plan_id else {}
     print(f"cliente: {cliente.get('nombre','?')} plan={plan_id} identidad={identidad_estado}")
