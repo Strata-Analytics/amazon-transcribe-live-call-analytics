@@ -14,9 +14,9 @@ on:
 
 # ─── Variables globales ────────────────────────────────────────────────────────
 env:
-  STACK_NAME:      agent-copilot-demo
+  STACK_NAME:      lca-poc-copilot
   REGION:          us-east-1
-  CFN_BUCKET:      agent-copilot-demo-cfn-templates   # bucket en cuenta demo
+  CFN_BUCKET:      agent-copilot-demo-cfn-templates
 
   # Bucket público de AWS donde están los artefactos originales de LCA
   AWS_ARTIFACT_BUCKET: aws-ml-blog-us-east-1
@@ -25,7 +25,7 @@ env:
 # ─────────────────────────────────────────────────────────────────────────────
 jobs:
   deploy:
-    name: 🚀 Deploy ${{ github.ref_name }} → agent-copilot-demo
+    name: 🚀 Deploy ${{ github.ref_name }} → lca-poc-copilot (demo)
     runs-on: ubuntu-latest
     environment: demo      # GitHub Environment → role ARN de cuenta demo + gate de aprobación
 
@@ -69,6 +69,44 @@ jobs:
             s3://${{ env.CFN_BUCKET }}/stacks/lca-chimevc-stack/template.yaml \
             --region ${{ env.REGION }}
 
+          echo "📦 Building + packaging lca-connect-kvs-stack..."
+          cd lca-chimevc-stack/lambda_layers/node_transcriber_layer
+          npm install --omit=dev
+          mkdir -p nodejs
+          cp -r node_modules nodejs/
+          zip -r transcriber-layer.zip nodejs
+          cd ../../../lca-connect-kvs-stack/lambda_functions/connect_kvs_consumer
+          npm ci --omit=dev
+          cd ../../..
+          aws cloudformation package \
+            --template-file lca-connect-kvs-stack/template.yaml \
+            --s3-bucket ${{ env.CFN_BUCKET }} \
+            --s3-prefix stacks/lca-connect-kvs-stack/lambda \
+            --output-template-file /tmp/lca-connect-kvs-packaged.yaml \
+            --region ${{ env.REGION }}
+          aws s3 cp /tmp/lca-connect-kvs-packaged.yaml \
+            s3://${{ env.CFN_BUCKET }}/stacks/lca-connect-kvs-stack/template.yaml \
+            --region ${{ env.REGION }}
+
+          echo "📦 Building + packaging lca-websocket-transcriber-stack..."
+          pip install \
+            -r lca-websocket-transcriber-stack/source/lambda_functions/start_codebuild/requirements.txt \
+            -t lca-websocket-transcriber-stack/source/lambda_functions/start_codebuild/
+          cd lca-websocket-transcriber-stack/source/lambda_functions/pca_integration
+          npm ci --omit=dev
+          cd ../../../..
+          cd lca-websocket-transcriber-stack/deployment
+          aws cloudformation package \
+            --template-file lca-websocket-transcriber.yaml \
+            --s3-bucket ${{ env.CFN_BUCKET }} \
+            --s3-prefix stacks/lca-websocket-transcriber-stack/lambda \
+            --output-template-file /tmp/lca-websocket-transcriber-packaged.yaml \
+            --region ${{ env.REGION }}
+          cd ../..
+          aws s3 cp /tmp/lca-websocket-transcriber-packaged.yaml \
+            s3://${{ env.CFN_BUCKET }}/stacks/lca-websocket-transcriber-stack/template.yaml \
+            --region ${{ env.REGION }}
+
           echo "✅ Sub-stacks subidos."
 
       # ── 5. Procesar lca-main.yaml ─────────────────────────────────────────────
@@ -98,6 +136,14 @@ jobs:
           OUR_CHIME="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-chimevc-stack/template.yaml"
           sed -i "s|${AWS_CHIME}|${OUR_CHIME}|g" /tmp/lca-main-processed.yaml
 
+          AWS_CONNECT="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/${VERSION}/lca-connect-kvs-stack/template.yaml"
+          OUR_CONNECT="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-connect-kvs-stack/template.yaml"
+          sed -i "s|${AWS_CONNECT}|${OUR_CONNECT}|g" /tmp/lca-main-processed.yaml
+
+          AWS_WS="https://s3.${REGION}.amazonaws.com/${AWS_BUCKET}/${AWS_PREFIX}/${VERSION}/lca-websocket-transcriber-stack/${VERSION}/template.yaml"
+          OUR_WS="https://s3.${REGION}.amazonaws.com/${OUR_BUCKET}/stacks/lca-websocket-transcriber-stack/template.yaml"
+          sed -i "s|${AWS_WS}|${OUR_WS}|g" /tmp/lca-main-processed.yaml
+
           echo "✅ Template procesado."
 
       # ── 6. Validar y subir template ───────────────────────────────────────────
@@ -116,24 +162,160 @@ jobs:
 
           echo "TEMPLATE_URL=${TEMPLATE_URL}" >> "$GITHUB_ENV"
 
-      # ── 7. Deploy ─────────────────────────────────────────────────────────────
+      # ── 7. Deploy CloudFormation stack ────────────────────────────────────────
       - name: Deploy CloudFormation stack
         run: |
           echo "🚀 Deployando ${{ env.STACK_NAME }}..."
 
-          PARAMS=$(jq -r \
+          mapfile -t PARAMS < <(jq -r \
             '.[] | select(.ParameterValue != "****") | .ParameterKey + "=" + .ParameterValue' \
-            strata-deploy-to-demo/lca-stack-parameters-demo.json | tr '\n' ' ')
+            strata-deploy-to-demo/lca-stack-parameters-demo.json)
+
+          PARAMS+=("DeepgramApiKey=${{ secrets.DEEPGRAM_API_KEY }}")
 
           aws cloudformation deploy \
             --region         ${{ env.REGION }} \
-            --template-url   "${{ env.TEMPLATE_URL }}" \
+            --template-file  /tmp/lca-main-processed.yaml \
+            --s3-bucket      ${{ env.CFN_BUCKET }} \
+            --s3-prefix      cfn-deploy \
             --stack-name     ${{ env.STACK_NAME }} \
-            --parameter-overrides $PARAMS \
+            --parameter-overrides "${PARAMS[@]}" \
             --capabilities   CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --no-fail-on-empty-changeset
 
-      # ── 8. Resumen ────────────────────────────────────────────────────────────
+      # ── 8. Actualizar strata_agent_assist Lambda directamente ─────────────────
+      # BYO Lambda: referenciada por parámetro AgentAssistExistingLambdaFunctionArn.
+      # CloudFormation no puede actualizar su código — deploy directo obligatorio.
+      - name: Deploy strata_agent_assist Lambda
+        run: |
+          echo "📦 Empaquetando strata_agent_assist..."
+          cd lca-ai-stack/source/lambda_functions/strata_agent_assist
+          zip -r /tmp/agent-assist.zip . -x "*.pyc" -x "__pycache__/*"
+          cd ../../../..
+
+          echo "⬆️  Actualizando código Lambda..."
+          aws lambda update-function-code \
+            --function-name lca-poc-agent-assist \
+            --zip-file fileb:///tmp/agent-assist.zip \
+            --region ${{ env.REGION }} \
+            --output text
+
+          echo "✅ strata_agent_assist desplegado en lca-poc-agent-assist."
+
+      # ── 9. Actualizar call_event_processor Lambda directamente ────────────────
+      - name: Deploy call_event_processor Lambda
+        run: |
+          echo "🔍 Buscando nombre del Lambda call_event_processor..."
+
+          AI_STACK=$(aws cloudformation describe-stack-resource \
+            --stack-name ${{ env.STACK_NAME }} \
+            --logical-resource-id AISTACK \
+            --query 'StackResourceDetail.PhysicalResourceId' \
+            --output text \
+            --region ${{ env.REGION }})
+
+          LAMBDA_FN=$(aws cloudformation describe-stack-resource \
+            --stack-name "$AI_STACK" \
+            --logical-resource-id CallEventProcessorFunction \
+            --query 'StackResourceDetail.PhysicalResourceId' \
+            --output text \
+            --region ${{ env.REGION }})
+
+          echo "Lambda function: $LAMBDA_FN"
+
+          echo "📦 Empaquetando call_event_processor..."
+          cd lca-ai-stack/source/lambda_functions/call_event_processor
+          zip -r /tmp/call-event-processor.zip . -x "*.pyc" -x "__pycache__/*"
+          cd ../../../..
+
+          echo "⬆️  Actualizando código Lambda..."
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FN" \
+            --zip-file fileb:///tmp/call-event-processor.zip \
+            --region ${{ env.REGION }} \
+            --output text
+
+          echo "✅ call_event_processor actualizado."
+
+      # ── 10. Build y push imagen Docker del WebSocket transcriber (Deepgram) ───
+      - name: Build and push WebSocket transcriber Docker image
+        run: |
+          ECR_REPO="992382598036.dkr.ecr.${{ env.REGION }}.amazonaws.com/lca-poc-copilot-websockettranscriberstack-2xznama9oh6e-transcriberecrrepository-vlzypquptihb"
+          IMAGE_TAG="0.9.7"
+          CLUSTER="lca-poc-copilot-WEBSOCKETTRANSCRIBERSTACK-2XZNAMA9OH6E-TranscribingCluster-DxEpZpnugVEN"
+          SERVICE="lca-poc-copilot-WEBSOCKETTRANSCRIBERSTACK-2XZNAMA9OH6E-TranscriberWebsocketFargateService-5M2p6XZKpwGq"
+
+          echo "🔑 Autenticando en ECR (demo)..."
+          aws ecr get-login-password --region ${{ env.REGION }} | \
+            docker login --username AWS --password-stdin 992382598036.dkr.ecr.${{ env.REGION }}.amazonaws.com
+
+          echo "🐳 Building Docker image..."
+          docker build -t "${ECR_REPO}:${IMAGE_TAG}" \
+            lca-websocket-transcriber-stack/source/app/
+
+          echo "⬆️  Pushing to ECR..."
+          docker push "${ECR_REPO}:${IMAGE_TAG}"
+
+          echo "🔄 Forcing ECS service redeployment..."
+          aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$SERVICE" \
+            --force-new-deployment \
+            --region ${{ env.REGION }} > /dev/null
+
+          echo "✅ Imagen pushed y servicio ECS actualizado."
+
+      # ── 11. Seed DynamoDB — telco-clientes (con numero_documento) ─────────────
+      - name: Seed telco-clientes
+        run: |
+          aws dynamodb batch-write-item \
+            --request-items file://strata-deploy-to-demo/batch_lca-poc-telco-clientes_0.json \
+            --region ${{ env.REGION }}
+          echo "✅ telco-clientes seeded"
+
+      # ── 12. Seed DynamoDB — telco-planes ─────────────────────────────────────
+      - name: Seed telco-planes
+        run: |
+          aws dynamodb batch-write-item \
+            --request-items file://strata-deploy-to-demo/batch_lca-poc-telco-planes_0.json \
+            --region ${{ env.REGION }}
+          echo "✅ telco-planes seeded"
+
+      # ── 13. Seed DynamoDB — telco-ofertas ────────────────────────────────────
+      - name: Seed telco-ofertas
+        run: |
+          aws dynamodb batch-write-item \
+            --request-items file://strata-deploy-to-demo/batch_lca-poc-telco-ofertas_0.json \
+            --region ${{ env.REGION }}
+          echo "✅ telco-ofertas seeded"
+
+      # ── 14. Seed DynamoDB — LLM prompt templates ─────────────────────────────
+      - name: Seed LLM prompt templates
+        run: |
+          aws dynamodb batch-write-item \
+            --request-items file://strata-deploy-to-demo/batch_lca-poc-llm-prompts_0.json \
+            --region ${{ env.REGION }}
+          echo "✅ LLM prompt templates seeded"
+
+      # ── 15. Diagnóstico en caso de fallo ─────────────────────────────────────
+      - name: CloudFormation failure diagnostics
+        if: failure()
+        run: |
+          echo "════════════════════════════════════════════"
+          echo "  ❌ Stack events (últimos 30)"
+          echo "════════════════════════════════════════════"
+          aws cloudformation describe-stack-events \
+            --stack-name ${{ env.STACK_NAME }} \
+            --region     ${{ env.REGION }} \
+            --query 'StackEvents[?ResourceStatus==`CREATE_FAILED` || ResourceStatus==`UPDATE_FAILED` || ResourceStatus==`ROLLBACK_IN_PROGRESS`].[Timestamp,ResourceType,LogicalResourceId,ResourceStatusReason]' \
+            --output table \
+          || aws cloudformation describe-stack-events \
+            --stack-name ${{ env.STACK_NAME }} \
+            --region     ${{ env.REGION }} \
+            --query 'StackEvents[:30].[Timestamp,ResourceStatus,ResourceType,LogicalResourceId,ResourceStatusReason]' \
+            --output table
+
+      # ── 16. Resumen ───────────────────────────────────────────────────────────
       - name: Deploy summary
         if: success()
         run: |

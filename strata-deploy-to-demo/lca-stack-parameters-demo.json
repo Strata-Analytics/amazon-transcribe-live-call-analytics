@@ -133,7 +133,11 @@
     },
     {
         "ParameterKey": "TranscribeApiMode",
-        "ParameterValue": "analytics"
+        "ParameterValue": "deepgram"
+    },
+    {
+        "ParameterKey": "DeepgramApiKey",
+        "ParameterValue": "****"
     },
     {
         "ParameterKey": "WhisperSageMakerAutoScalingScaleOutCooldown",
