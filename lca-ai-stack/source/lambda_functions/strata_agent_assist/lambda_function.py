@@ -259,28 +259,22 @@ def extract_documento_from_context(transcript: str, context_text: str) -> str | 
 # ---------------------------------------------------------------------------
 
 _IDENTITY_SK = '__IDENTITY__'
-# In-process cache: pk → (state_dict, timestamp). Works across warm Lambda invocations
-# within the same container — the primary persistence mechanism. DDB is best-effort
-# secondary for cross-instance durability (requires PutItem permission to succeed).
-_identity_cache: dict[str, tuple[dict, float]] = {}
-_IDENTITY_CACHE_TTL = 3600  # 1 hour
+# DDB is the only source of truth — no in-process cache.
+# An in-memory cache cannot be invalidated by the test cleanup() function (which
+# only deletes DDB rows), so stale state would leak across test runs and across
+# unrelated calls that happen to share a Lambda container.
 
 
 def read_identity_state(dynamodb_pk: str, table_name: str) -> dict:
-    # In-process cache (fast, no network, always works)
-    entry = _identity_cache.get(dynamodb_pk)
-    if entry:
-        state, ts = entry
-        if time.time() - ts < _IDENTITY_CACHE_TTL:
-            print(f"read_identity_state (cache): {state.get('estado','')}")
-            return state
-    # DDB fallback (cross-instance, requires GetItem permission)
     try:
         tbl = dynamodb.Table(table_name or DYNAMODB_TABLE_NAME)
-        resp = tbl.get_item(Key={'PK': dynamodb_pk, 'SK': _IDENTITY_SK})
+        resp = tbl.get_item(
+            Key={'PK': dynamodb_pk, 'SK': _IDENTITY_SK},
+            ConsistentRead=True,
+        )
         item = resp.get('Item', {})
         if item:
-            _identity_cache[dynamodb_pk] = (item, time.time())
+            print(f"read_identity_state (DDB): {item.get('estado','')}")
         return item
     except Exception as e:
         print(f"read_identity_state DDB error: {e}")
@@ -288,15 +282,6 @@ def read_identity_state(dynamodb_pk: str, table_name: str) -> dict:
 
 
 def save_identity_state(dynamodb_pk: str, table_name: str, estado: str, cliente: dict):
-    state = {
-        'estado': estado,
-        'cliente_telefono': cliente.get('telefono', ''),
-        'cliente_nombre': cliente.get('nombre', ''),
-    }
-    # Always update in-process cache (guaranteed, no permissions needed)
-    _identity_cache[dynamodb_pk] = (state, time.time())
-    # Best-effort DDB write for cross-instance durability. TTL = 30 min so stale
-    # identity records from test re-runs / abandoned calls auto-clean.
     try:
         tbl = dynamodb.Table(table_name or DYNAMODB_TABLE_NAME)
         tbl.put_item(Item={
@@ -304,11 +289,13 @@ def save_identity_state(dynamodb_pk: str, table_name: str, estado: str, cliente:
             'SK': _IDENTITY_SK,
             'Channel': 'IDENTITY_STATE',
             'ExpiresAfter': int(time.time()) + 1800,
-            **state,
+            'estado': estado,
+            'cliente_telefono': cliente.get('telefono', ''),
+            'cliente_nombre': cliente.get('nombre', ''),
         })
-        print(f"save_identity_state (cache+DDB): {estado} → {cliente.get('nombre','?')}")
+        print(f"save_identity_state (DDB): {estado} → {cliente.get('nombre','?')}")
     except Exception as e:
-        print(f"save_identity_state (cache only, DDB failed): {e}")
+        print(f"save_identity_state DDB error: {e}")
 
 
 def resolve_cliente(event: dict, transcript: str, context_text: str,
