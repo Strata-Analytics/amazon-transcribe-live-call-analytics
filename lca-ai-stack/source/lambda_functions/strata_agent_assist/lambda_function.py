@@ -161,16 +161,40 @@ def extract_name_from_context(transcript: str, context_text: str) -> str:
     return ''
 
 
+def extract_documento_from_context(transcript: str, context_text: str) -> str | None:
+    """
+    Extract an 7-10 digit document number spoken by the caller.
+    Searches current transcript first, then prior 'Cliente:' lines in context.
+    Returns the digit string or None.
+    """
+    doc_pat = re.compile(r'\b(\d{7,10})\b')
+
+    # Search current transcript (raw customer utterance)
+    m = doc_pat.search(transcript)
+    if m:
+        return m.group(1)
+
+    # Search only caller lines in context to avoid matching profile/price numbers
+    for line in context_text.splitlines():
+        if line.startswith('Cliente:'):
+            m = doc_pat.search(line)
+            if m:
+                return m.group(1)
+    return None
+
+
 def resolve_cliente(event: dict, transcript: str, context_text: str,
                     call_id: str, table_name: str, dynamodb_pk: str) -> tuple:
     """
     Returns (cliente_dict, identidad_estado: str).
 
     identidad_estado values:
-      'CONFIRMADO'          — name matches phone profile, or found via name scan.
-      'NO_CONFIRMADO'       — phone profile found but client hasn't said name yet (unconfirmed hint).
-      'MISMATCH_RESUELTO'   — spoken name != phone name, but spoken name found in DB.
-      'CLIENTE_DESCONOCIDO' — spoken name not found in DB; phone profile discarded.
+      'CONFIRMADO'             — name + document both validated.
+      'NOMBRE_CONFIRMADO'      — name matches phone profile; document not yet provided.
+      'DOCUMENTO_NO_COINCIDE'  — name matched but provided document doesn't match record.
+      'NO_CONFIRMADO'          — phone profile found but client hasn't said name yet.
+      'MISMATCH_RESUELTO'      — spoken name != phone name, but spoken name found in DB (verbal confirm pending).
+      'CLIENTE_DESCONOCIDO'    — spoken name not found in DB; phone profile discarded.
     """
     phone = get_customer_phone_from_event(event)
     if not phone:
@@ -184,7 +208,7 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
     if not cliente_by_phone:
         if nombre_mencionado:
             c = get_cliente_by_nombre(nombre_mencionado)
-            return (c, 'CONFIRMADO') if c else ({}, 'CLIENTE_DESCONOCIDO')
+            return (c, 'CLIENTE_DESCONOCIDO') if not c else (c, 'NOMBRE_CONFIRMADO')
         return {}, 'CLIENTE_DESCONOCIDO'
 
     if not nombre_mencionado:
@@ -194,9 +218,17 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
     # Cross-validate name vs phone profile
     nombre_perfil = cliente_by_phone.get('nombre', '').lower()
     if any(p in nombre_perfil for p in nombre_mencionado.lower().split()):
-        return cliente_by_phone, 'CONFIRMADO'
+        # Name matches — validate document if available
+        doc_dado    = extract_documento_from_context(transcript, context_text)
+        doc_registro = str(cliente_by_phone.get('numero_documento', ''))
+        print(f"doc_dado='{doc_dado}' doc_registro='{doc_registro}'")
+        if doc_dado:
+            if doc_dado == doc_registro:
+                return cliente_by_phone, 'CONFIRMADO'
+            return cliente_by_phone, 'DOCUMENTO_NO_COINCIDE'
+        return cliente_by_phone, 'NOMBRE_CONFIRMADO'
 
-    # Mismatch — try name scan
+    # Mismatch — try name scan (verbal confirmation flow, no doc step here)
     print(f"nombre '{nombre_mencionado}' != perfil '{nombre_perfil}', buscando por nombre")
     c = get_cliente_by_nombre(nombre_mencionado)
     if c:
@@ -417,6 +449,18 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
             "IDENTIDAD_ESTADO: NO_CONFIRMADO — el cliente aún no dijo su nombre. "
             "Pedir nombre antes de proceder con cambios de cuenta o ventas. "
             "Usar datos del perfil como referencia pero NO confirmar nada sin nombre verificado."
+        )
+    elif identidad_estado == 'NOMBRE_CONFIRMADO':
+        lines.append(
+            "IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO — nombre verificado. "
+            "SIGUIENTE ACCIÓN OBLIGATORIA: solicitar número de documento para completar la verificación. "
+            "NO proceder con cambios de cuenta ni mostrar datos sensibles hasta tener documento confirmado."
+        )
+    elif identidad_estado == 'DOCUMENTO_NO_COINCIDE':
+        lines.append(
+            "IDENTIDAD_ESTADO: DOCUMENTO_NO_COINCIDE — el número de documento dado no coincide con el registro. "
+            "Pedir una vez más: '¿Podría verificar su número de documento?' "
+            "Si el segundo intento falla → ESCALACIÓN al especialista."
         )
     elif identidad_estado == 'MISMATCH_RESUELTO':
         lines.append(
@@ -767,10 +811,12 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
    • Saludo puro sin intención: solo "Hola", solo "Buenos días", solo "Buenas tardes" sin nada más
    • Solo el nombre sin solicitud: "Mi nombre es Carlos Mendoza" → ESPERAR (pero ver excepción abajo)
    • Frase incompleta — termina con: "porque", "y", "pero", "que", "um", "eh", "este", "entonces"
-   EXCEPCIÓN IDENTIDAD — anula ESPERAR: si el contexto contiene IDENTIDAD_ESTADO (NO_CONFIRMADO, MISMATCH_RESUELTO, CLIENTE_DESCONOCIDO), los casos anteriores NO son ESPERAR:
+   EXCEPCIÓN IDENTIDAD — anula ESPERAR: si el contexto contiene IDENTIDAD_ESTADO de verificación pendiente, los casos anteriores NO son ESPERAR:
    • "Buenas tardes, quería consultar" con IDENTIDAD_ESTADO: NO_CONFIRMADO → INFORMACION_ADICIONAL (pedir nombre)
    • "Me llamo Pedro López, llamo para consultar" con IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO → INFORMACION_ADICIONAL (calificar)
    • "Soy Ana Martínez, llamo para saber mis opciones" con IDENTIDAD_ESTADO: MISMATCH_RESUELTO → INFORMACION_ADICIONAL (confirmar)
+   • Cualquier mensaje con IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO → INFORMACION_ADICIONAL (pedir documento)
+   • Cualquier mensaje con IDENTIDAD_ESTADO: DOCUMENTO_NO_COINCIDE → INFORMACION_ADICIONAL (re-pedir documento)
 
 9. PAGOS ATRASADOS: si figura en DATOS DEL CLIENTE → SOPORTE siempre. No vender.
 
@@ -834,6 +880,16 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
     • IDENTIDAD_ESTADO: NO_CONFIRMADO — el cliente aún no dijo su nombre.
       Primera acción obligatoria: INFORMACION_ADICIONAL — "¿Me podría decir su nombre completo para verificar su cuenta?"
       Usar perfil del teléfono como referencia orientativa pero NO proceder con cambios de cuenta sin nombre confirmado.
+
+    • IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO — nombre verificado, pendiente validación de documento.
+      Siguiente acción obligatoria: INFORMACION_ADICIONAL — "Para completar la verificación de su cuenta, ¿me podría dar su número de documento?"
+      NO mostrar datos de cuenta, planes, consumo ni hacer cambios hasta tener documento confirmado.
+
+    • IDENTIDAD_ESTADO: DOCUMENTO_NO_COINCIDE — nombre verificado pero el número de documento dado no coincide.
+      Pedir una vez más: INFORMACION_ADICIONAL — "El número no coincide con nuestro registro. ¿Podría verificarlo?"
+      Si el cliente lo intenta de nuevo y tampoco coincide → ESCALACIÓN: "Por seguridad de su cuenta, necesito transferirle con un especialista para verificar su identidad."
+
+    • IDENTIDAD_ESTADO: CONFIRMADO — nombre + documento validados. Proceder normalmente con el perfil completo.
 
     • IDENTIDAD_ESTADO: MISMATCH_RESUELTO — el teléfono pertenece a otro nombre pero el nombre dicho fue encontrado en la base de datos.
       Primera acción obligatoria: INFORMACION_ADICIONAL — confirmar: "¿Es usted [nombre]?"
@@ -1186,6 +1242,18 @@ IDENTIDAD_ESTADO: MISMATCH_RESUELTO (nombre encontrado en base: Ana Martínez)
 IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO
 ÚLTIMO MENSAJE: "Me llamo Pedro López, llamo para consultar mi plan."
 → {"razonamiento": "CLIENTE_DESCONOCIDO: Pedro López no existe en la base de datos. Ignorar perfil del teléfono. Calificar al cliente.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Gracias, Pedro. ¿Tiene actualmente un plan activo con TelcoStrata, o está interesado en contratar uno?", "urgencia": "media"}
+
+# EJEMPLO ID-4 — IDENTIDAD: nombre verificado, pendiente documento → pedir número de documento
+IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO
+DATOS DEL CLIENTE: nombre: Veronica Rivera · plan_actual: MOV-PLUS ($299/mes)
+ÚLTIMO MENSAJE: "Sí, soy Veronica Rivera, llamo para consultar sobre mi plan."
+→ {"razonamiento": "NOMBRE_CONFIRMADO: nombre verificado pero falta el documento. Siguiente paso obligatorio: pedir número de documento antes de proceder.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Gracias, Veronica. Para completar la verificación de su cuenta, ¿me podría dar su número de documento?", "urgencia": "alta"}
+
+# EJEMPLO ID-5 — IDENTIDAD: documento dado y coincide → CONFIRMADO, proceder con perfil
+IDENTIDAD_ESTADO: CONFIRMADO
+DATOS DEL CLIENTE: nombre: Veronica Rivera · plan_actual: MOV-PLUS ($299/mes) · consumo_promedio: 12GB/mes
+ÚLTIMO MENSAJE: "Sí, es el 87654321."
+→ {"razonamiento": "CONFIRMADO: nombre y documento validados. Identidad completa. Proceder normalmente con el perfil de Veronica.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Perfecto, Veronica, su identidad está verificada. Veo que tiene MOV-PLUS con 15GB. ¿En qué le puedo ayudar hoy?", "urgencia": "baja"}
 
 # EJEMPLO SUSP-1 — SUSPENSIÓN: primera solicitud, explorar motivo
 DATOS DEL CLIENTE: nombre: Valeria · plan_actual: MOV-BASIC ($199).

@@ -36,6 +36,9 @@
             },
             "precio_movil_actual": {
                 "N": "299"
+            },
+            "numero_documento": {
+                "S": "12345678"
             }
         },
         {
@@ -80,6 +83,9 @@
             },
             "precio_movil_actual": {
                 "N": "299"
+            },
+            "numero_documento": {
+                "S": "87654321"
             }
         },
         {
@@ -124,6 +130,9 @@
             },
             "precio_movil_actual": {
                 "N": "449"
+            },
+            "numero_documento": {
+                "S": "11223344"
             }
         },
         {
@@ -165,6 +174,9 @@
             },
             "precio_movil_actual": {
                 "N": "199"
+            },
+            "numero_documento": {
+                "S": "55667788"
             }
         },
         {
@@ -206,6 +218,9 @@
             },
             "precio_movil_actual": {
                 "N": "199"
+            },
+            "numero_documento": {
+                "S": "99887766"
             }
         },
         {
@@ -241,6 +256,9 @@
             },
             "precio_movil_actual": {
                 "N": "599"
+            },
+            "numero_documento": {
+                "S": "44332211"
             }
         }
     ],
