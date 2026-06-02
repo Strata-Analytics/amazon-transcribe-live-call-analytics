@@ -174,12 +174,12 @@ def extract_documento_from_context(transcript: str, context_text: str) -> str | 
     if m:
         return m.group(1)
 
-    # Search only caller lines in context to avoid matching profile/price numbers
-    for line in context_text.splitlines():
-        if line.startswith('Cliente:'):
-            m = doc_pat.search(line)
-            if m:
-                return m.group(1)
+    # Search caller lines in REVERSE order so most-recent document wins
+    caller_lines = [l for l in context_text.splitlines() if l.startswith('Cliente:')]
+    for line in reversed(caller_lines):
+        m = doc_pat.search(line)
+        if m:
+            return m.group(1)
     return None
 
 
@@ -189,12 +189,11 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
     Returns (cliente_dict, identidad_estado: str).
 
     identidad_estado values:
-      'CONFIRMADO'             — name + document both validated.
-      'NOMBRE_CONFIRMADO'      — name matches phone profile; document not yet provided.
-      'DOCUMENTO_NO_COINCIDE'  — name matched but provided document doesn't match record.
-      'NO_CONFIRMADO'          — phone profile found but client hasn't said name yet.
-      'MISMATCH_RESUELTO'      — spoken name != phone name, but spoken name found in DB (verbal confirm pending).
-      'CLIENTE_DESCONOCIDO'    — spoken name not found in DB; phone profile discarded.
+      'CONFIRMADO'                  — phone+name match (no doc needed) OR mismatch path with correct doc.
+      'NO_CONFIRMADO'               — phone profile found but client hasn't said name yet.
+      'MISMATCH_PENDIENTE_DOCUMENTO'— spoken name != phone name, found in DB; awaiting doc validation.
+      'DOCUMENTO_NO_COINCIDE'       — on mismatch path: doc given but doesn't match record.
+      'CLIENTE_DESCONOCIDO'         — spoken name not found in DB → escalate.
     """
     phone = get_customer_phone_from_event(event)
     if not phone:
@@ -205,39 +204,40 @@ def resolve_cliente(event: dict, transcript: str, context_text: str,
     nombre_mencionado = extract_name_from_context(transcript, context_text)
     print(f"nombre mencionado: '{nombre_mencionado}'")
 
-    if not cliente_by_phone:
-        if nombre_mencionado:
-            c = get_cliente_by_nombre(nombre_mencionado)
-            return (c, 'CLIENTE_DESCONOCIDO') if not c else (c, 'NOMBRE_CONFIRMADO')
+    if not nombre_mencionado:
+        if cliente_by_phone:
+            return cliente_by_phone, 'NO_CONFIRMADO'
         return {}, 'CLIENTE_DESCONOCIDO'
 
-    if not nombre_mencionado:
-        # Phone matched but client hasn't said name yet — treat as unconfirmed hint
-        return cliente_by_phone, 'NO_CONFIRMADO'
+    # Check if spoken name matches phone profile → CONFIRMADO directly, no document needed
+    if cliente_by_phone:
+        nombre_perfil = cliente_by_phone.get('nombre', '').lower()
+        if any(p in nombre_perfil for p in nombre_mencionado.lower().split()):
+            print(f"CONFIRMADO: nombre '{nombre_mencionado}' matches perfil '{nombre_perfil}'")
+            return cliente_by_phone, 'CONFIRMADO'
 
-    # Cross-validate name vs phone profile
-    nombre_perfil = cliente_by_phone.get('nombre', '').lower()
-    if any(p in nombre_perfil for p in nombre_mencionado.lower().split()):
-        # Name matches — validate document if available
-        doc_dado    = extract_documento_from_context(transcript, context_text)
-        doc_registro = str(cliente_by_phone.get('numero_documento', ''))
-        print(f"doc_dado='{doc_dado}' doc_registro='{doc_registro}'")
-        if doc_dado:
-            if doc_dado == doc_registro:
-                return cliente_by_phone, 'CONFIRMADO'
-            return cliente_by_phone, 'DOCUMENTO_NO_COINCIDE'
-        return cliente_by_phone, 'NOMBRE_CONFIRMADO'
-
-    # Mismatch — try name scan (verbal confirmation flow, no doc step here)
-    print(f"nombre '{nombre_mencionado}' != perfil '{nombre_perfil}', buscando por nombre")
+    # Name doesn't match phone profile (or no phone) → scan DB by name
+    print(f"nombre '{nombre_mencionado}' != perfil '{cliente_by_phone.get('nombre','?')}', buscando por nombre")
     c = get_cliente_by_nombre(nombre_mencionado)
-    if c:
-        nombre_bd = cliente_by_phone.get('nombre', '?')
-        print(f"MISMATCH_RESUELTO: teléfono→{nombre_bd}, encontrado→{c.get('nombre','?')}")
-        return c, 'MISMATCH_RESUELTO'
+    if not c:
+        print(f"CLIENTE_DESCONOCIDO: nombre '{nombre_mencionado}' no encontrado")
+        return {}, 'CLIENTE_DESCONOCIDO'
 
-    print(f"CLIENTE_DESCONOCIDO: nombre '{nombre_mencionado}' no encontrado, descartando perfil del teléfono")
-    return {}, 'CLIENTE_DESCONOCIDO'
+    # Found client by name — document required to confirm identity on mismatch path
+    doc_dado    = extract_documento_from_context(transcript, context_text)
+    doc_registro = str(c.get('numero_documento', ''))
+    print(f"MISMATCH path: doc_dado='{doc_dado}' doc_registro='{doc_registro}'")
+
+    if doc_dado:
+        if doc_dado == doc_registro:
+            print(f"CONFIRMADO via doc: nombre='{nombre_mencionado}'")
+            return c, 'CONFIRMADO'
+        print(f"DOCUMENTO_NO_COINCIDE: dado='{doc_dado}' registro='{doc_registro}'")
+        return c, 'DOCUMENTO_NO_COINCIDE'
+
+    nombre_bd = cliente_by_phone.get('nombre', '?') if cliente_by_phone else '?'
+    print(f"MISMATCH_PENDIENTE_DOCUMENTO: telefono→{nombre_bd}, encontrado→{c.get('nombre','?')}")
+    return c, 'MISMATCH_PENDIENTE_DOCUMENTO'
 
 
 # ---------------------------------------------------------------------------
@@ -450,11 +450,12 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
             "Pedir nombre antes de proceder con cambios de cuenta o ventas. "
             "Usar datos del perfil como referencia pero NO confirmar nada sin nombre verificado."
         )
-    elif identidad_estado == 'NOMBRE_CONFIRMADO':
+    elif identidad_estado == 'MISMATCH_PENDIENTE_DOCUMENTO':
         lines.append(
-            "IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO — nombre verificado. "
-            "SIGUIENTE ACCIÓN OBLIGATORIA: solicitar número de documento para completar la verificación. "
-            "NO proceder con cambios de cuenta ni mostrar datos sensibles hasta tener documento confirmado."
+            f"IDENTIDAD_ESTADO: MISMATCH_PENDIENTE_DOCUMENTO — el teléfono está registrado a otro nombre "
+            f"pero se encontró en la base de datos: {cliente.get('nombre', '?')}. "
+            f"SIGUIENTE ACCIÓN OBLIGATORIA: solicitar número de documento para validar identidad. "
+            f"NO proceder con datos de cuenta, planes ni ventas hasta tener documento confirmado."
         )
     elif identidad_estado == 'DOCUMENTO_NO_COINCIDE':
         lines.append(
@@ -462,14 +463,7 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
             "Pedir una vez más: '¿Podría verificar su número de documento?' "
             "Si el segundo intento falla → ESCALACIÓN al especialista."
         )
-    elif identidad_estado == 'MISMATCH_RESUELTO':
-        lines.append(
-            f"IDENTIDAD_ESTADO: MISMATCH_RESUELTO — el teléfono está registrado a otro nombre "
-            f"pero se encontró en la base de datos: {cliente.get('nombre', '?')}. "
-            f"ACCIÓN OBLIGATORIA INMEDIATA: preguntar '¿Es usted {cliente.get('nombre', '?')}?' "
-            f"ANTES de cualquier mención de planes, precios, consumo o datos de cuenta. "
-            f"PROHIBIDO: proceder con datos de cuenta sin confirmación explícita del cliente."
-        )
+    # CONFIRMADO: no extra line — proceed normally with full profile
 
     return "DATOS DEL CLIENTE:\n" + '\n'.join(f"• {l}" for l in lines)
 
@@ -813,10 +807,11 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
    • Frase incompleta — termina con: "porque", "y", "pero", "que", "um", "eh", "este", "entonces"
    EXCEPCIÓN IDENTIDAD — anula ESPERAR: si el contexto contiene IDENTIDAD_ESTADO de verificación pendiente, los casos anteriores NO son ESPERAR:
    • "Buenas tardes, quería consultar" con IDENTIDAD_ESTADO: NO_CONFIRMADO → INFORMACION_ADICIONAL (pedir nombre)
-   • "Me llamo Pedro López, llamo para consultar" con IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO → INFORMACION_ADICIONAL (calificar)
-   • "Soy Ana Martínez, llamo para saber mis opciones" con IDENTIDAD_ESTADO: MISMATCH_RESUELTO → INFORMACION_ADICIONAL (confirmar)
-   • Cualquier mensaje con IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO → INFORMACION_ADICIONAL (pedir documento)
+   • "Soy Ana Martínez, llamo para saber mis opciones" con IDENTIDAD_ESTADO: MISMATCH_PENDIENTE_DOCUMENTO → INFORMACION_ADICIONAL (pedir documento)
+   • "Me llamo Pedro López, llamo para consultar" con IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO → ESCALACIÓN inmediata
+   • Cualquier mensaje con IDENTIDAD_ESTADO: MISMATCH_PENDIENTE_DOCUMENTO → INFORMACION_ADICIONAL (pedir documento)
    • Cualquier mensaje con IDENTIDAD_ESTADO: DOCUMENTO_NO_COINCIDE → INFORMACION_ADICIONAL (re-pedir documento)
+   EXCEPCIÓN PRECIO — anula ESPERAR: Si el cliente dice "está caro", "no sé si me conviene", "es mucho", "no me convence" después de una oferta → MANEJO_OBJECION. Nunca ESPERAR aunque sean pocas palabras.
 
 9. PAGOS ATRASADOS: si figura en DATOS DEL CLIENTE → SOPORTE siempre. No vender.
 
@@ -881,29 +876,19 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
       Primera acción obligatoria: INFORMACION_ADICIONAL — "¿Me podría decir su nombre completo para verificar su cuenta?"
       Usar perfil del teléfono como referencia orientativa pero NO proceder con cambios de cuenta sin nombre confirmado.
 
-    • IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO — nombre verificado, pendiente validación de documento.
-      Siguiente acción obligatoria: INFORMACION_ADICIONAL — "Para completar la verificación de su cuenta, ¿me podría dar su número de documento?"
-      NO mostrar datos de cuenta, planes, consumo ni hacer cambios hasta tener documento confirmado.
+    • IDENTIDAD_ESTADO: CONFIRMADO — teléfono + nombre validados (o mismatch resuelto con documento). Proceder normalmente con el perfil completo.
 
-    • IDENTIDAD_ESTADO: DOCUMENTO_NO_COINCIDE — nombre verificado pero el número de documento dado no coincide.
+    • IDENTIDAD_ESTADO: MISMATCH_PENDIENTE_DOCUMENTO — el teléfono está registrado a otro nombre pero el nombre dicho fue encontrado en la base de datos.
+      Siguiente acción obligatoria: INFORMACION_ADICIONAL — "Para verificar su identidad, ¿me podría dar su número de documento?"
+      NO mencionar planes, precios, consumo ni datos de cuenta hasta tener documento confirmado.
+
+    • IDENTIDAD_ESTADO: DOCUMENTO_NO_COINCIDE — nombre encontrado pero el número de documento dado no coincide.
       Pedir una vez más: INFORMACION_ADICIONAL — "El número no coincide con nuestro registro. ¿Podría verificarlo?"
       Si el cliente lo intenta de nuevo y tampoco coincide → ESCALACIÓN: "Por seguridad de su cuenta, necesito transferirle con un especialista para verificar su identidad."
 
-    • IDENTIDAD_ESTADO: CONFIRMADO — nombre + documento validados. Proceder normalmente con el perfil completo.
-
-    • IDENTIDAD_ESTADO: MISMATCH_RESUELTO — el teléfono pertenece a otro nombre pero el nombre dicho fue encontrado en la base de datos.
-      Primera acción obligatoria: INFORMACION_ADICIONAL — confirmar: "¿Es usted [nombre]?"
-      Solo proceder con el perfil después de que el cliente confirme.
-
     • IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO — nombre dicho NO existe en la base de datos.
-      IGNORAR completamente todos los datos del perfil del teléfono registrado — pertenecen a otro cliente.
-      Si el CONTEXTO NO muestra preguntas de calificación previas → Primera acción: INFORMACION_ADICIONAL, preguntar "¿Tiene actualmente un plan activo con TelcoStrata?"
-      Si el CONTEXTO ya muestra que Copilot hizo preguntas de calificación Y el cliente respondió → NO repetir esas preguntas. Usar la información que el cliente ya proporcionó y continuar la conversación.
-      Preguntas de calificación (de a una por turno, solo si aún no respondidas):
-        "¿Tiene actualmente un plan con nosotros?"
-        "¿Cuál es su plan o número de cuenta?"
-        "¿Hace cuánto tiempo es cliente?"
-      Si no confirma tener plan activo → tratar como cliente potencial o derivar a activaciones.
+      Acción OBLIGATORIA: ESCALACIÓN — "Su nombre no aparece en nuestra base de datos. Para proteger la seguridad de su cuenta, necesito transferirle con un especialista que pueda verificar su identidad."
+      PROHIBIDO: preguntas de calificación, intentos de venta o retención, compartir datos del perfil del teléfono.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMATO DE RESPUESTA
@@ -981,6 +966,8 @@ RETENCIÓN
 
 MANEJO_OBJECION
   Cliente rechaza oferta o dice que es caro, sin amenazar cancelar.
+  ⚠ ANTI-ESPERAR CRÍTICO: estas frases después de una oferta son SIEMPRE MANEJO_OBJECION, nunca ESPERAR:
+  "está caro" · "no sé si me conviene" · "es mucho" · "no me convence" · "la diferencia es mucha" · "no veo el beneficio" · "no sé si vale la pena"
   Con GAP, cliente dice "está caro" / "no me convence" / "es mucho":
     → Ofrecer upgrade con 20% dto por 3 meses (usar línea "con 20% dto" de TABLA DE COSTOS).
     → NOTA: este descuento es sobre el plan de UPGRADE, no es un descuento de retención. No viola Regla 12.
@@ -1038,7 +1025,8 @@ CIERRE
 
 ESPERAR
   Todo lo demás. Fragmentos cortos, datos personales, monosílabos, saludos, silencios.
-  ANTE LA DUDA → ESPERAR.
+  PROHIBIDO ESPERAR si el cliente dice: "está caro", "caro", "no sé si me conviene", "es mucho", "no vale la pena", "no me convence", "la diferencia es mucha" — estas son SIEMPRE MANEJO_OBJECION, incluso si el mensaje es corto.
+  ANTE LA DUDA → ESPERAR. Pero "está caro" NUNCA es duda: es MANEJO_OBJECION.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EJEMPLOS
@@ -1233,27 +1221,29 @@ IDENTIDAD_ESTADO: NO_CONFIRMADO
 ÚLTIMO MENSAJE: "Buenos días, quería consultar sobre mi plan."
 → {"razonamiento": "IDENTIDAD_ESTADO NO_CONFIRMADO — cliente no dijo su nombre. Pedir nombre antes de proceder con cualquier dato de cuenta.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Buenos días. ¿Me podría decir su nombre completo para verificar su cuenta?", "urgencia": "alta"}
 
-# EJEMPLO ID-2 — IDENTIDAD: mismatch resuelto → confirmar antes de usar perfil
-IDENTIDAD_ESTADO: MISMATCH_RESUELTO (nombre encontrado en base: Ana Martínez)
+# EJEMPLO ID-2 — IDENTIDAD: discrepancia de nombre → solicitar documento para validar
+IDENTIDAD_ESTADO: MISMATCH_PENDIENTE_DOCUMENTO (nombre encontrado en base: Ana Martínez)
 ÚLTIMO MENSAJE: "Soy Ana Martínez, llamo para saber mis opciones de plan."
-→ {"razonamiento": "MISMATCH_RESUELTO: nombre Ana Martínez encontrado en base pero teléfono registrado a otro nombre. Confirmar identidad antes de proceder.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Para confirmar, ¿es usted Ana Martínez? Quiero asegurarme de ver la cuenta correcta antes de continuar.", "urgencia": "alta"}
+→ {"razonamiento": "MISMATCH_PENDIENTE_DOCUMENTO: Ana Martínez encontrada en base pero el teléfono está registrado a otro nombre. Solicitar documento para validar identidad antes de proceder.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Para verificar su identidad, ¿me podría dar su número de documento?", "urgencia": "alta"}
 
-# EJEMPLO ID-3 — IDENTIDAD: cliente desconocido → ignorar perfil del teléfono, calificar
+# EJEMPLO ID-3 — IDENTIDAD: cliente no registrado → ESCALACIÓN inmediata
 IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO
 ÚLTIMO MENSAJE: "Me llamo Pedro López, llamo para consultar mi plan."
-→ {"razonamiento": "CLIENTE_DESCONOCIDO: Pedro López no existe en la base de datos. Ignorar perfil del teléfono. Calificar al cliente.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Gracias, Pedro. ¿Tiene actualmente un plan activo con TelcoStrata, o está interesado en contratar uno?", "urgencia": "media"}
+→ {"razonamiento": "CLIENTE_DESCONOCIDO: Pedro López no existe en la base de datos. No hay cuenta verificable. ESCALACIÓN obligatoria.", "accion": "ESCALACIÓN", "recomendacion": "Su nombre no aparece en nuestra base de datos, Pedro. Para proteger la seguridad de su cuenta, necesito transferirle con un especialista que pueda verificar su identidad. Un momento, por favor.", "urgencia": "alta"}
 
-# EJEMPLO ID-4 — IDENTIDAD: nombre verificado, pendiente documento → pedir número de documento
-IDENTIDAD_ESTADO: NOMBRE_CONFIRMADO
-DATOS DEL CLIENTE: nombre: Veronica Rivera · plan_actual: MOV-PLUS ($299/mes)
-ÚLTIMO MENSAJE: "Sí, soy Veronica Rivera, llamo para consultar sobre mi plan."
-→ {"razonamiento": "NOMBRE_CONFIRMADO: nombre verificado pero falta el documento. Siguiente paso obligatorio: pedir número de documento antes de proceder.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Gracias, Veronica. Para completar la verificación de su cuenta, ¿me podría dar su número de documento?", "urgencia": "alta"}
-
-# EJEMPLO ID-5 — IDENTIDAD: documento dado y coincide → CONFIRMADO, proceder con perfil
+# EJEMPLO ID-4 — IDENTIDAD: documento dado en path MISMATCH y coincide → CONFIRMADO, proceder
 IDENTIDAD_ESTADO: CONFIRMADO
-DATOS DEL CLIENTE: nombre: Veronica Rivera · plan_actual: MOV-PLUS ($299/mes) · consumo_promedio: 12GB/mes
-ÚLTIMO MENSAJE: "Sí, es el 87654321."
-→ {"razonamiento": "CONFIRMADO: nombre y documento validados. Identidad completa. Proceder normalmente con el perfil de Veronica.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Perfecto, Veronica, su identidad está verificada. Veo que tiene MOV-PLUS con 15GB. ¿En qué le puedo ayudar hoy?", "urgencia": "baja"}
+DATOS DEL CLIENTE: nombre: Ana Martínez · plan_actual: MOV-BASIC ($199/mes)
+CONTEXTO: Copilot solicitó documento. Cliente dio "55667788" que coincide con el registro.
+ÚLTIMO MENSAJE: "Mi documento es el 55667788."
+→ {"razonamiento": "CONFIRMADO: documento validado correctamente en path mismatch. Identidad completa. Proceder con el perfil de Ana.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "Perfecto, Ana, su identidad está verificada. Veo que tiene MOV-BASIC. ¿En qué le puedo ayudar hoy?", "urgencia": "baja"}
+
+# EJEMPLO ID-5 — IDENTIDAD: documento incorrecto → re-pedir una vez
+IDENTIDAD_ESTADO: DOCUMENTO_NO_COINCIDE
+DATOS DEL CLIENTE: nombre: Ana Martínez · plan_actual: MOV-BASIC ($199/mes)
+CONTEXTO: Copilot pidió documento. Cliente dio número que no coincide con el registro.
+ÚLTIMO MENSAJE: "Mi número de documento es 12345678."
+→ {"razonamiento": "DOCUMENTO_NO_COINCIDE: el número dado no coincide con el registro de Ana. Pedir una vez más con tono cordial.", "accion": "INFORMACION_ADICIONAL", "recomendacion": "El número no coincide con nuestro registro, Ana. ¿Podría verificarlo nuevamente?", "urgencia": "alta"}
 
 # EJEMPLO SUSP-1 — SUSPENSIÓN: primera solicitud, explorar motivo
 DATOS DEL CLIENTE: nombre: Valeria · plan_actual: MOV-BASIC ($199).
@@ -1344,15 +1334,22 @@ def lambda_handler(event, context):
     kb_scripts       = get_relevant_scripts(transcript, cliente, context_text)
     familiar_context = build_familiar_context(cliente, plan_data, tl, context_text)
 
-    # Identity block for CLIENTE_DESCONOCIDO (no profile available)
+    # Identity block for unconfirmed/escalation states
     identity_block = ''
     if identidad_estado == 'CLIENTE_DESCONOCIDO':
         identity_block = (
             "IDENTIDAD_ESTADO: CLIENTE_DESCONOCIDO\n"
-            "• El nombre mencionado no existe en la base de datos.\n"
-            "• El perfil del número de teléfono NO corresponde a este cliente — IGNORAR.\n"
-            "• Acción requerida: preguntar si tiene plan activo con TelcoStrata. "
-            "Calificar antes de proceder con cualquier venta."
+            "• El nombre mencionado no existe en la base de datos de TelcoStrata.\n"
+            "• No hay cuenta verificable — NINGUNA acción de venta o retención es posible.\n"
+            "• Acción OBLIGATORIA: ESCALACIÓN. Informar al cliente que será transferido con un especialista "
+            "para verificar su identidad. NO hacer preguntas de calificación ni intentar vender."
+        )
+    elif identidad_estado == 'MISMATCH_PENDIENTE_DOCUMENTO':
+        identity_block = (
+            "IDENTIDAD_ESTADO: MISMATCH_PENDIENTE_DOCUMENTO\n"
+            f"• El teléfono está registrado a un nombre diferente, pero se encontró a {cliente.get('nombre', '?')} en la base de datos.\n"
+            "• SIGUIENTE ACCIÓN OBLIGATORIA: solicitar número de documento para validar identidad.\n"
+            "• NO proceder con datos de cuenta, precios, planes ni cambios hasta tener documento confirmado."
         )
 
     # Retention block — check current segment AND accumulated context (FIX)
@@ -1388,6 +1385,21 @@ def lambda_handler(event, context):
         parts.append(f"CONTEXTO DE LA LLAMADA:\n{context_text}")
     parts.append(f"ÚLTIMO MENSAJE DEL CLIENTE:\n{transcript}")
     parts.append(f"SENTIMIENTO: {sentiment}")
+
+    # Hard override: price objection in current turn → force MANEJO_OBJECION
+    _obj_kw = ["está caro", "es caro", "no sé si me conviene", "no me convence",
+               "es mucho", "no vale la pena", "la diferencia es mucha", "no lo veo"]
+    _price_obj = any(kw in tl for kw in _obj_kw)
+    print(f"[PRICE_OBJ] detected={_price_obj} pricing_context_len={len(pricing_context)}")
+    if _price_obj:
+        parts.append(
+            "ACCION_FORZADA: MANEJO_OBJECION\n"
+            "El cliente expresó objeción de precio ('está caro', 'no sé si me conviene', etc.).\n"
+            "Responde EXACTAMENTE con accion=MANEJO_OBJECION.\n"
+            "Usa la línea 'con 20% dto' de TABLA DE COSTOS para la recomendación.\n"
+            "PROHIBIDO: accion=ESPERAR, accion=INFORMACION_ADICIONAL."
+        )
+
     parts.append("Responde con el JSON de la acción correcta.")
 
     user_message = '\n\n'.join(parts)
@@ -1420,13 +1432,27 @@ def lambda_handler(event, context):
             print(f"[NBA] razonamiento={razonamiento}")
             print(f"[NBA] recomendacion={recomendacion}")
 
+            # Operator identity status tag — always prepended
+            ID_TAGS = {
+                'CONFIRMADO':                   '[✓ IDENTIDAD VERIFICADA]',
+                'NO_CONFIRMADO':                '[⚠ IDENTIDAD PENDIENTE — solicitando nombre]',
+                'MISMATCH_PENDIENTE_DOCUMENTO': '[⚠ DISCREPANCIA — solicitando documento]',
+                'DOCUMENTO_NO_COINCIDE':        '[⚠ DOCUMENTO NO COINCIDE — re-verificando]',
+                'CLIENTE_DESCONOCIDO':          '[⚠ CLIENTE NO REGISTRADO — ESCALAR]',
+            }
+            id_tag = ID_TAGS.get(identidad_estado, '')
+
             if accion == 'ESPERAR' or not recomendacion or recomendacion == 'Escuchando al cliente.':
+                # Show tag on silence when identity not yet resolved
+                if id_tag and identidad_estado != 'CONFIRMADO':
+                    return build_response(id_tag)
                 return build_response('')
             if accion not in VALID_ACTIONS:
                 print(f"Invalid action '{accion}' — ESPERAR")
                 return build_response('')
 
-            return build_response(f"[{accion}] {recomendacion}")
+            msg = f"{id_tag} [{accion}] {recomendacion}" if id_tag else f"[{accion}] {recomendacion}"
+            return build_response(msg)
 
         except json.JSONDecodeError:
             print(f"JSON parse error — raw: {text[:200]}")
