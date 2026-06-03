@@ -1147,6 +1147,13 @@ OFERTA_ESPECIAL
 
 ESCALACIÓN
   Solo si el cliente pide supervisor explícitamente. No usar por frustración general.
+  PROHIBIDO ESCALAR (estos son UPSELL/RETENCIÓN/SOPORTE, NO ESCALACIÓN):
+  • Cualquier petición de cambio/upgrade de plan (móvil u hogar). "Quiero el de 300", "quiero más velocidad", "quiero MOV-PRO" → UPSELL.
+  • Cualquier solicitud de información comercial (precios, planes, ofertas) → INFORMACION_ADICIONAL o UPSELL.
+  • Quejas de precio → MANEJO_OBJECION.
+  • Intención de baja → RETENCIÓN.
+  • Problemas técnicos reales (sin señal, lentitud, no conecta) → SOPORTE.
+  La ÚNICA ESCALACIÓN válida en este Copilot es: CLIENTE_DESCONOCIDO (identidad sin verificar después de los pasos del flujo).
 
 SOPORTE
   Problema técnico activo: sin señal, error de red, falla de servicio inesperada, facturación incorrecta.
