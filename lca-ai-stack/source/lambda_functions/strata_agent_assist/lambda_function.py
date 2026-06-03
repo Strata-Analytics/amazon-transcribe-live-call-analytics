@@ -558,6 +558,7 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
     if cliente.get('internet_hogar'):
         proveedor = cliente.get('proveedor_internet_hogar', '')
         precio_ih = cliente.get('precio_internet_hogar_actual', '')
+        plan_hogar = cliente.get('plan_hogar_actual', '')
         if proveedor and proveedor.lower() not in ('telcostrata', ''):
             lines.append(
                 f"internet_hogar: SÍ con {proveedor} (${precio_ih}/mes) — "
@@ -565,7 +566,14 @@ def build_profile_section(cliente: dict, plan_data: dict, insights: dict,
                 f"NO ofrecer proactivamente si el cliente no pregunta."
             )
         else:
-            lines.append("internet_hogar: SÍ (TelcoStrata) — NO ofrecer planes HOG ni bundle")
+            plan_hogar_data = get_plan(plan_hogar) if plan_hogar else {}
+            velocidad = plan_hogar_data.get('velocidad_mbps', '?')
+            precio_h  = cliente.get('precio_hogar_actual', plan_hogar_data.get('precio', '?'))
+            lines.append(
+                f"internet_hogar: SÍ con TelcoStrata — plan_hogar_actual: {plan_hogar or '?'} "
+                f"({velocidad}Mbps, ${precio_h}/mes). "
+                f"NO ofrecer hogar de forma proactiva; SÍ procesar upgrade si el cliente lo solicita explícitamente."
+            )
     else:
         lines.append("internet_hogar: NO — oportunidad OPORTUNIDAD_VENTA bundle si cliente lo menciona")
 
@@ -949,7 +957,10 @@ REGLAS — LEER COMPLETO ANTES DE RESPONDER
 
 7. HOGAR — SOLO SI EL CLIENTE LO MENCIONA EXPLÍCITAMENTE:
    • NUNCA ofrecer internet hogar ni bundle de forma proactiva. Esperar que el cliente lo pregunte.
-   • Si internet_hogar indica "(TelcoStrata)" → NO ofrecer nada de hogar bajo ninguna circunstancia.
+   • Si internet_hogar indica "con TelcoStrata":
+     - NO ofrecer planes HOG ni bundle de forma proactiva.
+     - SÍ procesar upgrade si el cliente lo solicita explícitamente (ej: "quiero más velocidad", "mejorar mi internet", "cambiar a uno más rápido", "el de 300 megas", "el de 1 giga"). En ese caso → UPSELL al plan HOG superior según `plan_hogar_actual` y campo `upgrade` del catálogo. NUNCA escalar a soporte técnico para upgrades de plan.
+     - Si el cliente reporta una falla técnica (lentitud, no conecta, intermitencia, sin señal de wifi) → SOPORTE (no UPSELL).
    • Si internet_hogar dice "con Izzi/Telmex/otro" Y el cliente pregunta por hogar en este turno → OPORTUNIDAD_VENTA bundle.
    • Si el cliente está hablando de plan familiar → NO mezclar con oferta de hogar aunque tenga proveedor externo.
 
@@ -1263,6 +1274,11 @@ DATOS DEL CLIENTE: nombre: María · plan_actual: MOV-PLUS ($299) · internet_ho
 CONTEXTO: María confirmó que paga $450 con Telmex.
 ÚLTIMO MENSAJE: "Pago $450 de internet con Telmex todos los meses."
 → {"razonamiento": "Paga $450 en Telmex + $299 MOV-PLUS = $749. Bundle HOG-100 + MOV-PLUS = $676. Ahorro $73/mes.", "accion": "OPORTUNIDAD_VENTA", "recomendacion": "Con el bundle HOG-100 (100Mbps fibra) + tu plan móvil actual pagarías $676/mes en lugar de $749 — ahorrás $73 por mes y tenés todo en una sola factura. ¿Te interesa conocer los detalles?", "urgencia": "alta"}
+
+# EJEMPLO 14b — UPSELL hogar a cliente TelcoStrata existente: cliente solicita upgrade explícitamente
+DATOS DEL CLIENTE: nombre: Roberto · plan_actual: MOV-PRO ($449) · internet_hogar: SÍ con TelcoStrata — plan_hogar_actual: HOG-100 (100Mbps, $499/mes).
+ÚLTIMO MENSAJE: "Quería ver opciones para mejorar mi internet de hogar, quiero más velocidad."
+→ {"razonamiento": "Cliente TelcoStrata pide upgrade explícito de internet hogar. PROHIBIDO escalar a soporte técnico — esto es UPSELL, no falla técnica. HOG-100 → HOG-300 es el upgrade natural. Ofrecer detalles y diferencia de precio.", "accion": "UPSELL", "recomendacion": "Perfecto, Roberto. Desde tu HOG-100 actual ($499/mes) el siguiente paso es HOG-300 — 300Mbps, 3 veces más rápido, con WiFi extender incluido por $699/mes (diferencia de $200/mes). Ideal si tenés varios dispositivos o trabajás desde casa. ¿Lo activamos?", "urgencia": "alta"}
 
 # EJEMPLO 15 — OPORTUNIDAD_VENTA familiar
 DATOS DEL CLIENTE: nombre: Ana · plan_actual: MOV-BASIC ($199).
